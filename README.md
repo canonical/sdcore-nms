@@ -15,13 +15,13 @@ Graphical User Interface (GUI) for operating the core (creating subscribers, net
 Install dependencies:
 
 ```bash
-pnpm i
+npm install
 ```
 
 Run the development server:
 
 ```bash
-pnpm dev
+npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
