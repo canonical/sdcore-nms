@@ -1,4 +1,9 @@
 @tailwind base;
+
+body {
+  font-family: "Ubuntu variable", sans-serif !important;
+}
+
 @tailwind components;
 @tailwind utilities;
 
