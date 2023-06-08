@@ -21,6 +21,7 @@ parts:
     source: .
     source-type: local
     build-snaps:
-    - node/18/stable
+      - node/18/stable
     override-build: |
+      npm ci --frozen-lockfile
       npm run build
