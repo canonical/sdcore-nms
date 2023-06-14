@@ -3,7 +3,9 @@ import { ReactNode, useState } from "react";
 
 import { Button, Modal, Form, Input } from "@canonical/react-components";
 
-export default function AddSubscriber(): ReactNode {
+type Props = { text: string };
+
+export default function AddSubscriber(props: Props): ReactNode {
   const [modalOpen, setModalOpen] = useState(false);
   const closeHandler = () => setModalOpen(false);
   const handleSave = () => {
@@ -12,10 +14,11 @@ export default function AddSubscriber(): ReactNode {
   return (
     <>
       <Button
-        className="p-button--positive u-no-margin--bottom"
+        appearance="positive"
+        className="u-no-margin--bottom"
         onClick={() => setModalOpen(true)}
       >
-        Add New Subscriber
+        {props.text}
       </Button>
       {modalOpen && (
         <Modal

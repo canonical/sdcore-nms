@@ -12,6 +12,7 @@ export default function EditSubscriber(props: Props): ReactNode {
       <Button
         className="u-no-margin--bottom"
         onClick={() => setModalOpen(true)}
+        small={true}
       >
         Edit
       </Button>
@@ -35,23 +36,15 @@ export default function EditSubscriber(props: Props): ReactNode {
           }
         >
           <Form stacked>
-            <Input type="text" id="imsi" label="IMSI" stacked />
-            <Input type="text" id="plmn-id" label="PLMN ID" stacked />
+            <Input type="number" id="plmn-id" label="PLMN ID" stacked />
+            <Input type="text" id="opc" label="OPC" stacked />
+            <Input type="text" id="key" label="Key" stacked />
             <Input
-              type="text"
-              id="network-slice"
-              label="Network Slice"
+              type="number"
+              id="sequence-number"
+              label="Sequence Number"
               stacked
             />
-            <Input type="number" id="slice-id" label="Slice ID" stacked />
-            <Input type="text" id="standard" label="Standard" stacked />
-            <Input type="text" id="dnn" label="DNN" stacked />
-            <Input type="text" id="mbr" label="MBR" stacked />
-            <Input type="text" id="uplink" label="Uplink" stacked />
-            <Input type="text" id="downlink" label="Downlink" stacked />
-            <Input type="text" id="qos" label="QOS" stacked />
-            <Input type="number" id="qci" label="QCI" stacked />
-            <Input type="number" id="arp" label="ARP" stacked />
           </Form>
         </Modal>
       )}

@@ -14,6 +14,7 @@ export default function DeleteSubscriberButton(props: Props) {
       appearance="negative"
       className={"u-no-margin--bottom"}
       key={props.imsi}
+      small={true}
     >
       Delete
     </Button>
