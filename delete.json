@@ -1,0 +1,119 @@
+// Create a new subscriber:
+
+curl --location '3.90.228.4:8543/api/subscriber/imsi-208930100007487' \
+--header 'Content-Type: text/plain' \
+--data '{
+    "UeId":"208930100007487",
+    "plmnId":"20801",
+    "opc":"981d464c7c52eb6e5036234984ad0bcf",
+    "key":"5122250214c33e723a5dd523fc145fc0",
+    "sequenceNumber":"16f3b3f70fc2"
+}'
+
+// Delete a subscriber:
+// http://<config-service-name-or-ip>:<port>/api/subscriber/<imsi-xxx>
+
+curl -X DELETE http://3.90.228.4:8543/api/subscriber/imsi-208930100007489 -v
+
+// DEVICE GROUP
+// Create a new device group named "cows" that contains the newly created subscriber:
+curl -v --location '3.90.228.4:8543/config/v1/device-group/cows' \
+--header 'Content-Type: application/json' \
+--data '{
+    "imsis": [
+      "208930100007487",
+      "208930100007490",
+      "208930100007491",
+      "208930100007495",
+      "208930100007475",
+      "208930100007499",
+      "208930100007492",
+      "208930100007497",
+      "208930100007440"
+    ],
+    "site-info": "demo",
+    "ip-domain-name": "pool1",
+    "ip-domain-expanded": {
+        "dnn": "internet",
+        "ue-ip-pool": "172.250.1.0/16",
+        "dns-primary": "8.8.8.8",
+        "mtu": 1460,
+        "ue-dnn-qos": {
+            "dnn-mbr-uplink": 20000000,
+            "dnn-mbr-downlink": 200000000,
+            "traffic-class": {
+                "name": "platinum",
+                "arp": 6,
+                "pdb": 300,
+                "pelr": 6,
+                "qci": 8
+            }
+        }
+    }
+}'
+
+
+// Create a network slice called "default" that contains the "cows" device group:
+curl -v --location '3.90.228.4:8543/config/v1/network-slice/default' \
+--header 'Content-Type: application/json' \
+--data '{
+  "slice-id": {
+    "sst": "1",
+    "sd": "010203"
+  },
+  "site-device-group": [
+    "cows"
+  ],
+  "site-info": {
+    "site-name": "demo",
+    "plmn": {
+      "mcc": "208",
+      "mnc": "93"
+    },
+    "gNodeBs": [
+      {
+        "name": "demo-gnb1",
+        "tac": 1
+      }
+    ],
+    "upf": {
+      "upf-name": "upf",
+      "upf-port": "8805"
+    }
+  }
+}'
+
+// Get subscribers
+curl -X GET 3.90.228.4:8543/api/subscriber
+
+// Output
+[{"plmnID":"20893","ueId":"imsi-208930100007487"}]
+
+curl -v --location '3.90.228.4:8543/config/v1/device-group/cows' \
+--header 'Content-Type: application/json' \
+--data '{
+    "imsis": [
+        "208930100007487",
+        "208930100007488",
+        "208930100007489"
+    ],
+    "site-info": "demo",
+    "ip-domain-name": "pool1",
+    "ip-domain-expanded": {
+        "dnn": "internet",
+        "ue-ip-pool": "172.250.1.0/16",
+        "dns-primary": "8.8.8.8",
+        "mtu": 1460,
+        "ue-dnn-qos": {
+            "dnn-mbr-uplink": 20000000,
+            "dnn-mbr-downlink": 200000000,
+            "traffic-class": {
+                "name": "platinum",
+                "arp": 6,
+                "pdb": 300,
+                "pelr": 6,
+                "qci": 8
+            }
+        }
+    }
+}'

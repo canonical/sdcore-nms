@@ -9,7 +9,7 @@ import NetworkConfiguration from "@/components/NetworkConfiguration";
 
 export default function Home() {
   const views = ["network configuration", "subscribers", "network slices"];
-  const [view, setView] = useState(views[0]);
+  const [view, setView] = useState(views[1]);
 
   const handleViewNetworkConfiguration = () => {
     setView(views[0]);
@@ -38,7 +38,7 @@ export default function Home() {
             className="p-button--base is-dark u-no-margin--bottom"
             onClick={handleViewSubscribers}
           >
-            Subscribers
+            Subscribers 
           </button>
         </nav>
         <div className="col-span-12 ml-[16rem] mt-8 flex w-10/12 flex-col items-start">

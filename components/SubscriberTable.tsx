@@ -1,96 +1,97 @@
 "use client";
+import { useState, useEffect } from "react";
 import EditSubscriber from "@/components/EditSubscriber";
 import DeleteSubscriberButton from "@/components/DeleteSubscriberButton";
-import AddSubscriber from "./AddSubscriber";
+import CreateSubscriber from "@/components/CreateSubscriberButton";
 
-import { Notification } from "@canonical/react-components";
+import {
+  Notification,
+  Button,
+  Badge,
+  Spinner,
+} from "@canonical/react-components";
 
-const dummySubscribers = {
-  table: [
-    {
-      IMSI: "123456789",
-    },
-    {
-      IMSI: "987654321",
-    },
-    {
-      IMSI: "345678912",
-    },
-    {
-      IMSI: "456789123",
-    },
-    {
-      IMSI: "567891234",
-    },
-    {
-      IMSI: "678912345",
-    },
-    {
-      IMSI: "789123456",
-    },
-    {
-      IMSI: "891234567",
-    },
-    {
-      IMSI: "912345678",
-    },
-    {
-      IMSI: "234567891",
-    },
-    {
-      IMSI: "112233445",
-    },
-    {
-      IMSI: "223344556",
-    },
-    {
-      IMSI: "334455667",
-    },
-    {
-      IMSI: "445566778",
-    },
-    {
-      IMSI: "556677889",
-    },
-    {
-      IMSI: "667788990",
-    },
-    {
-      IMSI: "778899011",
-    },
-    {
-      IMSI: "889900112",
-    },
-    {
-      IMSI: "990011223",
-    },
-    {
-      IMSI: "100112233",
-    },
-    {
-      IMSI: "210012345",
-    },
-    {
-      IMSI: "321001234",
-    },
-  ],
+import { SlRefresh } from "react-icons/sl";
+
+import { WEBUI_ENDPOINT } from "@/sdcoreConfig";
+
+// {"plmnID":"20893","ueId":"imsi-208930100007487"}
+export type Subscriber = {
+  plmnID: string;
+  ueId: string;
 };
 
+// [{"plmnID":"20893","ueId":"imsi-208930100007487"}]
+export type Subscribers = Subscriber[];
+
 export default function SubscriberTable() {
-  const tableContent = dummySubscribers.table.map((subscriber) => {
+  const [subscribers, setSubscribers] = useState<Subscribers>([]);
+  const [loading, setLoading] = useState(false);
+  const [createEnabled, setCreateEnabled] = useState(true);
+  const [refresh, setRefresh] = useState(false);
+
+  const currentImsis: string[] = subscribers.map((subscriber: Subscriber) => {
+    return subscriber.ueId.split("-")[1];
+  });
+
+  useEffect(() => {
+    const fetchSubscribers = async () => {
+      setLoading(true);
+
+      const headers = {
+        "Content-Type": "application/json",
+      };
+
+      try {
+        const response = await fetch(`${WEBUI_ENDPOINT}/api/subscriber`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch subscribers");
+        }
+
+        const data = await response.json();
+        setSubscribers(data);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+        setCreateEnabled(false);
+      }
+    };
+
+    fetchSubscribers();
+  }, [refresh]);
+
+  const handleRefresh = () => {
+    setRefresh(!refresh);
+  };
+
+  const tableContent = subscribers.map((subscriber: Subscriber) => {
+    const rawIMSI = subscriber.ueId.split("-")[1];
     return (
-      <tr key={subscriber.IMSI} className="overflow-x-scroll">
-        <td>{subscriber.IMSI}</td>
+      <tr key={rawIMSI} className="overflow-x-scroll">
+        <td>{rawIMSI}</td>
         <td>
-          <EditSubscriber imsi={subscriber.IMSI} key={subscriber.IMSI} />
+          <EditSubscriber
+            imsi={rawIMSI}
+            currentSubscribers={currentImsis}
+            refreshHandler={handleRefresh}
+            key={rawIMSI}
+          />
           <DeleteSubscriberButton
-            imsi={String(subscriber.IMSI)}
-            key={subscriber.IMSI + "delete"}
+            imsi={String(rawIMSI)}
+            key={rawIMSI + "delete-button"}
           />
         </td>
       </tr>
     );
   });
+
   return (
     <div className="ml-8 flex flex-col">
       <Notification severity="caution" title="Warning">
@@ -98,20 +99,48 @@ export default function SubscriberTable() {
         <span className="italic">Network Configuration</span> tab before adding
         subscribers.
       </Notification>
-      <div className="flex flex-row items-end justify-between">
+      <div className="flex flex-row items-end justify-start">
         <h1 className="h1-heading--1 font-regular">Subscribers</h1>
-        <AddSubscriber text="Create" />
+        <div className="ml-[10rem] mr-4">
+          <Button
+            hasIcon={true}
+            disabled={createEnabled}
+            className="u-no-margin--bottom"
+            onClick={handleRefresh}
+          >
+            <SlRefresh size={20} />
+          </Button>
+        </div>
+        <CreateSubscriber
+          text="Create"
+          currentSubscribers={currentImsis}
+          disabled={createEnabled}
+          refreshHandler={handleRefresh}
+        />
       </div>
-      <div className="w-[50rem] pt-1">
-        <table aria-label="Example of formatting in the table">
-          <thead>
-            <tr>
-              <th>IMSI</th>
-              <th className="u-align--left">Actions</th>
-            </tr>
-          </thead>
-          {tableContent}
-        </table>
+      <div className="mt-8 w-[50rem]">
+        {loading ? (
+          <Spinner text="Loading subscribers..." />
+        ) : (
+          <table aria-label="Example of formatting in the table">
+            <thead>
+              <tr>
+                <th>IMSI</th>
+                <th className="u-align--left">Actions</th>
+              </tr>
+            </thead>
+            <tbody>{tableContent}</tbody>
+          </table>
+        )}
+        {loading ? null : (
+          <>
+            <span className="font-light">Total subscribers</span>{" "}
+            <Badge
+              badgeType="UNDEFINED_LARGE_NUMBER"
+              value={subscribers.length}
+            />
+          </>
+        )}
       </div>
     </div>
   );

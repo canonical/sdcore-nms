@@ -1,6 +1,7 @@
+"use client";
 import { useState } from "react";
-
 import { Form, Input, Button } from "@canonical/react-components";
+import { WEBUI_ENDPOINT } from "@/sdcoreConfig";
 
 export default function NetworkConfiguration() {
   const [mcc, setMcc] = useState("");
@@ -22,7 +23,7 @@ export default function NetworkConfiguration() {
   }
 
   async function crateEmptyDeviceGroup() {
-    const url = "http://10.152.183.20:5000/config/v1/device-group/cows";
+    const url = `${WEBUI_ENDPOINT}/config/v1/device-group/cows`;
     const headers = {
       "Content-Type": "application/json",
     };
@@ -63,7 +64,7 @@ export default function NetworkConfiguration() {
   }
 
   async function createNetworkSliceWithDeviceGroup() {
-    const url = "http://10.152.183.20:5000/config/v1/network-slice/default";
+    const url = `${WEBUI_ENDPOINT}/config/v1/network-slice/default`;
     const headers = {
       "Content-Type": "application/json",
     };
@@ -108,7 +109,7 @@ export default function NetworkConfiguration() {
   return (
     <div className="ml-8">
       <h1 className="h1-heading--1 font-regular mb-8">Network Configuration</h1>
-      <Form stacked>
+      <div className="mt-8">
         <Input
           type="number"
           id="mcc"
@@ -128,7 +129,7 @@ export default function NetworkConfiguration() {
         <Button appearance="positive" className="mt-8" onClick={handleSave}>
           Create Network
         </Button>
-      </Form>
+      </div>
     </div>
   );
 }
