@@ -84,7 +84,9 @@ export default function SubscriberTable() {
             key={rawIMSI}
           />
           <DeleteSubscriberButton
+            currentSubscribers={currentImsis}
             imsi={String(rawIMSI)}
+            refreshHandler={handleRefresh}
             key={rawIMSI + "delete-button"}
           />
         </td>
