@@ -11,7 +11,7 @@ type Props = {
 };
 
 export default function EditSubscriber(props: Props): ReactNode {
-  const [modalOpen, setModalOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [imsi, setImsi] = useState<string>("");
   const [opc, setOpc] = useState<string>("");
   const [key, setKey] = useState<string>("");

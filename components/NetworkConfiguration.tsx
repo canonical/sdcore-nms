@@ -4,8 +4,8 @@ import { Input, Button } from "@canonical/react-components";
 import { WEBUI_ENDPOINT } from "@/sdcoreConfig";
 
 export default function NetworkConfiguration() {
-  const [mcc, setMcc] = useState("");
-  const [mnc, setMnc] = useState("");
+  const [mcc, setMcc] = useState<string>("");
+  const [mnc, setMnc] = useState<string>("");
 
   const handleMccChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
@@ -17,52 +17,56 @@ export default function NetworkConfiguration() {
     setMnc(value);
   };
 
-  async function handleSave() {
-    async function createNetworkSliceWithDeviceGroup() {
-      const url = `${WEBUI_ENDPOINT}/config/v1/network-slice/default`;
-      const headers = {
-        "Content-Type": "application/json",
-      };
-      const data = {
-        "slice-id": {
-          sst: "1",
-          sd: "010203",
+  const createNetworkSliceWithDeviceGroup = async () => {
+    const url = `${WEBUI_ENDPOINT}/config/v1/network-slice/default`;
+    const headers = {
+      "Content-Type": "application/json",
+    };
+    const data = {
+      "slice-id": {
+        sst: "1",
+        sd: "010203",
+      },
+      "site-device-group": ["cows"],
+      "site-info": {
+        "site-name": "demo",
+        plmn: {
+          mcc: mcc,
+          mnc: mnc,
         },
-        "site-device-group": ["cows"],
-        "site-info": {
-          "site-name": "demo",
-          plmn: {
-            mcc: mcc,
-            mnc: mnc,
+        gNodeBs: [
+          {
+            name: "demo-gnb1",
+            tac: 1,
           },
-          gNodeBs: [
-            {
-              name: "demo-gnb1",
-              tac: 1,
-            },
-          ],
-          upf: {
-            "upf-name": "upf",
-            "upf-port": "8805",
-          },
+        ],
+        upf: {
+          "upf-name": "upf",
+          "upf-port": "8805",
         },
-      };
+      },
+    };
 
-      try {
-        const response = await fetch(url, {
-          method: "POST",
-          headers,
-          body: JSON.stringify(data),
-        });
-        const responseData = await response.json();
-        console.log(responseData);
-      } catch (error) {
-        console.error(error);
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          `Error creating network. Error code: ${response.status}`
+        );
       }
+    } catch (error) {
+      console.error(error);
     }
+  };
 
+  const handleSave = async () => {
     await createNetworkSliceWithDeviceGroup();
-  }
+  };
 
   return (
     <div className="ml-8">

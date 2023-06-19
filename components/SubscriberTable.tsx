@@ -15,20 +15,18 @@ import { SlRefresh } from "react-icons/sl";
 
 import { WEBUI_ENDPOINT } from "@/sdcoreConfig";
 
-// {"plmnID":"20893","ueId":"imsi-208930100007487"}
 export type Subscriber = {
   plmnID: string;
   ueId: string;
 };
 
-// [{"plmnID":"20893","ueId":"imsi-208930100007487"}]
 export type Subscribers = Subscriber[];
 
 export default function SubscriberTable() {
   const [subscribers, setSubscribers] = useState<Subscribers>([]);
-  const [loading, setLoading] = useState(false);
-  const [createEnabled, setCreateEnabled] = useState(true);
-  const [refresh, setRefresh] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [createEnabled, setCreateEnabled] = useState<boolean>(true);
+  const [refresh, setRefresh] = useState<boolean>(false);
 
   const currentImsis: string[] = subscribers.map((subscriber: Subscriber) => {
     return subscriber.ueId.split("-")[1];
@@ -124,7 +122,7 @@ export default function SubscriberTable() {
         {loading ? (
           <Spinner text="Loading subscribers..." />
         ) : (
-          <table aria-label="Example of formatting in the table">
+          <table aria-label="Subscribers List">
             <thead>
               <tr>
                 <th>IMSI</th>
@@ -136,7 +134,7 @@ export default function SubscriberTable() {
         )}
         {loading ? null : (
           <>
-            <span className="font-light">Total subscribers</span>{" "}
+            <span>Total subscribers</span>{" "}
             <Badge
               badgeType="UNDEFINED_LARGE_NUMBER"
               value={subscribers.length}

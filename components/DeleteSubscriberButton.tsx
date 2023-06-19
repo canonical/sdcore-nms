@@ -10,9 +10,9 @@ type Props = {
 };
 
 export default function DeleteSubscriberButton(props: Props) {
-  const [deleting, setDeleting] = useState(false);
+  const [deleting, setDeleting] = useState<boolean>(false);
 
-  const getUpdatedImsis = (
+  const getFilteredSubscribers = (
     imsiList: string[],
     imsiToRemove: string
   ): string[] => {
@@ -55,7 +55,9 @@ export default function DeleteSubscriberButton(props: Props) {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              imsis: [...getUpdatedImsis(props.currentSubscribers, props.imsi)],
+              imsis: [
+                ...getFilteredSubscribers(props.currentSubscribers, props.imsi),
+              ],
               ...STATIC_DEVICE_GROUP_DATA,
             }),
           }

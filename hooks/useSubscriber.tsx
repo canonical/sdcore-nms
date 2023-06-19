@@ -18,7 +18,7 @@ export const useSubscriber = (
         `${webuiEndpoint}/api/subscriber/imsi-${imsi}`,
         {
           method: "POST",
-          // mode: "no-cors",
+          // mode: "no-cors", FIXME: Remove when webui API is fixed.
           headers: {
             "Content-Type": "application/json",
           },
