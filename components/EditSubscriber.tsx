@@ -19,17 +19,12 @@ export default function EditSubscriber(props: Props): ReactNode {
   const closeHandler = () => setModalOpen(false);
   const { handleSubscriber } = useSubscriber(
     WEBUI_ENDPOINT,
-    imsi,
+    props.imsi,
     opc,
     key,
     sequenceNumber,
     props.currentSubscribers
   );
-
-  const handleImsiChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value;
-    setImsi(value);
-  };
 
   const handleOpcChange = (event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
@@ -84,7 +79,6 @@ export default function EditSubscriber(props: Props): ReactNode {
               type="text"
               id="imsi"
               label="IMSI"
-              onChange={handleImsiChange}
               value={props.imsi}
               stacked
               disabled
