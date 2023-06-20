@@ -1,0 +1,16 @@
+name: Main branch CI
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  lint-report:
+    uses: ./.github/workflows/lint-report.yaml
+
+  unit-tests-with-coverage:
+    uses: ./.github/workflows/unit-test.yaml
