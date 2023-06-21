@@ -13,7 +13,7 @@ import {
 
 import { SlRefresh } from "react-icons/sl";
 
-import { WEBUI_ENDPOINT } from "@/sdcoreConfig";
+import { WEBUI_ENDPOINT } from "@/public/sdcoreConfig";
 
 export type Subscriber = {
   plmnID: string;

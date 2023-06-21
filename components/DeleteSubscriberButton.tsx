@@ -1,6 +1,6 @@
 "use client";
 import { Button } from "@canonical/react-components";
-import { WEBUI_ENDPOINT, STATIC_DEVICE_GROUP_DATA } from "@/sdcoreConfig";
+import { WEBUI_ENDPOINT, STATIC_DEVICE_GROUP_DATA, STATIC_NETWORK_SLICE_DATA } from "@/public/sdcoreConfig";
 import { useState } from "react";
 
 type Props = {
@@ -48,7 +48,7 @@ export default function DeleteSubscriberButton(props: Props) {
     const removeSubcriberFromDeviceGroup = async () => {
       try {
         const response = await fetch(
-          `${WEBUI_ENDPOINT}/config/v1/device-group/cows`,
+          `${WEBUI_ENDPOINT}/config/v1/device-group/${STATIC_NETWORK_SLICE_DATA["site-device-group"][0]}`,
           {
             method: "POST",
             headers: {

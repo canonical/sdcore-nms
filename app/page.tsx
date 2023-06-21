@@ -6,6 +6,7 @@ import SubscriberTable from "@/components/SubscriberTable";
 
 import canonicalUbuntuLogo from "@/public/Canonical-Ubuntu+logo-2021_RGB_reverse.svg";
 import NetworkConfiguration from "@/components/NetworkConfiguration";
+import { Button } from "@canonical/react-components";
 
 export default function Home() {
   const views = ["network configuration", "subscribers", "network slices"];
@@ -28,18 +29,20 @@ export default function Home() {
             width={200}
             className="mx-8 mb-4"
           />
-          <button
-            className="p-button--base is-dark u-no-margin--bottom"
+          <Button
+            appearance="base"
+            className="is-dark u-no-margin--bottom"
             onClick={handleViewNetworkConfiguration}
           >
             Network Configuration
-          </button>
-          <button
-            className="p-button--base is-dark u-no-margin--bottom"
+          </Button>
+          <Button
+            appearance="base"
+            className="is-dark u-no-margin--bottom"
             onClick={handleViewSubscribers}
           >
             Subscribers
-          </button>
+          </Button>
         </nav>
         <div className="col-span-12 ml-[16rem] mt-8 flex w-10/12 flex-col items-start">
           {view == views[0] && <NetworkConfiguration />}

@@ -1,7 +1,31 @@
 "use client";
 import { useState } from "react";
 import { Input, Button } from "@canonical/react-components";
-import { WEBUI_ENDPOINT } from "@/sdcoreConfig";
+import { WEBUI_ENDPOINT, STATIC_NETWORK_SLICE_DATA, NETWORK_SLICE_NAME } from "@/public/sdcoreConfig";
+
+export type NetworkSliceData = {
+  "slice-id": {
+    sst: string;
+    sd: string;
+  };
+  "site-device-group": string[];
+  "site-info": {
+    "site-name": string;
+    plmn: {
+      mcc: string;
+      mnc: string;
+    };
+    gNodeBs: {
+      name: string;
+      tac: number;
+    }[];
+    upf: {
+      "upf-name": string;
+      "upf-port": string;
+    };
+  };
+};
+
 
 export default function NetworkConfiguration() {
   const [mcc, setMcc] = useState<string>("");
@@ -18,40 +42,24 @@ export default function NetworkConfiguration() {
   };
 
   const createNetworkSliceWithDeviceGroup = async () => {
-    const url = `${WEBUI_ENDPOINT}/config/v1/network-slice/default`;
+    const url = `${WEBUI_ENDPOINT}/config/v1/network-slice/${NETWORK_SLICE_NAME}`;
     const headers = {
       "Content-Type": "application/json",
     };
-    const data = {
-      "slice-id": {
-        sst: "1",
-        sd: "010203",
-      },
-      "site-device-group": ["cows"],
+
+    const networkSliceData: NetworkSliceData = {
+      ...STATIC_NETWORK_SLICE_DATA,
       "site-info": {
-        "site-name": "demo",
-        plmn: {
-          mcc: mcc,
-          mnc: mnc,
-        },
-        gNodeBs: [
-          {
-            name: "demo-gnb1",
-            tac: 1,
-          },
-        ],
-        upf: {
-          "upf-name": "upf",
-          "upf-port": "8805",
-        },
-      },
+        ...STATIC_NETWORK_SLICE_DATA["site-info"],
+        plmn: { mcc: mcc, mnc: mnc }
+      }
     };
 
     try {
       const response = await fetch(url, {
         method: "POST",
         headers,
-        body: JSON.stringify(data),
+        body: JSON.stringify(networkSliceData),
       });
 
       if (!response.ok) {

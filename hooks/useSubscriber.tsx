@@ -2,7 +2,8 @@ import { useCallback } from "react";
 import {
   STATIC_SUSBCRIBER_DATA,
   STATIC_DEVICE_GROUP_DATA,
-} from "@/sdcoreConfig";
+  STATIC_NETWORK_SLICE_DATA,
+} from "@/public/sdcoreConfig";
 
 export const useSubscriber = (
   webuiEndpoint: string,
@@ -45,7 +46,7 @@ export const useSubscriber = (
   const addSubscriberToDeviceGroup = useCallback(async () => {
     try {
       const response = await fetch(
-        `${webuiEndpoint}/config/v1/device-group/cows`,
+        `${webuiEndpoint}/config/v1/device-group/${STATIC_NETWORK_SLICE_DATA["site-device-group"][0]}`,
         {
           method: "POST",
           headers: {
