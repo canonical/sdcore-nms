@@ -12,5 +12,5 @@ jobs:
   lint-report:
     uses: ./.github/workflows/lint-report.yaml
 
-  build-check:
-    uses: ./.github/workflows/build-check.yaml
+  build:
+    uses: ./.github/workflows/build.yaml
