@@ -6,4 +6,4 @@
   <h1>SD-Core GUI</h1>
 </div>
 
-Graphical User Interface (GUI) for operating the core (creating subscribers, network slices, device groups).
+Graphical User Interface (GUI) for configuring SD-Core and managing subscribers.

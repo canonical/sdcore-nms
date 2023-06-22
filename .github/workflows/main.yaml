@@ -12,5 +12,5 @@ jobs:
   lint-report:
     uses: ./.github/workflows/lint-report.yaml
 
-  unit-tests-with-coverage:
-    uses: ./.github/workflows/unit-test.yaml
+  build-check:
+    uses: ./.github/workflows/build-check.yaml

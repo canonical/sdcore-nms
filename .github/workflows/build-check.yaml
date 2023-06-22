@@ -1,10 +1,10 @@
-name: Unit tests
+name: Build check
 
 on:
   workflow_call:
 
 jobs:
-  lint-report:
+  build-check:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout repository
