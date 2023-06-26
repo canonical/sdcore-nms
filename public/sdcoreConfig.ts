@@ -1,4 +1,3 @@
-
 const WEBUI_ENDPOINT: string = "http://3.90.228.4:8543";
 
 const STATIC_SUSBCRIBER_DATA = {
@@ -27,9 +26,11 @@ const STATIC_DEVICE_GROUP_DATA = {
   },
 };
 
+const NETWORK_SLICE_NAME: string = "default";
+
 const STATIC_NETWORK_SLICE_DATA = {
   "slice-id": {
-    sst: "1",
+    sst: 1,
     sd: "010203",
   },
   "site-device-group": ["cows"],
@@ -38,7 +39,7 @@ const STATIC_NETWORK_SLICE_DATA = {
     gNodeBs: [
       {
         name: "demo-gnb1",
-        tac: 1,
+        tac: "1",
       },
     ],
     upf: {
@@ -46,9 +47,7 @@ const STATIC_NETWORK_SLICE_DATA = {
       "upf-port": "8805",
     },
   },
-}
-
-const NETWORK_SLICE_NAME = "default";
+};
 
 export {
   WEBUI_ENDPOINT,

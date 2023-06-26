@@ -1,11 +1,15 @@
 "use client";
 import { useState } from "react";
 import { Input, Button } from "@canonical/react-components";
-import { WEBUI_ENDPOINT, STATIC_NETWORK_SLICE_DATA, NETWORK_SLICE_NAME } from "@/public/sdcoreConfig";
+import {
+  WEBUI_ENDPOINT,
+  STATIC_NETWORK_SLICE_DATA,
+  NETWORK_SLICE_NAME,
+} from "@/public/sdcoreConfig";
 
 export type NetworkSliceData = {
   "slice-id": {
-    sst: string;
+    sst: number;
     sd: string;
   };
   "site-device-group": string[];
@@ -17,7 +21,7 @@ export type NetworkSliceData = {
     };
     gNodeBs: {
       name: string;
-      tac: number;
+      tac: string;
     }[];
     upf: {
       "upf-name": string;
@@ -25,7 +29,6 @@ export type NetworkSliceData = {
     };
   };
 };
-
 
 export default function NetworkConfiguration() {
   const [mcc, setMcc] = useState<string>("");
@@ -51,8 +54,8 @@ export default function NetworkConfiguration() {
       ...STATIC_NETWORK_SLICE_DATA,
       "site-info": {
         ...STATIC_NETWORK_SLICE_DATA["site-info"],
-        plmn: { mcc: mcc, mnc: mnc }
-      }
+        plmn: { mcc: mcc, mnc: mnc },
+      },
     };
 
     try {
