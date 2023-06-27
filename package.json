@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@canonical/react-components": "^0.42.0",
-    "@types/node": "20.2.5",
+    "@types/node": "20.3.2",
     "@types/react": "18.2.8",
     "@types/react-dom": "18.2.4",
     "autoprefixer": "10.4.14",
