@@ -1,30 +1,38 @@
 "use client";
-import { Modal, Form, Input, Button } from "@canonical/react-components";
-import React, { ReactNode, useState, ChangeEvent } from "react";
+import { ChangeEvent, useState } from "react";
+import { Button, Modal, Form, Input } from "@canonical/react-components";
 import { WEBUI_ENDPOINT } from "@/public/sdcoreConfig";
+
 import { useSubscriber } from "@/hooks/useSubscriber";
 
 type Props = {
-  imsi: string;
+  text: string;
   currentSubscribers: string[];
+  disabled: boolean;
   refreshHandler: () => void;
 };
 
-export default function EditSubscriber(props: Props): ReactNode {
+export default function CreateSubscriber(props: Props) {
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [imsi, setImsi] = useState<string>("");
   const [opc, setOpc] = useState<string>("");
   const [key, setKey] = useState<string>("");
   const [sequenceNumber, setSequenceNumber] = useState<string>("");
-  const closeHandler = () => setModalOpen(false);
   const { handleSubscriber } = useSubscriber(
     WEBUI_ENDPOINT,
-    props.imsi,
+    imsi,
     opc,
     key,
     sequenceNumber,
     props.currentSubscribers
   );
+
+  const closeHandler = () => setModalOpen(false);
+
+  const handleImsiChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    setImsi(value);
+  };
 
   const handleOpcChange = (event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
@@ -42,23 +50,25 @@ export default function EditSubscriber(props: Props): ReactNode {
   };
 
   const handleSave = async () => {
-    closeHandler();
     await handleSubscriber();
+    closeHandler();
     props.refreshHandler();
   };
+
   return (
     <>
       <Button
+        appearance="positive"
         className="u-no-margin--bottom"
         onClick={() => setModalOpen(true)}
-        small={true}
+        disabled={props.disabled}
       >
-        Edit
+        {props.text}
       </Button>
       {modalOpen && (
         <Modal
           close={closeHandler}
-          title="Edit Subscriber"
+          title="Add New Subscriber"
           buttonRow={
             <>
               <Button onClick={closeHandler} className="u-no-margin--bottom">
@@ -79,9 +89,8 @@ export default function EditSubscriber(props: Props): ReactNode {
               type="text"
               id="imsi"
               label="IMSI"
-              value={props.imsi}
+              onChange={handleImsiChange}
               stacked
-              disabled
             />
             <Input
               type="text"

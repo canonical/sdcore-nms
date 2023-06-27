@@ -1,152 +1,146 @@
 "use client";
+import { useState, useEffect } from "react";
 import EditSubscriber from "@/components/EditSubscriber";
 import DeleteSubscriberButton from "@/components/DeleteSubscriberButton";
-import AddSubscriber from "./AddSubscriber";
+import CreateSubscriber from "@/components/CreateSubscriberButton";
 
-const dummySubscribers = {
-  table: [
-    {
-      IMSI: "123456789",
-      "PLMN ID": "PLMN001",
-      "Network Slice": "Slice A",
-      "Slice ID": "001",
-      ST: "Standard",
-      DNN: "example.com",
-      MBR: "100 Mbps",
-      Uplink: "50 Mbps",
-      Downlink: "100 Mbps",
-      QOS: "High",
-      QCI: "8",
-      ARP: "3",
-    },
-    {
-      IMSI: "987654321",
-      "PLMN ID": "PLMN001",
-      "Network Slice": "Slice B",
-      "Slice ID": "002",
-      ST: "Standard",
-      DNN: "example.com",
-      MBR: "100 Mbps",
-      Uplink: "50 Mbps",
-      Downlink: "100 Mbps",
-      QOS: "High",
-      QCI: "8",
-      ARP: "3",
-    },
-    {
-      IMSI: "123456789",
-      "PLMN ID": "PLMN001",
-      "Network Slice": "Slice A",
-      "Slice ID": "001",
-      ST: "Standard",
-      DNN: "example.com",
-      MBR: "100 Mbps",
-      Uplink: "50 Mbps",
-      Downlink: "100 Mbps",
-      QOS: "High",
-      QCI: "8",
-      ARP: "3",
-    },
-    {
-      IMSI: "987654321",
-      "PLMN ID": "PLMN001",
-      "Network Slice": "Slice B",
-      "Slice ID": "002",
-      ST: "Standard",
-      DNN: "example.com",
-      MBR: "100 Mbps",
-      Uplink: "50 Mbps",
-      Downlink: "100 Mbps",
-      QOS: "High",
-      QCI: "8",
-      ARP: "3",
-    },
-    {
-      IMSI: "123456789",
-      "PLMN ID": "PLMN001",
-      "Network Slice": "Slice A",
-      "Slice ID": "001",
-      ST: "Standard",
-      DNN: "example.com",
-      MBR: "100 Mbps",
-      Uplink: "50 Mbps",
-      Downlink: "100 Mbps",
-      QOS: "High",
-      QCI: "8",
-      ARP: "3",
-    },
-    {
-      IMSI: "987654321",
-      "PLMN ID": "PLMN001",
-      "Network Slice": "Slice B",
-      "Slice ID": "002",
-      ST: "Standard",
-      DNN: "example.com",
-      MBR: "100 Mbps",
-      Uplink: "50 Mbps",
-      Downlink: "100 Mbps",
-      QOS: "High",
-      QCI: "8",
-      ARP: "3",
-    },
-  ],
+import {
+  Notification,
+  Button,
+  Badge,
+  Spinner,
+} from "@canonical/react-components";
+
+import { SlRefresh } from "react-icons/sl";
+
+import { WEBUI_ENDPOINT } from "@/public/sdcoreConfig";
+
+export type Subscriber = {
+  plmnID: string;
+  ueId: string;
 };
 
+export type Subscribers = Subscriber[];
+
 export default function SubscriberTable() {
-  const tableContent = dummySubscribers.table.map((subscriber) => {
+  const [subscribers, setSubscribers] = useState<Subscribers>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [createEnabled, setCreateEnabled] = useState<boolean>(true);
+  const [refresh, setRefresh] = useState<boolean>(false);
+
+  const currentImsis: string[] = subscribers.map((subscriber: Subscriber) => {
+    return subscriber.ueId.split("-")[1];
+  });
+
+  useEffect(() => {
+    const fetchSubscribers = async () => {
+      setLoading(true);
+
+      const headers = {
+        "Content-Type": "application/json",
+      };
+
+      try {
+        const response = await fetch(`${WEBUI_ENDPOINT}/api/subscriber`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch subscribers");
+        }
+
+        const data = await response.json();
+        setSubscribers(data);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+        setCreateEnabled(false);
+      }
+    };
+
+    fetchSubscribers();
+  }, [refresh]);
+
+  const handleRefresh = () => {
+    setRefresh(!refresh);
+  };
+
+  const tableContent = subscribers.map((subscriber: Subscriber) => {
+    const rawIMSI = subscriber.ueId.split("-")[1];
     return (
-      <tr key={subscriber.IMSI} className="overflow-x-scroll">
-        <td>{subscriber.IMSI}</td>
-        <td>{subscriber["PLMN ID"]}</td>
-        <td>{subscriber["Network Slice"]}</td>
-        <td>{subscriber["Slice ID"]}</td>
-        <td>{subscriber.ST}</td>
-        <td>{subscriber.DNN}</td>
-        <td>{subscriber.MBR}</td>
-        <td>{subscriber.Uplink}</td>
-        <td>{subscriber.Downlink}</td>
-        <td>{subscriber.QOS}</td>
-        <td>{subscriber.QCI}</td>
-        <td>{subscriber.ARP}</td>
+      <tr key={rawIMSI} className="overflow-x-scroll">
+        <td>{rawIMSI}</td>
         <td>
-          <EditSubscriber imsi={subscriber.IMSI} key={subscriber.IMSI} />
-        </td>
-        <td>
+          <EditSubscriber
+            imsi={rawIMSI}
+            currentSubscribers={currentImsis}
+            refreshHandler={handleRefresh}
+            key={rawIMSI}
+          />
           <DeleteSubscriberButton
-            imsi={String(subscriber.IMSI)}
-            key={subscriber.IMSI + "delete"}
+            currentSubscribers={currentImsis}
+            imsi={String(rawIMSI)}
+            refreshHandler={handleRefresh}
+            key={rawIMSI + "delete-button"}
           />
         </td>
       </tr>
     );
   });
+
   return (
-    <div className="flex flex-col">
-      <div className="flex flex-row justify-between items-end">
+    <div className="ml-8 flex flex-col">
+      <Notification severity="caution" title="Warning">
+        Configure your network in the{" "}
+        <span className="italic">Network Configuration</span> tab before adding
+        subscribers.
+      </Notification>
+      <div className="flex flex-row items-end justify-start">
         <h1 className="h1-heading--1 font-regular">Subscribers</h1>
-        <AddSubscriber />
+        <div className="ml-[10rem] mr-4">
+          <Button
+            hasIcon={true}
+            disabled={createEnabled}
+            className="u-no-margin--bottom"
+            onClick={handleRefresh}
+          >
+            <SlRefresh size={20} />
+          </Button>
+        </div>
+        <CreateSubscriber
+          text="Create"
+          currentSubscribers={currentImsis}
+          disabled={createEnabled}
+          refreshHandler={handleRefresh}
+        />
       </div>
-      <div className="pt-1 w-fit">
-        <table aria-label="Example of formatting in the table">
-          <thead>
-            <tr>
-              <th>IMSI</th>
-              <th>PLMN ID</th>
-              <th className="u-align--left">Network Slice</th>
-              <th className="u-align--left">Slice ID</th>
-              <th className="u-align--left">ST</th>
-              <th className="u-align--left">DNN</th>
-              <th className="u-align--left">MBR</th>
-              <th className="u-align--left">Uplink</th>
-              <th className="u-align--left">Downlink</th>
-              <th className="u-align--left">QOS</th>
-              <th className="u-align--left">QCI</th>
-              <th className="u-align--left">ARP</th>
-              <th className="u-align--left">Actions</th>
-            </tr>
-          </thead>
-          {tableContent}
-        </table>
+      <div className="mt-8 w-[50rem]">
+        {loading ? (
+          <Spinner text="Loading subscribers..." />
+        ) : (
+          <table aria-label="Subscribers List">
+            <thead>
+              <tr>
+                <th>IMSI</th>
+                <th className="u-align--left">Actions</th>
+              </tr>
+            </thead>
+            <tbody>{tableContent}</tbody>
+          </table>
+        )}
+        {loading ? null : (
+          <>
+            <span>Total subscribers</span>{" "}
+            <Badge
+              badgeType="UNDEFINED_LARGE_NUMBER"
+              value={subscribers.length}
+            />
+          </>
+        )}
       </div>
     </div>
   );

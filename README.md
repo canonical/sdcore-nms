@@ -6,22 +6,4 @@
   <h1>SD-Core GUI</h1>
 </div>
 
-:warning: **Proof of Concept**
-
-Graphical User Interface (GUI) for operating the core (creating subscribers, network slices, device groups).
-
-## Usage
-
-Install dependencies:
-
-```bash
-npm install
-```
-
-Run the development server:
-
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Graphical User Interface (GUI) for configuring SD-Core and managing subscribers.
