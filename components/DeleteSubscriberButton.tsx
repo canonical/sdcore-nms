@@ -1,6 +1,6 @@
 "use client";
 import { Button } from "@canonical/react-components";
-import { WEBUI_ENDPOINT, STATIC_DEVICE_GROUP_DATA, STATIC_NETWORK_SLICE_DATA } from "@/public/sdcoreConfig";
+import { WEBUI_ENDPOINT, STATIC_DEVICE_GROUP_DATA, STATIC_NETWORK_SLICE_DATA } from "@/config/sdcoreConfig";
 import { useState } from "react";
 
 type Props = {

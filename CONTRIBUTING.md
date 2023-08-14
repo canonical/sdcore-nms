@@ -22,11 +22,11 @@ To make contributions to this project, make sure you have [`Nodejs 18`](https://
 
 4. Run the development server:
 
-```bash
-npm run dev
-```
+   ```shell
+   npm run dev
+   ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to start contributing.
+Open http://localhost:3005 with your browser to view the UI.
 
 ## Testing
 

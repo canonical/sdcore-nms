@@ -1,7 +1,7 @@
 "use client";
 import { Modal, Form, Input, Button } from "@canonical/react-components";
 import React, { ReactNode, useState, ChangeEvent } from "react";
-import { WEBUI_ENDPOINT } from "@/public/sdcoreConfig";
+import { WEBUI_ENDPOINT } from "@/config/sdcoreConfig";
 import { useSubscriber } from "@/hooks/useSubscriber";
 
 type Props = {

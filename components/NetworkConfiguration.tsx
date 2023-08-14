@@ -5,7 +5,7 @@ import {
   WEBUI_ENDPOINT,
   STATIC_NETWORK_SLICE_DATA,
   NETWORK_SLICE_NAME,
-} from "@/public/sdcoreConfig";
+} from "@/config/sdcoreConfig";
 
 export type NetworkSliceData = {
   "slice-id": {

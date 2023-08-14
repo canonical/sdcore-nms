@@ -3,7 +3,7 @@ import {
   STATIC_SUSBCRIBER_DATA,
   STATIC_DEVICE_GROUP_DATA,
   STATIC_NETWORK_SLICE_DATA,
-} from "@/public/sdcoreConfig";
+} from "@/config/sdcoreConfig";
 
 export const useSubscriber = (
   webuiEndpoint: string,

@@ -1,4 +1,4 @@
-const WEBUI_ENDPOINT: string = "http://3.90.228.4:8543";
+const WEBUI_ENDPOINT: string = "http://3.90.228.5:8543";
 
 const STATIC_SUSBCRIBER_DATA = {
   plmnID: "20893",
