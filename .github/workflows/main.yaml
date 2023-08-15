@@ -13,5 +13,6 @@ jobs:
     uses: ./.github/workflows/integration_tests.yaml
 
   publish:
+    if: github.ref_name == 'main'
     needs: integration-tests
     uses: ./.github/workflows/publish.yaml
