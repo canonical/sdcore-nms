@@ -1,7 +1,6 @@
 "use client";
 import { ChangeEvent, useState } from "react";
 import { Button, Modal, Form, Input } from "@canonical/react-components";
-import { WEBUI_ENDPOINT } from "@/public/sdcoreConfig";
 
 import { useSubscriber } from "@/hooks/useSubscriber";
 
@@ -19,7 +18,6 @@ export default function CreateSubscriber(props: Props) {
   const [key, setKey] = useState<string>("");
   const [sequenceNumber, setSequenceNumber] = useState<string>("");
   const { handleSubscriber } = useSubscriber(
-    WEBUI_ENDPOINT,
     imsi,
     opc,
     key,

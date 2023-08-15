@@ -1,4 +1,5 @@
-const WEBUI_ENDPOINT: string = "http://3.90.228.4:8543";
+
+const WEBUI_ENDPOINT = process.env.WEBUI_ENDPOINT || 'http://localhost:3000';
 
 const STATIC_SUSBCRIBER_DATA = {
   plmnID: "20893",
@@ -30,24 +31,25 @@ const NETWORK_SLICE_NAME: string = "default";
 
 const STATIC_NETWORK_SLICE_DATA = {
   "slice-id": {
-    sst: 1,
-    sd: "010203",
+    "sst": "1",
+    "sd": "010203",
   },
   "site-device-group": ["cows"],
   "site-info": {
     "site-name": "demo",
-    gNodeBs: [
+    "gNodeBs": [
       {
-        name: "demo-gnb1",
-        tac: "1",
+        "name": "demo-gnb1",
+        "tac": 1,
       },
     ],
-    upf: {
-      "upf-name": "upf",
-      "upf-port": "8805",
+    "upf": {
+      "upf-name": process.env.UPF_HOSTNAME || "upf",
+      "upf-port": process.env.UPF_PORT || "8805",
     },
   },
 };
+
 
 export {
   WEBUI_ENDPOINT,
