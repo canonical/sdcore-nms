@@ -41,7 +41,6 @@ export default function SubscriberTable() {
         if (!response.ok) {
           throw new Error("Failed to fetch subscribers");
         }
-    
         const data = await response.json();
         setSubscribers(data);
       } catch (error) {
