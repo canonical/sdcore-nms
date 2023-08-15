@@ -1,7 +1,6 @@
 "use client";
 import { Modal, Form, Input, Button } from "@canonical/react-components";
 import React, { ReactNode, useState, ChangeEvent } from "react";
-import { WEBUI_ENDPOINT } from "@/public/sdcoreConfig";
 import { useSubscriber } from "@/hooks/useSubscriber";
 
 type Props = {
@@ -12,13 +11,11 @@ type Props = {
 
 export default function EditSubscriber(props: Props): ReactNode {
   const [modalOpen, setModalOpen] = useState<boolean>(false);
-  const [imsi, setImsi] = useState<string>("");
   const [opc, setOpc] = useState<string>("");
   const [key, setKey] = useState<string>("");
   const [sequenceNumber, setSequenceNumber] = useState<string>("");
   const closeHandler = () => setModalOpen(false);
   const { handleSubscriber } = useSubscriber(
-    WEBUI_ENDPOINT,
     props.imsi,
     opc,
     key,

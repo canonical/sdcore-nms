@@ -13,7 +13,6 @@ import {
 
 import { SlRefresh } from "react-icons/sl";
 
-import { WEBUI_ENDPOINT } from "@/public/sdcoreConfig";
 
 export type Subscriber = {
   plmnID: string;
@@ -35,23 +34,14 @@ export default function SubscriberTable() {
   useEffect(() => {
     const fetchSubscribers = async () => {
       setLoading(true);
-
-      const headers = {
-        "Content-Type": "application/json",
-      };
-
+    
       try {
-        const response = await fetch(`${WEBUI_ENDPOINT}/api/subscriber`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-
+        const response = await fetch(`/api/getSubscribers`);
+    
         if (!response.ok) {
           throw new Error("Failed to fetch subscribers");
         }
-
+    
         const data = await response.json();
         setSubscribers(data);
       } catch (error) {
@@ -61,6 +51,7 @@ export default function SubscriberTable() {
         setCreateEnabled(false);
       }
     };
+    
 
     fetchSubscribers();
   }, [refresh]);
