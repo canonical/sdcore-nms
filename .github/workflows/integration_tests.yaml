@@ -1,0 +1,38 @@
+name: Integration tests
+
+on:
+  workflow_call:
+
+jobs:
+  integration-tests:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - uses: canonical/craft-actions/rockcraft-pack@main
+        id: rockcraft
+
+      - name: Install Skopeo
+        run: |
+          sudo snap install skopeo --edge --devmode
+
+      - name: Import the image to Docker registry
+        run: |
+          sudo skopeo --insecure-policy copy oci-archive:${{ steps.rockcraft.outputs.rock }} docker-daemon:sdcore-gui:0.1
+
+      - name: Run the image
+        run: |
+          docker run -d -p 3000:3000 sdcore-gui:0.1
+
+      - name: Check if the GUI is successfully running
+        id: test_image
+        run: |
+          sleep 10  # Wait for the container to be ready
+          curl localhost:3000 | grep 'Network Configuration'
+
+      - uses: actions/upload-artifact@v3
+        if: steps.test_image.outcome == 'success'
+        with:
+          name: rock
+          path: ${{ steps.rockcraft.outputs.rock }}

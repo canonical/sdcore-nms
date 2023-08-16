@@ -1,5 +1,8 @@
 # Contributing
 
+
+## Development
+
 To make contributions to this project, make sure you have [`Nodejs 18`](https://nodejs.org/) installed.
 
 1. Clone the repository:
@@ -22,11 +25,11 @@ To make contributions to this project, make sure you have [`Nodejs 18`](https://
 
 4. Run the development server:
 
-```bash
-npm run dev
-```
+   ```bash
+   npm run dev
+   ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to start contributing.
+Open [http://localhost:3000](http://localhost:3000) with your browser to view the changes.
 
 ## Testing
 
@@ -47,3 +50,25 @@ To build the project:
 ```shell
 npm run build
 ```
+
+## Container image
+
+Pack the ROCK
+
+```bash
+rockcraft pack -v
+```
+
+Move the ROCK to Docker's registry
+
+```bash
+sudo skopeo --insecure-policy copy oci-archive:sdcore-gui_0.1_amd64.rock docker-daemon:sdcore-gui:0.1
+```
+
+Run the GUI
+
+```bash
+docker run -p 3000:3000 sdcore-gui:0.1
+```
+
+You will have the GUI available in `http://localhost:3000`.
