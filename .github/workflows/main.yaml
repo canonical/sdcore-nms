@@ -8,8 +8,12 @@ on:
 jobs:
   lint-report:
     uses: ./.github/workflows/lint-report.yaml
+
+  build:
+    uses: ./.github/workflows/build.yaml
   
   integration-tests:
+    needs: build
     uses: ./.github/workflows/integration_tests.yaml
 
   publish:
