@@ -9,25 +9,26 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@canonical/react-components": "^0.42.0",
+    "@canonical/react-components": "^0.45.0",
     "@types/node": "20.5.0",
     "@types/react": "18.2.20",
     "@types/react-dom": "18.2.7",
     "autoprefixer": "10.4.15",
     "eslint": "8.47.0",
     "eslint-config-next": "13.4.16",
+    "lodash": "^4.17.21",
     "next": "13.4.16",
     "postcss": "8.4.28",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "react-icons": "^4.9.0",
-    "sass": "^1.62.1",
+    "react-icons": "^4.10.1",
+    "sass": "^1.65.1",
     "tailwindcss": "3.3.3",
     "typescript": "5.1.6",
-    "vanilla-framework": "^3.14.0"
+    "vanilla-framework": "^4.0.0"
   },
   "devDependencies": {
-    "prettier": "^3.0.0",
-    "prettier-plugin-tailwindcss": "^0.4.0"
+    "prettier": "^3.0.2",
+    "prettier-plugin-tailwindcss": "^0.4.1"
   }
 }
