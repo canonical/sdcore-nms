@@ -6,5 +6,5 @@ module.exports = {
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {},
-  plugins: [require("prettier-plugin-tailwindcss")],
+  plugins: [],
 };
