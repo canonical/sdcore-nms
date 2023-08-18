@@ -1,6 +1,6 @@
 name: sdcore-gui
 base: ubuntu:22.04
-version: "0.2"
+version: "0.1"
 summary: SD-Core GUI
 description: |
   A graphical user interface for SD-Core.
@@ -8,6 +8,15 @@ license: Apache-2.0
 platforms:
   amd64:
 
+services:
+  sdcore-gui:
+    override: replace
+    command: "/bin/bash -c 'cd /app && npm run start'"  # TODO: Use working-dir once it is available in Juju (Ref: https://github.com/canonical/operator/issues/988)
+    startup: enabled
+    environment:
+      WEBUI_ENDPOINT: "http://1.3.4.5:5000"
+      UPF_HOSTNAME: "upf"
+      UPF_PORT: 1111
 
 parts:
   node:  # FIXME: Node should be installed using `stage-snap`. Bug: https://github.com/canonical/rockcraft/issues/307
