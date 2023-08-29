@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import EditSubscriber from "@/components/EditSubscriber";
 import DeleteSubscriberButton from "@/components/DeleteSubscriberButton";
-import CreateSubscriber from "@/components/CreateSubscriberButton";
+import CreateSubscriberButton from "@/components/CreateSubscriberButton";
 
 import {
   Notification,
@@ -101,7 +101,7 @@ export default function SubscriberTable() {
             <SlRefresh size={20} />
           </Button>
         </div>
-        <CreateSubscriber
+        <CreateSubscriberButton
           text="Create"
           currentSubscribers={currentImsis}
           disabled={createEnabled}
