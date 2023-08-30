@@ -88,12 +88,12 @@ export default function SubscriberTable() {
   return (
     <Row>
       <Col size={8}>
-          <h2 className="h2-heading--1 font-regular">Subscribers</h2>
-          <Notification severity="caution" title="Warning">
+      <Notification severity="caution" title="Warning">
         Configure your network in the{" "}
         <span className="italic">Network Configuration</span> tab before adding
         subscribers.
       </Notification>
+          <h2 className="h2-heading--1 font-regular">Subscribers</h2>
           <div className="u-align--right">
           <Button
             hasIcon={true}
