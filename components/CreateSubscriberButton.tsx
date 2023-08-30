@@ -7,14 +7,12 @@ type Props = {
   text: string;
   currentSubscribers: string[];
   disabled: boolean;
-  refreshHandler: () => void;
 };
 
 export default function CreateSubscriberButton({
   text, 
   currentSubscribers, 
   disabled, 
-  refreshHandler
 }: Props) {
   const [isCreateSubscriberModalVisible, setIsCreateSubscriberModalVisible] =
     useState<boolean>(false);

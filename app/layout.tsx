@@ -1,21 +1,59 @@
+"use client";
 import "./globals.scss";
 import { Inter } from "next/font/google";
+import { Navigation } from "@canonical/react-components";
+import React, { useState, useEffect } from "react";
+import { checkBackendAvailable } from "@/utils/checkBackendAvailable";
+import { Notification } from "@canonical/react-components";
+
 
 const inter = Inter({ subsets: ["latin"] });
 
-export const metadata = {
-  title: "SD Core",
-  description: "SD Core Dashboard",
-};
 
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const [backendAvailable, setBackendAvailable] = useState<null | boolean>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const isBackendAvailable = await checkBackendAvailable();
+      setBackendAvailable(isBackendAvailable);
+    };
+
+    fetchData();
+  }, []);
+
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <Navigation
+          theme="dark"
+          logo={{
+            src: "https://assets.ubuntu.com/v1/82818827-CoF_white.svg",
+            title: "5G",
+            url: "/",
+          }}
+          items={[
+            {
+              label: "Network Configuration",
+              url: "/network-configuration",
+            },
+            {
+              label: "Subscribers",
+              url: "/subscribers",
+            },
+          ]}
+        />
+        {backendAvailable === false && (
+            <Notification severity="negative" title="Error">
+              {"Backend not available"}
+            </Notification>
+        )}
+        {backendAvailable === true && children}
+      </body>
     </html>
   );
 }

@@ -11,13 +11,6 @@ type Props = {
 export default function DeleteSubscriberButton(props: Props) {
   const [deleting, setDeleting] = useState<boolean>(false);
 
-  const getFilteredSubscribers = (
-    imsiList: string[],
-    imsiToRemove: string
-  ): string[] => {
-    return imsiList.filter((imsi) => imsi !== imsiToRemove);
-  };
-
   const handleDeleteSubscriber = async () => {
     setDeleting(true);
   

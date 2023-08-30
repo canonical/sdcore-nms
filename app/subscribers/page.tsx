@@ -8,11 +8,12 @@ import {
   Notification,
   Button,
   Badge,
-  Spinner,
+  MainTable,
+  Row,
+  Col,
 } from "@canonical/react-components";
 
 import { SlRefresh } from "react-icons/sl";
-
 
 export type Subscriber = {
   plmnID: string;
@@ -23,7 +24,6 @@ export type Subscribers = Subscriber[];
 
 export default function SubscriberTable() {
   const [subscribers, setSubscribers] = useState<Subscribers>([]);
-  const [loading, setLoading] = useState<boolean>(false);
   const [createEnabled, setCreateEnabled] = useState<boolean>(true);
   const [refresh, setRefresh] = useState<boolean>(false);
 
@@ -33,7 +33,6 @@ export default function SubscriberTable() {
 
   useEffect(() => {
     const fetchSubscribers = async () => {
-      setLoading(true);
     
       try {
         const response = await fetch(`/api/getSubscribers`);
@@ -46,7 +45,6 @@ export default function SubscriberTable() {
       } catch (error) {
         console.error(error);
       } finally {
-        setLoading(false);
         setCreateEnabled(false);
       }
     };
@@ -61,37 +59,42 @@ export default function SubscriberTable() {
 
   const tableContent = subscribers.map((subscriber: Subscriber) => {
     const rawIMSI = subscriber.ueId.split("-")[1];
-    return (
-      <tr key={rawIMSI} className="overflow-x-scroll">
-        <td>{rawIMSI}</td>
-        <td>
-          <EditSubscriber
-            imsi={rawIMSI}
-            currentSubscribers={currentImsis}
-            refreshHandler={handleRefresh}
-            key={rawIMSI}
-          />
-          <DeleteSubscriberButton
-            currentSubscribers={currentImsis}
-            imsi={String(rawIMSI)}
-            refreshHandler={handleRefresh}
-            key={rawIMSI + "delete-button"}
-          />
-        </td>
-      </tr>
-    );
+    return {
+      key: rawIMSI,
+      columns: [
+        { content: rawIMSI },
+        {
+          content: (
+            <>
+              <EditSubscriber
+                imsi={rawIMSI}
+                currentSubscribers={currentImsis}
+                refreshHandler={handleRefresh}
+                key={rawIMSI}
+              />
+              <DeleteSubscriberButton
+                currentSubscribers={currentImsis}
+                imsi={String(rawIMSI)}
+                refreshHandler={handleRefresh}
+                key={rawIMSI + "delete-button"}
+              />
+            </>
+          ),
+        },
+      ],
+    };
   });
 
   return (
-    <div className="ml-8 flex flex-col">
-      <Notification severity="caution" title="Warning">
+    <Row>
+      <Col size={8}>
+          <h2 className="h2-heading--1 font-regular">Subscribers</h2>
+          <Notification severity="caution" title="Warning">
         Configure your network in the{" "}
         <span className="italic">Network Configuration</span> tab before adding
         subscribers.
       </Notification>
-      <div className="flex flex-row items-end justify-start">
-        <h1 className="h1-heading--1 font-regular">Subscribers</h1>
-        <div className="ml-[10rem] mr-4">
+          <div className="u-align--right">
           <Button
             hasIcon={true}
             disabled={createEnabled}
@@ -100,38 +103,33 @@ export default function SubscriberTable() {
           >
             <SlRefresh size={20} />
           </Button>
-        </div>
-        <CreateSubscriberButton
+          <CreateSubscriberButton
           text="Create"
           currentSubscribers={currentImsis}
           disabled={createEnabled}
-          refreshHandler={handleRefresh}
         />
-      </div>
-      <div className="mt-8 w-[50rem]">
-        {loading ? (
-          <Spinner text="Loading subscribers..." />
-        ) : (
-          <table aria-label="Subscribers List">
-            <thead>
-              <tr>
-                <th>IMSI</th>
-                <th className="u-align--left">Actions</th>
-              </tr>
-            </thead>
-            <tbody>{tableContent}</tbody>
-          </table>
-        )}
-        {loading ? null : (
-          <>
-            <span>Total subscribers</span>{" "}
+          </div>
+          <MainTable
+            defaultSort='"abcd"'
+            defaultSortDirection="ascending"
+            headers={[
+              {
+                content: "IMSI",
+              },
+              {
+                content: "Actions",
+              },
+            ]}
+            rows={tableContent}
+          />
+          <Button className="p-chip">
+            total
             <Badge
               badgeType="UNDEFINED_LARGE_NUMBER"
               value={subscribers.length}
             />
-          </>
-        )}
-      </div>
-    </div>
-  );
+          </Button>
+      </Col>
+    </Row>
+)
 }

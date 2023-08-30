@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Input, Button } from "@canonical/react-components";
+import { Input, Button, Row, Col } from "@canonical/react-components";
 
 export default function NetworkConfiguration() {
   const [mcc, setMcc] = useState<string>("");
@@ -56,9 +56,9 @@ export default function NetworkConfiguration() {
   };
 
   return (
-    <div className="ml-8">
-      <h1 className="h1-heading--1 font-regular mb-8">Network Configuration</h1>
-      <div className="mt-8">
+      <Row>
+        <Col size={8}>
+            <h2 className="h2-heading--1 font-regular">Network Configuration</h2>
         <Input
           type="number"
           id="mcc"
@@ -82,7 +82,8 @@ export default function NetworkConfiguration() {
         <Button appearance="positive" className="mt-8" onClick={handleSave}>
           Create Network
         </Button>
-      </div>
-    </div>
-  );
+        </Col>
+      </Row>
+
+  )
 }
