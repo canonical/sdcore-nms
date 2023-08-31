@@ -29,7 +29,7 @@ jobs:
         id: test_image
         run: |
           sleep 10  # Wait for the container to be ready
-          curl localhost:3000 | grep 'Network Configuration'
+          curl localhost:3000/network-configuration | grep 'Network Configuration'
 
       - uses: actions/upload-artifact@v3
         if: steps.test_image.outcome == 'success'
