@@ -20,7 +20,7 @@ export default function EditSubscriber(props: Props): ReactNode {
     opc,
     key,
     sequenceNumber,
-    props.currentSubscribers
+    props.currentSubscribers,
   );
 
   const handleOpcChange = (event: ChangeEvent<HTMLInputElement>) => {

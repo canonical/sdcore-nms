@@ -6,16 +6,16 @@ import React, { useState, useEffect } from "react";
 import { checkBackendAvailable } from "@/utils/checkBackendAvailable";
 import { Notification, Theme } from "@canonical/react-components";
 
-
 const inter = Inter({ subsets: ["latin"] });
-
 
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [backendAvailable, setBackendAvailable] = useState<null | boolean>(null);
+  const [backendAvailable, setBackendAvailable] = useState<null | boolean>(
+    null,
+  );
 
   useEffect(() => {
     const fetchData = async () => {
@@ -48,9 +48,9 @@ export default function RootLayout({
           ]}
         />
         {backendAvailable === false && (
-            <Notification severity="negative" title="Error">
-              {"Backend not available"}
-            </Notification>
+          <Notification severity="negative" title="Error">
+            {"Backend not available"}
+          </Notification>
         )}
         {backendAvailable === true && children}
       </body>

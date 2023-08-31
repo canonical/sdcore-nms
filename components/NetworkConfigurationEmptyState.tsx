@@ -10,7 +10,6 @@ export default function NetworkConfigurationEmptyState() {
     setIsModalVisible(!isModalVisible);
   };
 
-
   return (
     <div>
       <table aria-label="Vanilla framework no content empty state">
@@ -36,9 +35,7 @@ export default function NetworkConfigurationEmptyState() {
       </table>
 
       {isModalVisible && (
-        <NetworkConfigurationModal
-          toggleModal={toggleModal}
-        />
+        <NetworkConfigurationModal toggleModal={toggleModal} />
       )}
     </div>
   );

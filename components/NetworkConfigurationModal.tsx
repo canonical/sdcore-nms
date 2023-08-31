@@ -1,5 +1,10 @@
 import React, { useState } from "react";
-import { Input, Button, Notification, Modal } from "@canonical/react-components";
+import {
+  Input,
+  Button,
+  Notification,
+  Modal,
+} from "@canonical/react-components";
 
 interface NetworkConfigurationModalProps {
   toggleModal: () => void;
@@ -46,7 +51,6 @@ export default function NetworkConfigurationModal({
       setApiError("Failed to configure the network.");
     }
   };
-
 
   const handleMccChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setMcc(e.target.value);
