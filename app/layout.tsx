@@ -33,7 +33,7 @@ export default function RootLayout({
           theme={Theme.DARK}
           logo={{
             src: "https://assets.ubuntu.com/v1/82818827-CoF_white.svg",
-            title: "5G",
+            title: "5G Network Management",
             url: "/",
           }}
           items={[

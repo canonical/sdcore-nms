@@ -1,89 +1,115 @@
 "use client";
-import { useState } from "react";
-import { Input, Button, Row, Col } from "@canonical/react-components";
+import React, { useState, useEffect } from "react";
+import NetworkConfigurationEmptyState from "@/components/NetworkConfigurationEmptyState";
+import { checkNetworkConfigured } from "@/utils/checkNetworkConfigured";
+import {
+    Row,
+    Col,
+    Button,
+    MainTable,
+  } from "@canonical/react-components";
+  import NetworkConfigurationModal from "@/components/NetworkConfigurationModal";
+
+
+export type NetworkSlice = {
+    mcc: string;
+    mnc: string;
+  };
 
 export default function NetworkConfiguration() {
-  const [mcc, setMcc] = useState<string>("");
-  const [mnc, setMnc] = useState<string>("");
-  const [MCCValidationError, setMCCValidationError] = useState<string | null>(
-    null,
-  );
-  const [MNCValidationError, setMNCValidationError] = useState<string | null>(
-    null,
-  );
+    const [loading, setLoading] = useState(true);
+    const [isNetworkConfigured, setIsNetworkConfigured] = useState(false);
+    const [networkSlice, setNetworkSlice] = useState<NetworkSlice | null>(null);
+    const [isModalVisible, setIsModalVisible] = useState(false);
 
-  const handleMccChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setMcc(e.target.value);
-
-    setMCCValidationError(null);
-  };
-
-  const handleMncChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setMnc(e.target.value);
-
-    setMNCValidationError(null);
-  };
-
-  const handleSave = async () => {
-    const plmnData = { mcc, mnc };
-
-    if (mcc.length !== 3) {
-      setMCCValidationError("MCC must be exactly 3 digits.");
-      return;
-    }
-
-    if (mnc.length < 2 || mnc.length > 3) {
-      setMNCValidationError("MNC must be 2 or 3 digits.");
-      return;
-    }
-
-    try {
-      const response = await fetch('/api/createNetworkSlice', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(plmnData),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Error creating network. Error code: ${response.status}`);
+    const toggleModal = () => {
+      setIsModalVisible(!isModalVisible);
+    };
+  
+    useEffect(() => {
+      const init = async () => {
+        const configured = await checkNetworkConfigured();
+        setIsNetworkConfigured(configured);
+        setLoading(false);
+  
+        if (configured) {
+          await fetchNetworkSlice();
+        }
+      };
+  
+      init();
+    }, []);
+  
+  
+    const fetchNetworkSlice = async () => {
+      try {
+        const response = await fetch(`/api/getNetworkSlice`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch network slice");
+        }
+        const data = await response.json();
+  
+        const mcc = data["site-info"]["plmn"]["mcc"];
+        const mnc = data["site-info"]["plmn"]["mnc"];
+  
+        setNetworkSlice({ mcc, mnc });
+      } catch (error) {
+        console.error(error);
       }
-
-    } catch (error) {
-      console.error(error);
-    }
   };
 
-  return (
-      <Row>
-        <Col size={8}>
+    if (loading) {
+      return <div>Loading...</div>;
+    }
+  
+    if (!isNetworkConfigured) {
+      return <NetworkConfigurationEmptyState />;
+    }
+  
+    return (
+      <div>
+        <Row>
+          <Col size={8}>
             <h2 className="h2-heading--1 font-regular">Network Configuration</h2>
-        <Input
-          type="number"
-          id="mcc"
-          label="MCC"
-          placeholder="001"
-          onChange={handleMccChange}
-          stacked
-          error={MCCValidationError}
-          required={true}
+          <div className="u-align--right">
+          <Button onClick={toggleModal}> Edit </Button>
+          </div>
+          
+            {networkSlice && (
+              <MainTable 
+                rows={[
+                  {
+                    columns: [{
+                      content: "MCC",
+                      role: "rowheader"
+                    }, {
+                      content: networkSlice.mcc || "N/A",
+                      className: "u-align--right"
+                    }]
+                  }, {
+                    columns: [{
+                      content: "MNC",
+                      role: "rowheader"
+                    }, {
+                      content: networkSlice.mnc || "N/A",
+                      className: "u-align--right"
+                    }]
+                  }
+                ]} 
+                sortable 
+              />
+            )}
+            
+          </Col>
+        </Row>
+        
+        {isModalVisible && (
+        <NetworkConfigurationModal
+          toggleModal={toggleModal}
         />
-        <Input
-          type="number"
-          id="mnc"
-          label="MNC"
-          placeholder="01"
-          onChange={handleMncChange}
-          stacked
-          error={MNCValidationError}
-          required={true}
-        />
-        <Button appearance="positive" className="mt-8" onClick={handleSave}>
-          Create Network
-        </Button>
-        </Col>
-      </Row>
-
-  )
-}
+      )}
+      </div>
+      
+    );
+  }
+  
