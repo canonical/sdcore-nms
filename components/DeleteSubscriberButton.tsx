@@ -13,7 +13,7 @@ export default function DeleteSubscriberButton(props: Props) {
 
   const handleDeleteSubscriber = async () => {
     setDeleting(true);
-  
+
     try {
       const response = await fetch(`/api/deleteSubscriber?imsi=${props.imsi}`, {
         method: "POST",
@@ -22,11 +22,11 @@ export default function DeleteSubscriberButton(props: Props) {
         },
         body: JSON.stringify({ currentSubscribers: props.currentSubscribers }),
       });
-  
+
       if (!response.ok) {
         throw new Error("Failed to delete subscriber");
       }
-  
+
       setDeleting(false);
       props.refreshHandler();
     } catch (error) {

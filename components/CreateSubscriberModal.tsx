@@ -9,7 +9,10 @@ type Props = {
   toggleModal: () => void;
 };
 
-export default function CreateSubscriberModal({ toggleModal, currentSubscribers }: Props) {
+export default function CreateSubscriberModal({
+  toggleModal,
+  currentSubscribers,
+}: Props) {
   const [imsi, setImsi] = useState<string>("");
   const [opc, setOpc] = useState<string>("");
   const [key, setKey] = useState<string>("");
@@ -20,12 +23,18 @@ export default function CreateSubscriberModal({ toggleModal, currentSubscribers 
     opc,
     key,
     sequenceNumber,
-    currentSubscribers
+    currentSubscribers,
   );
 
-  const [IMSIValidationError, setIMSIValidationError] = useState<string | null>(null);
-  const [OPCValidationError, setOPCValidationError] = useState<string | null>(null);
-  const [KeyValidationError, setKeyValidationError] = useState<string | null>(null);
+  const [IMSIValidationError, setIMSIValidationError] = useState<string | null>(
+    null,
+  );
+  const [OPCValidationError, setOPCValidationError] = useState<string | null>(
+    null,
+  );
+  const [KeyValidationError, setKeyValidationError] = useState<string | null>(
+    null,
+  );
 
   const handleImsiChange = (event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;

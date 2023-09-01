@@ -23,13 +23,13 @@ jobs:
 
       - name: Run the image
         run: |
-          docker run -d -p 3000:3000 --entrypoint /bin/bash ghcr.io/canonical/sdcore-gui:0.1 -c 'cd /app && npm run start'
+          docker run -d -p 3000:3000 --entrypoint /bin/bash sdcore-gui:0.1 -c 'cd /app && npm run start'
 
       - name: Check if the GUI is successfully running
         id: test_image
         run: |
           sleep 10  # Wait for the container to be ready
-          curl localhost:3000 | grep 'Network Configuration'
+          curl localhost:3000/network-configuration | grep 'Network Configuration'
 
       - uses: actions/upload-artifact@v3
         if: steps.test_image.outcome == 'success'
