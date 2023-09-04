@@ -48,6 +48,10 @@ export default function Subscribers() {
     init();
   }, []);
 
+  useEffect(() => {
+    fetchSubscribers();
+  }, [refresh]);
+
   const fetchSubscribers = async () => {
     try {
       const response = await fetch(`/api/getSubscribers`);
