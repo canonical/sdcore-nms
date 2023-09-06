@@ -8,13 +8,13 @@ To make contributions to this project, make sure you have [`Nodejs 18`](https://
 1. Clone the repository:
 
    ```shell
-   git clone git@github.com:canonical/sdcore-gui.git
+   git clone git@github.com:canonical/sdcore-nms.git
    ```
 
 2. Navigate to the project directory:
 
    ```shell
-   cd sdcore-gui
+   cd sdcore-nms
    ```
 
 3. Install the dependencies:
@@ -62,13 +62,13 @@ rockcraft pack -v
 Move the ROCK to Docker's registry
 
 ```bash
-sudo skopeo --insecure-policy copy oci-archive:sdcore-gui_0.1_amd64.rock docker-daemon:sdcore-gui:0.1
+sudo skopeo --insecure-policy copy oci-archive:sdcore-nms_0.1_amd64.rock docker-daemon:sdcore-nms:0.1
 ```
 
-Run the GUI
+Run the NMS
 
 ```bash
-docker run -p 3000:3000 sdcore-gui:0.1
+docker run -p 3000:3000 sdcore-nms:0.1
 ```
 
-You will have the GUI available in `http://localhost:3000`.
+You will have the NMS available in `http://localhost:3000`.
