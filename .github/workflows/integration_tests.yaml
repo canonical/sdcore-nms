@@ -19,13 +19,13 @@ jobs:
 
       - name: Import the image to Docker registry
         run: |
-          sudo skopeo --insecure-policy copy oci-archive:${{ steps.rockcraft.outputs.rock }} docker-daemon:sdcore-gui:0.1
+          sudo skopeo --insecure-policy copy oci-archive:${{ steps.rockcraft.outputs.rock }} docker-daemon:sdcore-nms:0.1
 
       - name: Run the image
         run: |
-          docker run -d -p 3000:3000 --entrypoint /bin/bash sdcore-gui:0.1 -c 'cd /app && npm run start'
+          docker run -d -p 3000:3000 --entrypoint /bin/bash sdcore-nms:0.1 -c 'cd /app && npm run start'
 
-      - name: Check if the GUI is successfully running
+      - name: Check if the NMS is successfully running
         id: test_image
         run: |
           sleep 10  # Wait for the container to be ready

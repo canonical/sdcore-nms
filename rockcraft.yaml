@@ -1,9 +1,9 @@
-name: sdcore-gui
+name: sdcore-nms
 base: ubuntu:22.04
 version: "0.1"
-summary: SD-Core GUI
+summary: SD-Core NMS
 description: |
-  A graphical user interface for SD-Core.
+  A Network Management System for managing the SD-Core 5G core network.
 license: Apache-2.0
 platforms:
   amd64:

@@ -3,14 +3,14 @@
 </div>
 <br/>
 <div align="center">
-  <h1>SD-Core GUI</h1>
+  <h1>SD-Core NMS</h1>
 </div>
 
-Graphical User Interface (GUI) for configuring SD-Core and managing subscribers.
+A Network Management System for managing the SD-Core 5G core network.
 
 ## Usage
 
 ```console
-docker pull ghcr.io/canonical/sdcore-gui:0.1
-docker run -it ghcr.io/canonical/sdcore-gui:0.1
+docker pull ghcr.io/canonical/sdcore-nms:0.1
+docker run -it ghcr.io/canonical/sdcore-nms:0.1
 ```
