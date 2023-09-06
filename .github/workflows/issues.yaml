@@ -1,0 +1,11 @@
+name: Sync Issues to JIRA
+
+on:
+  issues:
+    types: [opened, reopened, closed]
+
+jobs:
+  update:
+    name: Update Issue
+    uses: canonical/sdcore-github-workflows/.github/workflows/issues.yaml@main
+    secrets: inherit
