@@ -1,6 +1,6 @@
-export const checkNetworkConfigured = async () => {
+export const checkNetworkSliceExists = async () => {
   try {
-    const response = await fetch(`/api/getNetworkSlice`);
+    const response = await fetch(`/api/network-slice`);
 
     if (response.status === 200) {
       return true;

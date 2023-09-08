@@ -1,0 +1,15 @@
+[
+    {
+      "hostname": "abcd.canonical.com",
+      "port": "8803"
+    },
+    {
+      "hostname": "efgh.canonical.com",
+      "port": "1234"
+    },
+    {
+      "hostname": "ijkl.canonical.com",
+      "port": "8200"
+    }
+  ]
+  

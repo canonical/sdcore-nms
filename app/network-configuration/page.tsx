@@ -1,110 +1,136 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import NetworkConfigurationEmptyState from "@/components/NetworkConfigurationEmptyState";
-import { checkNetworkConfigured } from "@/utils/checkNetworkConfigured";
+import NetworkSliceEmptyState from "@/components/NetworkSliceEmptyState";
+import { checkNetworkSliceExists } from "@/utils/checkNetworkSliceExists";
 import { Row, Col, Button, MainTable } from "@canonical/react-components";
-import NetworkConfigurationModal from "@/components/NetworkConfigurationModal";
+import NetworkSliceModal from "@/components/NetworkSliceModal";
 
 export type NetworkSlice = {
   mcc: string;
   mnc: string;
+  name: string;
+  upf: {
+    hostname: string;
+    port: string;
+  };
+  gNodeBs: GnbItem[];
 };
+
+interface GnbItem {
+  name: string;
+  tac: string;
+}
 
 export default function NetworkConfiguration() {
   const [loading, setLoading] = useState(true);
-  const [isNetworkConfigured, setIsNetworkConfigured] = useState(false);
-  const [networkSlice, setNetworkSlice] = useState<NetworkSlice | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [networkSlices, setNetworkSlices] = useState<NetworkSlice[]>([]);
 
   const toggleModal = () => {
     setIsModalVisible(!isModalVisible);
   };
 
   useEffect(() => {
-    const init = async () => {
-      const configured = await checkNetworkConfigured();
-      setIsNetworkConfigured(configured);
-      setLoading(false);
-
-      if (configured) {
-        await fetchNetworkSlice();
-      }
-    };
-
-    init();
+    fetchNetworkSlices();
   }, []);
 
-  const fetchNetworkSlice = async () => {
+  const fetchNetworkSlices = async () => {
     try {
-      const response = await fetch(`/api/getNetworkSlice`);
+      const response = await fetch(`/api/network-slice`);
       if (!response.ok) {
-        throw new Error("Failed to fetch network slice");
+        throw new Error("Failed to fetch network slices");
       }
       const data = await response.json();
 
-      const mcc = data["site-info"]["plmn"]["mcc"];
-      const mnc = data["site-info"]["plmn"]["mnc"];
+      const slices: NetworkSlice[] = data.map((slice: any) => ({
+        mcc: slice["site-info"]["plmn"]["mcc"],
+        mnc: slice["site-info"]["plmn"]["mnc"],
+        name: slice.name,
+        upf: {
+          hostname: slice.upf.hostname,
+          port: slice.upf.port,
+        },
+        gNodeBs: slice.gNodeBs || [],
+      }));
 
-      setNetworkSlice({ mcc, mnc });
+      setNetworkSlices(slices);
+      setLoading(false);
     } catch (error) {
       console.error(error);
+      setLoading(false);
     }
   };
+
+  const handleView = (slice: NetworkSlice) => {};
+
+  const handleEdit = (slice: NetworkSlice) => {};
+
+  const handleDelete = (slice: NetworkSlice) => {};
 
   if (loading) {
     return <div>Loading...</div>;
   }
 
-  if (!isNetworkConfigured) {
-    return <NetworkConfigurationEmptyState />;
+  if (!networkSlices.length) {
+    return <NetworkSliceEmptyState />;
   }
 
   return (
     <div>
       <Row>
         <Col size={8}>
-          <h2 className="h2-heading--1 font-regular">Network Configuration</h2>
+          <h2 className="h2-heading--1 font-regular">Network Slices</h2>
           <div className="u-align--right">
-            <Button onClick={toggleModal}> Edit </Button>
+            <Button onClick={toggleModal} appearance="positive">
+              Create
+            </Button>
           </div>
-
-          {networkSlice && (
-            <MainTable
-              rows={[
+          <MainTable
+            rows={networkSlices.map((slice) => ({
+              columns: [
+                { content: "Name", role: "rowheader" },
+                { content: slice.name || "N/A", className: "u-align--right" },
+                { content: "MCC", role: "rowheader" },
+                { content: slice.mcc || "N/A", className: "u-align--right" },
+                { content: "MNC", role: "rowheader" },
+                { content: slice.mnc || "N/A", className: "u-align--right" },
+                { content: "UPF", role: "rowheader" },
                 {
-                  columns: [
-                    {
-                      content: "MCC",
-                      role: "rowheader",
-                    },
-                    {
-                      content: networkSlice.mcc || "N/A",
-                      className: "u-align--right",
-                    },
-                  ],
+                  content: `${slice.upf.hostname}:${slice.upf.port}` || "N/A",
+                  className: "u-align--right",
+                },
+                { content: "gNodeB's", role: "rowheader" },
+                {
+                  content:
+                    slice.gNodeBs.map((gnb) => gnb.name).join(", ") || "N/A",
+                  className: "u-align--right",
                 },
                 {
-                  columns: [
-                    {
-                      content: "MNC",
-                      role: "rowheader",
-                    },
-                    {
-                      content: networkSlice.mnc || "N/A",
-                      className: "u-align--right",
-                    },
-                  ],
+                  content: (
+                    <div className="u-flex u-justify-between">
+                      <Button small onClick={() => handleView(slice)}>
+                        View
+                      </Button>
+                      <Button small onClick={() => handleEdit(slice)}>
+                        Edit
+                      </Button>
+                      <Button
+                        small
+                        negative
+                        onClick={() => handleDelete(slice)}
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  ),
                 },
-              ]}
-              sortable
-            />
-          )}
+              ],
+            }))}
+            sortable
+          />
         </Col>
       </Row>
-
-      {isModalVisible && (
-        <NetworkConfigurationModal toggleModal={toggleModal} />
-      )}
+      {isModalVisible && <NetworkSliceModal toggleModal={toggleModal} />}
     </div>
   );
 }

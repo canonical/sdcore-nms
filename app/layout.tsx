@@ -41,10 +41,6 @@ export default function RootLayout({
               label: "Network Configuration",
               url: "/network-configuration",
             },
-            {
-              label: "Subscribers",
-              url: "/subscribers",
-            },
           ]}
         />
         {backendAvailable === false && (

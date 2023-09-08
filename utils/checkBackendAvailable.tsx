@@ -1,6 +1,6 @@
 export const checkBackendAvailable = async () => {
   try {
-    const response = await fetch(`/api/getNetworkSlices`);
+    const response = await fetch(`/api/network-slice`);
 
     if (response.status === 200) {
       return true;
