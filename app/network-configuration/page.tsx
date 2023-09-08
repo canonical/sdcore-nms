@@ -36,7 +36,9 @@ export default function NetworkConfiguration() {
 
   const fetchNetworkSlices = async () => {
     try {
-      const response = await fetch(`/api/network-slice`);
+      const response = await fetch(`/api/network-slice`, {
+        method: "GET",
+      });
       if (!response.ok) {
         throw new Error("Failed to fetch network slices");
       }
