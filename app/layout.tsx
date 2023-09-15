@@ -33,7 +33,7 @@ export default function RootLayout({
           theme={Theme.DARK}
           logo={{
             src: "https://assets.ubuntu.com/v1/82818827-CoF_white.svg",
-            title: "SD-Core NMS",
+            title: "5G NMS",
             url: "/",
           }}
           items={[

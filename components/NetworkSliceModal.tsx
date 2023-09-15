@@ -10,6 +10,7 @@ import {
 
 interface NetworkSliceModalProps {
   toggleModal: () => void;
+  onSliceCreated: () => void;
 }
 
 interface UpfItem {
@@ -24,6 +25,7 @@ interface GnbItem {
 
 export default function NetworkSliceModal({
   toggleModal,
+  onSliceCreated,
 }: NetworkSliceModalProps) {
   const [mcc, setMcc] = useState<string>("");
   const [mnc, setMnc] = useState<string>("");
@@ -93,13 +95,12 @@ export default function NetworkSliceModal({
     const sliceData = {
       mcc,
       mnc,
-      name,
       upfHostname: selectedUpf?.hostname,
       upfPort: selectedUpf?.port,
     };
 
     try {
-      const response = await fetch("/api/network-slice", {
+      const response = await fetch(`/api/network-slice/${name}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -112,7 +113,7 @@ export default function NetworkSliceModal({
           `Error creating network. Error code: ${response.status}`,
         );
       }
-
+      onSliceCreated();
       toggleModal();
     } catch (error) {
       console.error(error);

@@ -1,7 +1,7 @@
 [
     {
-      "hostname": "abcd.canonical.com",
-      "port": "8803"
+      "hostname": "upf",
+      "port": "8805"
     },
     {
       "hostname": "efgh.canonical.com",

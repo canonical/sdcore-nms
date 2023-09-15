@@ -1,23 +1,23 @@
 "use client";
 import React, { useState } from "react";
-import NetworkSliceModal from "@/components/NetworkSliceModal";
+import DeviceGroupModal from "@/components/DeviceGroupModal";
 import { Button, Row, Col, Strip } from "@canonical/react-components";
 
-interface NetworkSliceEmptyStateProps {
-  onSliceCreatedInEmptyState: () => void;
+interface DeviceGroupEmptyStateProps {
+  onDeviceGroupCreatedInEmptyState: () => void;
 }
 
-export default function NetworkSliceEmptyState({
-  onSliceCreatedInEmptyState,
-}: NetworkSliceEmptyStateProps) {
+export default function DeviceGroupEmptyState({
+  onDeviceGroupCreatedInEmptyState,
+}: DeviceGroupEmptyStateProps) {
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   const toggleModal = () => {
     setIsModalVisible(!isModalVisible);
   };
 
-  const handleSliceCreated = () => {
-    onSliceCreatedInEmptyState();
+  const handleDeviceGroupCreated = () => {
+    onDeviceGroupCreatedInEmptyState();
   };
 
   return (
@@ -27,7 +27,7 @@ export default function NetworkSliceEmptyState({
           <Strip>
             <Row>
               <Col size={8} medium={4} small={3} className="u-align--left">
-                <p className="p-heading--4">No network slice available</p>
+                <p className="p-heading--4">No device group available</p>
                 <Button
                   appearance="positive"
                   className="mt-8"
@@ -42,9 +42,9 @@ export default function NetworkSliceEmptyState({
       </table>
 
       {isModalVisible && (
-        <NetworkSliceModal
+        <DeviceGroupModal
           toggleModal={toggleModal}
-          onSliceCreated={handleSliceCreated}
+          onDeviceGroupCreated={handleDeviceGroupCreated}
         />
       )}
     </div>

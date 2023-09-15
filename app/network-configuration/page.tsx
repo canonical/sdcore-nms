@@ -1,28 +1,25 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import NetworkSliceEmptyState from "@/components/NetworkSliceEmptyState";
-import { checkNetworkSliceExists } from "@/utils/checkNetworkSliceExists";
-import { Row, Col, Button, MainTable } from "@canonical/react-components";
+import {
+  Row,
+  Col,
+  Button,
+  MainTable,
+  Icon,
+  ICONS,
+} from "@canonical/react-components";
 import NetworkSliceModal from "@/components/NetworkSliceModal";
+import { useRouter } from "next/navigation";
 
 export type NetworkSlice = {
-  mcc: string;
-  mnc: string;
   name: string;
-  upf: {
-    hostname: string;
-    port: string;
-  };
-  gNodeBs: GnbItem[];
 };
-
-interface GnbItem {
-  name: string;
-  tac: string;
-}
 
 export default function NetworkConfiguration() {
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
+
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [networkSlices, setNetworkSlices] = useState<NetworkSlice[]>([]);
 
@@ -43,16 +40,10 @@ export default function NetworkConfiguration() {
         throw new Error("Failed to fetch network slices");
       }
       const data = await response.json();
+      console.log(data);
 
       const slices: NetworkSlice[] = data.map((slice: any) => ({
-        mcc: slice["site-info"]["plmn"]["mcc"],
-        mnc: slice["site-info"]["plmn"]["mnc"],
-        name: slice.name,
-        upf: {
-          hostname: slice.upf.hostname,
-          port: slice.upf.port,
-        },
-        gNodeBs: slice.gNodeBs || [],
+        name: slice,
       }));
 
       setNetworkSlices(slices);
@@ -63,62 +54,71 @@ export default function NetworkConfiguration() {
     }
   };
 
-  const handleView = (slice: NetworkSlice) => {};
+  const handleView = (slice: NetworkSlice) => {
+    router.push(`/network-slice/${slice.name}`);
+  };
 
-  const handleEdit = (slice: NetworkSlice) => {};
+  const handleDelete = async (slice: NetworkSlice) => {
+    try {
+      const response = await fetch(`/api/network-slice/${slice.name}`, {
+        method: "DELETE",
+      });
 
-  const handleDelete = (slice: NetworkSlice) => {};
+      if (!response.ok) {
+        throw new Error("Failed to delete network slice");
+      }
+
+      fetchNetworkSlices();
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   if (loading) {
     return <div>Loading...</div>;
   }
 
   if (!networkSlices.length) {
-    return <NetworkSliceEmptyState />;
+    return (
+      <NetworkSliceEmptyState onSliceCreatedInEmptyState={fetchNetworkSlices} />
+    );
   }
+
+  const handleSliceCreated = () => {
+    fetchNetworkSlices();
+  };
 
   return (
     <div>
       <Row>
-        <Col size={8}>
-          <h2 className="h2-heading--1 font-regular">Network Slices</h2>
-          <div className="u-align--right">
-            <Button onClick={toggleModal} appearance="positive">
-              Create
-            </Button>
-          </div>
+        <Col size={4}>
+          <h2>Network Slices</h2>
           <MainTable
+            headers={[
+              { content: null },
+              {
+                content: (
+                  <div className="u-align--right">
+                    <Button onClick={toggleModal} appearance="positive">
+                      Create
+                    </Button>
+                  </div>
+                ),
+              },
+            ]}
             rows={networkSlices.map((slice) => ({
               columns: [
-                { content: "Name", role: "rowheader" },
-                { content: slice.name || "N/A", className: "u-align--right" },
-                { content: "MCC", role: "rowheader" },
-                { content: slice.mcc || "N/A", className: "u-align--right" },
-                { content: "MNC", role: "rowheader" },
-                { content: slice.mnc || "N/A", className: "u-align--right" },
-                { content: "UPF", role: "rowheader" },
-                {
-                  content: `${slice.upf.hostname}:${slice.upf.port}` || "N/A",
-                  className: "u-align--right",
-                },
-                { content: "gNodeB's", role: "rowheader" },
-                {
-                  content:
-                    slice.gNodeBs.map((gnb) => gnb.name).join(", ") || "N/A",
-                  className: "u-align--right",
-                },
+                { content: slice.name, role: "rowheader" },
                 {
                   content: (
-                    <div className="u-flex u-justify-between">
+                    <div className="u-align--right">
                       <Button small onClick={() => handleView(slice)}>
                         View
                       </Button>
-                      <Button small onClick={() => handleEdit(slice)}>
-                        Edit
-                      </Button>
+
                       <Button
                         small
-                        negative
+                        appearance={"negative"}
                         onClick={() => handleDelete(slice)}
                       >
                         Delete
@@ -132,7 +132,12 @@ export default function NetworkConfiguration() {
           />
         </Col>
       </Row>
-      {isModalVisible && <NetworkSliceModal toggleModal={toggleModal} />}
+      {isModalVisible && (
+        <NetworkSliceModal
+          toggleModal={toggleModal}
+          onSliceCreated={handleSliceCreated}
+        />
+      )}
     </div>
   );
 }

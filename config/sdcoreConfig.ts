@@ -1,6 +1,4 @@
 
-const WEBUI_ENDPOINT = process.env.WEBUI_ENDPOINT || 'http://localhost:3000';
-
 const STATIC_SUSBCRIBER_DATA = {
   plmnID: "20893",
 };
@@ -27,34 +25,8 @@ const STATIC_DEVICE_GROUP_DATA = {
   },
 };
 
-const NETWORK_SLICE_NAME: string = "default";
-
-const STATIC_NETWORK_SLICE_DATA = {
-  "slice-id": {
-    "sst": "1",
-    "sd": "010203",
-  },
-  "site-device-group": ["cows"],
-  "site-info": {
-    "site-name": "demo",
-    "gNodeBs": [
-      {
-        "name": "demo-gnb1",
-        "tac": 1,
-      },
-    ],
-    "upf": {
-      "upf-name": process.env.UPF_HOSTNAME || "upf",
-      "upf-port": process.env.UPF_PORT || "8805",
-    },
-  },
-};
-
 
 export {
-  WEBUI_ENDPOINT,
   STATIC_SUSBCRIBER_DATA,
   STATIC_DEVICE_GROUP_DATA,
-  STATIC_NETWORK_SLICE_DATA,
-  NETWORK_SLICE_NAME,
 };
