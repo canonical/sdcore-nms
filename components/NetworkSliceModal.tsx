@@ -8,6 +8,8 @@ import {
   Select,
 } from "@canonical/react-components";
 
+import { createNetworkSlice } from "@/utils/createNetworkSlice";
+
 interface NetworkSliceModalProps {
   toggleModal: () => void;
   onSliceCreated: () => void;
@@ -20,7 +22,7 @@ interface UpfItem {
 
 interface GnbItem {
   name: string;
-  tac: string;
+  tac: number;
 }
 
 export default function NetworkSliceModal({
@@ -81,7 +83,11 @@ export default function NetworkSliceModal({
         const response = await fetch("/api/gnb", {
           method: "GET",
         });
-        const data = await response.json();
+        let data = await response.json();
+        data = data.map((gnb: GnbItem) => ({
+          ...gnb,
+          tac: gnb.tac,
+        }));
         setGnbList(data);
       } catch (error) {
         console.error("Error fetching GNB list:", error);
@@ -92,32 +98,24 @@ export default function NetworkSliceModal({
   }, []);
 
   const handleCreate = async () => {
-    const sliceData = {
-      mcc,
-      mnc,
-      upfHostname: selectedUpf?.hostname,
-      upfPort: selectedUpf?.port,
-    };
-
+    if (!selectedUpf) {
+      setApiError("Please select a UPF.");
+      return;
+    }
     try {
-      const response = await fetch(`/api/network-slice/${name}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(sliceData),
+      await createNetworkSlice({
+        name: name,
+        mcc: mcc,
+        mnc: mnc,
+        upfName: selectedUpf?.hostname!,
+        upfPort: selectedUpf?.port!,
+        gnbList: selectedGnbs.map((index) => gnbList[index]),
       });
-
-      if (!response.ok) {
-        throw new Error(
-          `Error creating network. Error code: ${response.status}`,
-        );
-      }
       onSliceCreated();
       toggleModal();
     } catch (error) {
       console.error(error);
-      setApiError("Failed to configure the network.");
+      setApiError((error as Error).message || "An unexpected error occurred.");
     }
   };
 

@@ -7,6 +7,8 @@ import {
   Form,
 } from "@canonical/react-components";
 
+import { createDeviceGroup } from "@/utils/createDeviceGroup";
+
 function isValidIP(ip: string) {
   const regex =
     /^(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)$/;
@@ -30,11 +32,13 @@ function isValidMBR(mbr: number) {
 interface DeviceGroupModalProps {
   toggleModal: () => void;
   onDeviceGroupCreated: () => void;
+  networkSliceName: string;
 }
 
 export default function DeviceGroupModal({
   toggleModal,
   onDeviceGroupCreated,
+  networkSliceName,
 }: DeviceGroupModalProps) {
   const [name, setName] = useState<string>("");
   const [ueIpPool, setUeIpPool] = useState<string>("");
@@ -78,24 +82,24 @@ export default function DeviceGroupModal({
     MBRUpstreamValidationError !== null;
 
   const handleCreate = async () => {
-    const deviceGroupData = {};
-    const MBRDownstreamBps = MBRDownstream ? MBRDownstream * 1000000 : 0;
-    const MBRUpstreamBps = MBRUpstream ? MBRUpstream * 1000000 : 0;
-
+    if (!MBRUpstream) {
+      setApiError("Please select a value for the upstream bitrate.");
+      return;
+    }
+    if (!MBRDownstream) {
+      setApiError("Please select a value for the downstream bitrate.");
+      return;
+    }
     try {
-      const response = await fetch(`/api/device-group/${name}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(deviceGroupData),
+      await createDeviceGroup({
+        name: name,
+        ueIpPool: ueIpPool,
+        dns: dns,
+        mtu: mtu,
+        MBRUpstream: MBRUpstream,
+        MBRDownstream: MBRDownstream,
+        networkSliceName: networkSliceName,
       });
-
-      if (!response.ok) {
-        throw new Error(
-          `Error creating device group. Error code: ${response.status}`,
-        );
-      }
       onDeviceGroupCreated();
       toggleModal();
     } catch (error) {

@@ -5,10 +5,12 @@ import { Button, Row, Col, Strip } from "@canonical/react-components";
 
 interface DeviceGroupEmptyStateProps {
   onDeviceGroupCreatedInEmptyState: () => void;
+  networkSliceName: string;
 }
 
 export default function DeviceGroupEmptyState({
   onDeviceGroupCreatedInEmptyState,
+  networkSliceName,
 }: DeviceGroupEmptyStateProps) {
   const [isModalVisible, setIsModalVisible] = useState(false);
 
@@ -45,6 +47,7 @@ export default function DeviceGroupEmptyState({
         <DeviceGroupModal
           toggleModal={toggleModal}
           onDeviceGroupCreated={handleDeviceGroupCreated}
+          networkSliceName={networkSliceName}
         />
       )}
     </div>

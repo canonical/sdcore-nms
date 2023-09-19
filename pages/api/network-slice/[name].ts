@@ -3,23 +3,6 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 const WEBUI_ENDPOINT = process.env.WEBUI_ENDPOINT;
 
-
-export type NetworkSliceRequestBody = {
-  mcc: string;
-  mnc: string;
-  name: string;
-  gNodeBs: {
-    name: string;
-    tac: number;
-  }[];
-  upf: {
-    "upf-name": string;
-    "upf-port": string;
-  };
-  deviceGroups: {}[];
-};
-
-
 export default async function handleNetworkSlice(req: NextApiRequest, res: NextApiResponse) {
   switch (req.method) {
     case "GET":
@@ -29,7 +12,7 @@ export default async function handleNetworkSlice(req: NextApiRequest, res: NextA
     case "DELETE":
       return handleDELETE(req, res);
     default:
-      res.setHeader("Allow", ["GET", "POST", "DELETE"]);
+      res.setHeader("Allow", ["GET", "POST","PUT", "DELETE"]);
       res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 }
@@ -56,7 +39,6 @@ async function handleGET(req: NextApiRequest, res: NextApiResponse) {
     }
 
     const data = await response.json();
-    console.log(data)
     res.status(200).json(data);
 
   } catch (error) {
@@ -72,22 +54,8 @@ async function handleGET(req: NextApiRequest, res: NextApiResponse) {
 async function handlePOST(req: NextApiRequest, res: NextApiResponse) {
   const { name } = req.query
   
-  const { mcc, mnc, gNodeBs, upf, deviceGroups } = req.body as NetworkSliceRequestBody;
   const url = `${WEBUI_ENDPOINT}/config/v1/network-slice/${name}`;
 
-  const networkSliceData = {
-    "slice-id": {
-      "sst": "1",
-      "sd": "010203",
-    },
-    "site-device-group": deviceGroups,
-    "site-info": {
-      "site-name": "demo",
-      "plmn": { "mcc": mcc, "mnc": mnc },
-      "gNodeBs": gNodeBs,
-      "upf": upf,
-    },
-  };
 
   try {
     const response = await fetch(url, {
@@ -95,10 +63,11 @@ async function handlePOST(req: NextApiRequest, res: NextApiResponse) {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(networkSliceData),
+      body: JSON.stringify(req.body),
     });
 
     if (!response.ok) {
+      console.log(response)
       throw new Error(`Error creating network slice. Error code: ${response.status}`);
     }
 

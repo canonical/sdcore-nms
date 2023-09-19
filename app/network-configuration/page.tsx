@@ -8,6 +8,7 @@ import {
   MainTable,
   Icon,
   ICONS,
+  Tabs,
 } from "@canonical/react-components";
 import NetworkSliceModal from "@/components/NetworkSliceModal";
 import { useRouter } from "next/navigation";
@@ -40,7 +41,6 @@ export default function NetworkConfiguration() {
         throw new Error("Failed to fetch network slices");
       }
       const data = await response.json();
-      console.log(data);
 
       const slices: NetworkSlice[] = data.map((slice: any) => ({
         name: slice,
@@ -91,15 +91,17 @@ export default function NetworkConfiguration() {
   return (
     <div>
       <Row>
-        <Col size={4}>
+        <Col size={6}>
           <h2>Network Slices</h2>
           <MainTable
             headers={[
-              { content: null },
+              {
+                content: null,
+              },
               {
                 content: (
                   <div className="u-align--right">
-                    <Button onClick={toggleModal} appearance="positive">
+                    <Button hasIcon appearance={"positive"} small>
                       Create
                     </Button>
                   </div>
