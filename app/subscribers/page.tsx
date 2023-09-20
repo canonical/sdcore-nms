@@ -7,8 +7,6 @@ import {
   Row,
   Col,
 } from "@canonical/react-components";
-import { SlRefresh } from "react-icons/sl";
-import EditSubscriber from "@/components/EditSubscriber";
 import DeleteSubscriberButton from "@/components/DeleteSubscriberButton";
 import CreateSubscriberModal from "@/components/CreateSubscriberModal";
 
@@ -45,7 +43,9 @@ export default function Subscribers() {
 
   const fetchSubscribers = async () => {
     try {
-      const response = await fetch(`/api/getSubscribers`);
+      const response = await fetch(`/api/subscriber`, {
+        method: "GET",
+      });
       if (!response.ok)
         throw new Error(
           `Failed to fetch subscribers. Status: ${response.status}`,
@@ -73,11 +73,6 @@ export default function Subscribers() {
         {
           content: (
             <>
-              <EditSubscriber
-                imsi={rawIMSI}
-                currentSubscribers={currentImsis}
-                refreshHandler={handleRefresh}
-              />
               <DeleteSubscriberButton
                 imsi={rawIMSI}
                 currentSubscribers={currentImsis}
@@ -92,16 +87,9 @@ export default function Subscribers() {
 
   return (
     <Row>
-      <Col size={8}>
+      <Col size={6}>
         <h2 className="h2-heading--1 font-regular">Subscribers</h2>
         <div className="u-align--right">
-          <Button
-            hasIcon={true}
-            className="u-no-margin--bottom"
-            onClick={handleRefresh}
-          >
-            <SlRefresh size={20} />
-          </Button>
           <Button
             appearance="positive"
             className="u-no-margin--bottom"
@@ -119,6 +107,7 @@ export default function Subscribers() {
             },
             {
               content: "Actions",
+              className: "u-align--right",
             },
           ]}
           rows={tableContent}
@@ -132,10 +121,7 @@ export default function Subscribers() {
         </Button>
       </Col>
       {isCreateSubscriberModalVisible && (
-        <CreateSubscriberModal
-          toggleModal={toggleCreateSubscriberModal}
-          currentSubscribers={currentImsis}
-        />
+        <CreateSubscriberModal toggleModal={toggleCreateSubscriberModal} />
       )}
     </Row>
   );

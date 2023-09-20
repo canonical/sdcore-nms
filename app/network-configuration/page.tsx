@@ -13,6 +13,7 @@ import {
 import NetworkSliceModal from "@/components/NetworkSliceModal";
 import { deleteDeviceGroup } from "@/utils/deleteDeviceGroup";
 import DeviceGroupModal from "@/components/DeviceGroupModal";
+import { getNetworkSlices } from "@/utils/getNetworkSlices";
 
 export type NetworkSlice = {
   name: string;
@@ -59,7 +60,7 @@ export default function NetworkConfiguration() {
   };
 
   useEffect(() => {
-    fetchNetworkSlices();
+    getNetworkSlices();
   }, []);
 
   const fetchDeviceGroup = async (deviceGroupName: string) => {
@@ -93,35 +94,20 @@ export default function NetworkConfiguration() {
     }
   };
 
-  const fetchNetworkSlices = async () => {
-    try {
-      const response = await fetch(`/api/network-slice`, {
-        method: "GET",
-      });
-      if (!response.ok) {
-        throw new Error("Failed to fetch network slices");
+  useEffect(() => {
+    const loadNetworkSlices = async () => {
+      try {
+        const slices: NetworkSlice[] = await getNetworkSlices();
+        setNetworkSlices(slices);
+        setLoading(false);
+      } catch (error) {
+        console.error("Failed to load network slices:", error);
+        setLoading(false);
       }
-      const sliceNames = await response.json();
+    };
 
-      const sliceDetailsPromises = sliceNames.map(async (sliceName: string) => {
-        const detailResponse = await fetch(`/api/network-slice/${sliceName}`, {
-          method: "GET",
-        });
-        if (!detailResponse.ok) {
-          throw new Error(`Failed to fetch details for slice: ${sliceName}`);
-        }
-        return detailResponse.json();
-      });
-
-      const detailedSlices = await Promise.all(sliceDetailsPromises);
-
-      setNetworkSlices(detailedSlices);
-      setLoading(false);
-    } catch (error) {
-      console.error(error);
-      setLoading(false);
-    }
-  };
+    loadNetworkSlices();
+  }, []);
 
   const handleDeleteNetworkSlice = async (sliceName: string) => {
     try {
@@ -133,7 +119,7 @@ export default function NetworkConfiguration() {
         throw new Error("Failed to delete network slice");
       }
 
-      fetchNetworkSlices();
+      getNetworkSlices();
     } catch (error) {
       console.error(error);
     }
@@ -149,7 +135,7 @@ export default function NetworkConfiguration() {
         networkSliceName: networkSliceName,
       });
 
-      fetchNetworkSlices();
+      getNetworkSlices();
     } catch (error) {
       console.error(error);
     }
@@ -161,12 +147,12 @@ export default function NetworkConfiguration() {
 
   if (!networkSlices.length) {
     return (
-      <NetworkSliceEmptyState onSliceCreatedInEmptyState={fetchNetworkSlices} />
+      <NetworkSliceEmptyState onSliceCreatedInEmptyState={getNetworkSlices} />
     );
   }
 
   const handleSliceCreated = () => {
-    fetchNetworkSlices();
+    getNetworkSlices();
   };
 
   const handleToggleRow = async (slice: NetworkSlice) => {
@@ -425,7 +411,7 @@ export default function NetworkConfiguration() {
       {isDeviceGroupModalVisible && (
         <DeviceGroupModal
           toggleModal={toggleDeviceGroupModal}
-          onDeviceGroupCreated={fetchNetworkSlices}
+          onDeviceGroupCreated={getNetworkSlices}
           networkSliceName={currentSliceName}
         />
       )}

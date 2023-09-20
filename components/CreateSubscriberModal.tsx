@@ -1,30 +1,28 @@
 "use client";
-import { ChangeEvent, useState } from "react";
-import { Button, Modal, Form, Input } from "@canonical/react-components";
-
-import { useSubscriber } from "@/hooks/useSubscriber";
+import { ChangeEvent, useState, useEffect } from "react";
+import {
+  Button,
+  Modal,
+  Form,
+  Input,
+  Select,
+} from "@canonical/react-components";
+import { createSubscriber } from "@/utils/createSubscriber";
+import { getNetworkSlices } from "@/utils/getNetworkSlices";
 
 type Props = {
-  currentSubscribers: string[];
   toggleModal: () => void;
 };
 
-export default function CreateSubscriberModal({
-  toggleModal,
-  currentSubscribers,
-}: Props) {
+export default function CreateSubscriberModal({ toggleModal }: Props) {
   const [imsi, setImsi] = useState<string>("");
   const [opc, setOpc] = useState<string>("");
   const [key, setKey] = useState<string>("");
   const [sequenceNumber, setSequenceNumber] = useState<string>("");
+  const [slices, setSlices] = useState<any[]>([]);
+  const [selectedSlice, setSelectedSlice] = useState<string | null>(null);
 
-  const { handleSubscriber } = useSubscriber(
-    imsi,
-    opc,
-    key,
-    sequenceNumber,
-    currentSubscribers,
-  );
+  const [deviceGroup, setDeviceGroup] = useState<string[]>([]);
 
   const [IMSIValidationError, setIMSIValidationError] = useState<string | null>(
     null,
@@ -35,6 +33,17 @@ export default function CreateSubscriberModal({
   const [KeyValidationError, setKeyValidationError] = useState<string | null>(
     null,
   );
+
+  const isCreateDisabled =
+    !imsi ||
+    !opc ||
+    !key ||
+    !sequenceNumber ||
+    !selectedSlice ||
+    deviceGroup.length === 0 ||
+    IMSIValidationError !== null ||
+    OPCValidationError !== null ||
+    KeyValidationError !== null;
 
   const handleImsiChange = (event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
@@ -59,6 +68,18 @@ export default function CreateSubscriberModal({
     setSequenceNumber(value);
   };
 
+  const handleNetworkSliceChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    const selected = event.target.value;
+    setSelectedSlice(selected);
+
+    const matchedSlice = slices.find((slice) => slice.SliceName === selected);
+    if (matchedSlice) {
+      setDeviceGroup(matchedSlice["site-device-group"]);
+    } else {
+      setDeviceGroup([]);
+    }
+  };
+
   const handleSave = async () => {
     if (imsi.length < 14 || imsi.length > 15) {
       setIMSIValidationError("IMSI must be 14 or 15 digits.");
@@ -75,9 +96,28 @@ export default function CreateSubscriberModal({
       return;
     }
 
-    await handleSubscriber();
+    await createSubscriber({
+      imsi: imsi,
+      plmnId: "20893",
+      opc: opc,
+      key: key,
+      sequenceNumber: sequenceNumber,
+    });
     toggleModal();
   };
+
+  useEffect(() => {
+    const fetchSlices = async () => {
+      try {
+        const slices = await getNetworkSlices();
+        setSlices(slices);
+      } catch (error) {
+        console.error("Failed to fetch network slices:", error);
+      }
+    };
+
+    fetchSlices();
+  }, []);
 
   return (
     <Modal
@@ -85,15 +125,13 @@ export default function CreateSubscriberModal({
       title="Add New Subscriber"
       buttonRow={
         <>
-          <Button onClick={toggleModal} className="u-no-margin--bottom">
-            Close
-          </Button>
           <Button
             onClick={handleSave}
             appearance="positive"
+            disabled={isCreateDisabled}
             className="u-no-margin--bottom"
           >
-            Save
+            Create
           </Button>
         </>
       }
@@ -101,6 +139,7 @@ export default function CreateSubscriberModal({
       <Form stacked>
         <Input
           type="text"
+          placeholder="208930100007487"
           id="imsi"
           label="IMSI"
           onChange={handleImsiChange}
@@ -111,6 +150,7 @@ export default function CreateSubscriberModal({
         <Input
           type="text"
           id="opc"
+          placeholder="981d464c7c52eb6e5036234984ad0bcf"
           label="OPC"
           onChange={handleOpcChange}
           stacked
@@ -120,6 +160,7 @@ export default function CreateSubscriberModal({
         <Input
           type="text"
           id="key"
+          placeholder="5122250214c33e723a5dd523fc145fc0"
           label="Key"
           onChange={handleKeyChange}
           stacked
@@ -129,10 +170,34 @@ export default function CreateSubscriberModal({
         <Input
           type="text"
           id="sequence-number"
+          placeholder="16f3b3f70fc2"
           label="Sequence Number"
           onChange={handleSequenceNumberChange}
           stacked
           required={true}
+        />
+        <Select
+          id="network-slice"
+          defaultValue=""
+          label="Network Slice"
+          stacked
+          required={true}
+          onChange={handleNetworkSliceChange}
+          options={slices.map((slice) => ({
+            label: slice.SliceName,
+            value: slice.SliceName,
+          }))}
+        />
+        <Select
+          id="device-group"
+          defaultValue=""
+          label="Device Group"
+          stacked
+          required={true}
+          options={deviceGroup.map((group) => ({
+            label: group,
+            value: group,
+          }))}
         />
       </Form>
     </Modal>
