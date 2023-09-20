@@ -3,8 +3,8 @@ interface DeviceGroupArgs {
   ueIpPool: string;
   dns: string;
   mtu: number;
-  MBRUpstream: number;
-  MBRDownstream: number;
+  MBRUpstreamMbps: number;
+  MBRDownstreamMbps: number;
   networkSliceName: string;
 }
 
@@ -13,8 +13,8 @@ export const createDeviceGroup = async ({
   ueIpPool,
   dns,
   mtu,
-  MBRUpstream,
-  MBRDownstream,
+  MBRUpstreamMbps,
+  MBRDownstreamMbps,
   networkSliceName,
 }: DeviceGroupArgs) => {
   const deviceGroupData = {
@@ -26,8 +26,9 @@ export const createDeviceGroup = async ({
       "dns-primary": dns,
       mtu: mtu,
       "ue-dnn-qos": {
-        "dnn-mbr-uplink": MBRUpstream,
-        "dnn-mbr-downlink": MBRDownstream,
+        "dnn-mbr-uplink": MBRUpstreamMbps,
+        "dnn-mbr-downlink": MBRDownstreamMbps,
+        "bitrate-unit": "Mbps",
         "traffic-class": {
           name: "platinum",
           arp: 6,

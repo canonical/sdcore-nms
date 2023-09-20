@@ -44,8 +44,8 @@ export default function DeviceGroupModal({
   const [ueIpPool, setUeIpPool] = useState<string>("");
   const [dns, setDns] = useState<string>("8.8.8.8");
   const [mtu, setMtu] = useState<number>(1460);
-  const [MBRDownstream, setMBRDownstream] = useState<number | null>(null);
-  const [MBRUpstream, setMBRUpstream] = useState<number | null>(null);
+  const [MBRDownstreamMbps, setMBRDownstream] = useState<number | null>(null);
+  const [MBRUpstreamMbps, setMBRUpstream] = useState<number | null>(null);
   const [apiError, setApiError] = useState<string | null>(null);
 
   const [NameValidationError, setNameValidationError] = useState<string | null>(
@@ -72,8 +72,8 @@ export default function DeviceGroupModal({
     !ueIpPool ||
     !dns ||
     mtu === null ||
-    MBRDownstream === null ||
-    MBRUpstream === null ||
+    MBRDownstreamMbps === null ||
+    MBRUpstreamMbps === null ||
     NameValidationError !== null ||
     UEIPPoolValidationError !== null ||
     DNSValidationError !== null ||
@@ -82,11 +82,11 @@ export default function DeviceGroupModal({
     MBRUpstreamValidationError !== null;
 
   const handleCreate = async () => {
-    if (!MBRUpstream) {
+    if (!MBRUpstreamMbps) {
       setApiError("Please select a value for the upstream bitrate.");
       return;
     }
-    if (!MBRDownstream) {
+    if (!MBRDownstreamMbps) {
       setApiError("Please select a value for the downstream bitrate.");
       return;
     }
@@ -96,8 +96,8 @@ export default function DeviceGroupModal({
         ueIpPool: ueIpPool,
         dns: dns,
         mtu: mtu,
-        MBRUpstream: MBRUpstream,
-        MBRDownstream: MBRDownstream,
+        MBRUpstreamMbps: MBRUpstreamMbps,
+        MBRDownstreamMbps: MBRDownstreamMbps,
         networkSliceName: networkSliceName,
       });
       onDeviceGroupCreated();
@@ -170,7 +170,7 @@ export default function DeviceGroupModal({
   };
   return (
     <Modal
-      title="Create Device Group"
+      title={"Create Device Group for slice: " + networkSliceName}
       close={toggleModal}
       buttonRow={
         <Button
@@ -201,7 +201,7 @@ export default function DeviceGroupModal({
         <Input
           type="text"
           id="ue-ip-pool"
-          label="UE IP Pool"
+          label="Subscriber IP Pool"
           placeholder="172.250.1.0/16"
           onChange={handleUEIPPoolChange}
           stacked

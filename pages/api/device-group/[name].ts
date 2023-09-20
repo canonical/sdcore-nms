@@ -63,7 +63,8 @@ async function handleGET(req: NextApiRequest, res: NextApiResponse) {
       throw new Error(`Error getting device group. Error code: ${response.status}`);
     }
 
-    res.status(200).json({ message: "Device Group retrieved successfully" });
+    const data = await response.json();
+    res.status(200).json(data);
   } catch (error) {
     console.error("Error details:", error);
     res.status(500).json({
