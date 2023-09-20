@@ -86,7 +86,7 @@ export default function NetworkSliceModal({
         let data = await response.json();
         data = data.map((gnb: GnbItem) => ({
           ...gnb,
-          tac: gnb.tac,
+          tac: Number(gnb.tac),
         }));
         setGnbList(data);
       } catch (error) {

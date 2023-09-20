@@ -56,7 +56,6 @@ async function handlePOST(req: NextApiRequest, res: NextApiResponse) {
   
   const url = `${WEBUI_ENDPOINT}/config/v1/network-slice/${name}`;
 
-
   try {
     const response = await fetch(url, {
       method: "POST",
@@ -67,7 +66,6 @@ async function handlePOST(req: NextApiRequest, res: NextApiResponse) {
     });
 
     if (!response.ok) {
-      console.log(response)
       throw new Error(`Error creating network slice. Error code: ${response.status}`);
     }
 

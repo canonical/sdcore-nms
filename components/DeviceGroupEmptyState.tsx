@@ -24,22 +24,20 @@ export default function DeviceGroupEmptyState({
 
   return (
     <div>
-      <table aria-label="Vanilla framework no content empty state">
+      <table>
         <caption>
-          <Strip>
-            <Row>
-              <Col size={8} medium={4} small={3} className="u-align--left">
-                <p className="p-heading--4">No device group available</p>
-                <Button
-                  appearance="positive"
-                  className="mt-8"
-                  onClick={toggleModal}
-                >
-                  Create
-                </Button>
-              </Col>
-            </Row>
-          </Strip>
+          <Row>
+            <Col size={8} className="u-align--left">
+              <p className="p-heading--4">No device group available</p>
+              <Button
+                appearance="positive"
+                className="mt-8"
+                onClick={toggleModal}
+              >
+                Create Device Group
+              </Button>
+            </Col>
+          </Row>
         </caption>
       </table>
 

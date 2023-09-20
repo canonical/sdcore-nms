@@ -6,20 +6,38 @@ import {
   Col,
   Button,
   MainTable,
-  Icon,
-  ICONS,
-  Tabs,
+  Chip,
+  ContextualMenu,
+  Card,
 } from "@canonical/react-components";
 import NetworkSliceModal from "@/components/NetworkSliceModal";
-import { useRouter } from "next/navigation";
+import { deleteDeviceGroup } from "@/utils/deleteDeviceGroup";
 
+import DeviceGroupEmptyState from "@/components/DeviceGroupEmptyState";
 export type NetworkSlice = {
   name: string;
+  SliceName?: string;
+  "slice-id"?: {
+    sst: string;
+    sd: string;
+  };
+  "site-device-group"?: any;
+  "site-info"?: {
+    "site-name": string;
+    plmn: {
+      mcc: string;
+      mnc: string;
+    };
+    gNodeBs?: any;
+    upf: {
+      "upf-name": string;
+      "upf-port": string;
+    };
+  };
 };
 
 export default function NetworkConfiguration() {
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [networkSlices, setNetworkSlices] = useState<NetworkSlice[]>([]);
@@ -40,13 +58,23 @@ export default function NetworkConfiguration() {
       if (!response.ok) {
         throw new Error("Failed to fetch network slices");
       }
-      const data = await response.json();
+      const sliceNames = await response.json();
+      console.log("Slice names: ", sliceNames);
 
-      const slices: NetworkSlice[] = data.map((slice: any) => ({
-        name: slice,
-      }));
+      const sliceDetailsPromises = sliceNames.map(async (sliceName: string) => {
+        const detailResponse = await fetch(`/api/network-slice/${sliceName}`, {
+          method: "GET",
+        });
+        if (!detailResponse.ok) {
+          throw new Error(`Failed to fetch details for slice: ${sliceName}`);
+        }
+        return detailResponse.json();
+      });
 
-      setNetworkSlices(slices);
+      const detailedSlices = await Promise.all(sliceDetailsPromises);
+      console.log("Slices: ", detailedSlices);
+
+      setNetworkSlices(detailedSlices);
       setLoading(false);
     } catch (error) {
       console.error(error);
@@ -54,19 +82,34 @@ export default function NetworkConfiguration() {
     }
   };
 
-  const handleView = (slice: NetworkSlice) => {
-    router.push(`/network-slice/${slice.name}`);
-  };
-
-  const handleDelete = async (slice: NetworkSlice) => {
+  const handleDeleteNetworkSlice = async (sliceName: string) => {
     try {
-      const response = await fetch(`/api/network-slice/${slice.name}`, {
+      const response = await fetch(`/api/network-slice/${sliceName}`, {
         method: "DELETE",
       });
 
       if (!response.ok) {
         throw new Error("Failed to delete network slice");
       }
+
+      fetchNetworkSlices();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleDeleteDeviceGroup = async (
+    deviceGroupName: string,
+    networkSliceName: string,
+  ) => {
+    try {
+      console.log("Deleting device group");
+      console.log(deviceGroupName);
+      console.log(networkSliceName);
+      await deleteDeviceGroup({
+        name: deviceGroupName,
+        networkSliceName: networkSliceName,
+      });
 
       fetchNetworkSlices();
     } catch (error) {
@@ -93,45 +136,81 @@ export default function NetworkConfiguration() {
       <Row>
         <Col size={6}>
           <h2>Network Slices</h2>
-          <MainTable
-            headers={[
-              {
-                content: null,
-              },
-              {
-                content: (
-                  <div className="u-align--right">
-                    <Button hasIcon appearance={"positive"} small>
-                      Create
-                    </Button>
-                  </div>
-                ),
-              },
-            ]}
-            rows={networkSlices.map((slice) => ({
-              columns: [
-                { content: slice.name, role: "rowheader" },
-                {
-                  content: (
-                    <div className="u-align--right">
-                      <Button small onClick={() => handleView(slice)}>
-                        View
-                      </Button>
-
-                      <Button
-                        small
-                        appearance={"negative"}
-                        onClick={() => handleDelete(slice)}
-                      >
-                        Delete
-                      </Button>
-                    </div>
-                  ),
-                },
-              ],
-            }))}
-            sortable
-          />
+          <div className="u-align--right">
+            <Button hasIcon appearance={"positive"} onClick={toggleModal}>
+              Create
+            </Button>
+          </div>
+          {networkSlices.map((slice) => (
+            <Card key={slice.SliceName} title={slice.SliceName}>
+              <Chip lead="MCC" value={slice["site-info"]?.plmn.mcc || "N/A"} />
+              <Chip lead="MNC" value={slice["site-info"]?.plmn.mnc || "N/A"} />
+              <Chip
+                lead="UPF"
+                value={`${slice["site-info"]?.upf["upf-name"]}:${slice["site-info"]?.upf["upf-port"]}`}
+                quoteValue={true}
+              />
+              <Chip
+                lead="gNodeBs"
+                value={slice?.["site-info"]?.gNodeBs?.length}
+              />
+              {slice["site-device-group"] &&
+              slice["site-device-group"].length > 0 ? (
+                <MainTable
+                  headers={[
+                    {
+                      content: "Device Groups",
+                    },
+                    {
+                      content: "Actions",
+                      className: "u-align--right",
+                    },
+                  ]}
+                  rows={slice["site-device-group"].map((group: string) => ({
+                    columns: [
+                      { content: group },
+                      {
+                        content: (
+                          <div className="u-align--right">
+                            {" "}
+                            <ContextualMenu
+                              hasToggleIcon
+                              links={[
+                                {
+                                  children: "Delete",
+                                  onClick: () =>
+                                    handleDeleteDeviceGroup(
+                                      group,
+                                      slice.SliceName,
+                                    ),
+                                },
+                              ]}
+                            />
+                          </div>
+                        ),
+                      },
+                    ],
+                    key: group,
+                  }))}
+                />
+              ) : (
+                <DeviceGroupEmptyState
+                  onDeviceGroupCreatedInEmptyState={fetchNetworkSlices}
+                  networkSliceName={slice.SliceName}
+                />
+              )}
+              <hr />
+              <div className="u-align--right">
+                <Button
+                  hasIcon
+                  appearance={"negative"}
+                  onClick={() => handleDeleteNetworkSlice(slice.SliceName)}
+                >
+                  Delete
+                </Button>
+              </div>
+            </Card>
+          ))}
         </Col>
       </Row>
       {isModalVisible && (
