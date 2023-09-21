@@ -17,9 +17,23 @@ export default async function handleNetworkSlice(req: NextApiRequest, res: NextA
   }
 }
 
+function isValidName(name: string): boolean {
+  return /^[a-zA-Z0-9-_]+$/.test(name);
+}
+
+
 async function handleGET(req: NextApiRequest, res: NextApiResponse) {
   const { name } = req.query
 
+  if (typeof name !== 'string') {
+    res.status(400).json({ error: "Invalid name provided." });
+    return;
+  }
+
+  if (!isValidName(name)) {
+    res.status(400).json({ error: "Invalid name provided." });
+    return;
+  }
 
   const url = `${WEBUI_ENDPOINT}/config/v1/network-slice/${name}`;
 
@@ -53,6 +67,16 @@ async function handleGET(req: NextApiRequest, res: NextApiResponse) {
 
 async function handlePOST(req: NextApiRequest, res: NextApiResponse) {
   const { name } = req.query
+
+  if (typeof name !== 'string') {
+    res.status(400).json({ error: "Invalid name provided." });
+    return;
+  }
+
+  if (!isValidName(name)) {
+    res.status(400).json({ error: "Invalid name provided." });
+    return;
+  }
   
   const url = `${WEBUI_ENDPOINT}/config/v1/network-slice/${name}`;
 
@@ -81,6 +105,15 @@ async function handlePOST(req: NextApiRequest, res: NextApiResponse) {
 async function handleDELETE(req: NextApiRequest, res: NextApiResponse) {
     const { name } = req.query
 
+    if (typeof name !== 'string') {
+      res.status(400).json({ error: "Invalid name provided." });
+      return;
+    }
+  
+    if (!isValidName(name)) {
+      res.status(400).json({ error: "Invalid name provided." });
+      return;
+    }
   
     const url = `${WEBUI_ENDPOINT}/config/v1/network-slice/${name}`;
   

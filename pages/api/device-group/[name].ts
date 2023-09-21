@@ -5,6 +5,7 @@ const WEBUI_ENDPOINT = process.env.WEBUI_ENDPOINT;
 
 
 export default async function handleDeviceGroup(req: NextApiRequest, res: NextApiResponse) {
+  
   switch (req.method) {
     case "GET":
       return handleGET(req, res);
@@ -18,9 +19,24 @@ export default async function handleDeviceGroup(req: NextApiRequest, res: NextAp
   }
 }
 
+function isValidName(name: string): boolean {
+  return /^[a-zA-Z0-9-_]+$/.test(name);
+}
+
 
 async function handlePOST(req: NextApiRequest, res: NextApiResponse) {
   const { name } = req.query
+
+  if (typeof name !== 'string') {
+    res.status(400).json({ error: "Invalid name provided." });
+    return;
+  }
+
+
+  if (!isValidName(name)) {
+    res.status(400).json({ error: "Invalid name provided." });
+    return;
+  }
   
   const url = `${WEBUI_ENDPOINT}/config/v1/device-group/${name}`;
 
@@ -48,6 +64,17 @@ async function handlePOST(req: NextApiRequest, res: NextApiResponse) {
 
 async function handleGET(req: NextApiRequest, res: NextApiResponse) {
   const { name } = req.query
+
+  if (typeof name !== 'string') {
+    res.status(400).json({ error: "Invalid name provided." });
+    return;
+  }
+
+
+  if (!isValidName(name)) {
+    res.status(400).json({ error: "Invalid name provided." });
+    return;
+  }
   
   const url = `${WEBUI_ENDPOINT}/config/v1/device-group/${name}`;
 
@@ -75,6 +102,16 @@ async function handleGET(req: NextApiRequest, res: NextApiResponse) {
 
 async function handleDELETE(req: NextApiRequest, res: NextApiResponse) {
   const { name } = req.query
+
+  if (typeof name !== 'string') {
+    res.status(400).json({ error: "Invalid name provided." });
+    return;
+  }
+
+  if (!isValidName(name)) {
+    res.status(400).json({ error: "Invalid name provided." });
+    return;
+  }
   
   const url = `${WEBUI_ENDPOINT}/config/v1/device-group/${name}`;
 

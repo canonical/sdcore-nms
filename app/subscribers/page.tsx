@@ -12,7 +12,7 @@ import DeleteSubscriberButton from "@/components/DeleteSubscriberButton";
 import CreateSubscriberModal from "@/components/CreateSubscriberModal";
 import { getSubscribers } from "@/utils/getSubscribers";
 import { SlRefresh } from "react-icons/sl";
-
+import deleteSubscriber from "@/utils/deleteSubscriber";
 export type Subscriber = {
   plmnID: string;
   ueId: string;
