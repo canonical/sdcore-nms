@@ -72,7 +72,9 @@ export const NetworkSliceTable: React.FC<NetworkSliceTableProps> = ({
 
     if (updatedSlice["site-device-group"]) {
       const updatedDeviceGroups = await Promise.all(
-        updatedSlice["site-device-group"].map((name) => getDeviceGroup(name)),
+        updatedSlice["site-device-group"].map((name: string) =>
+          getDeviceGroup(name),
+        ),
       );
       setDeviceGroupContent(updatedDeviceGroups);
 
@@ -90,7 +92,9 @@ export const NetworkSliceTable: React.FC<NetworkSliceTableProps> = ({
     const networkSlice = await getNetworkSlice(sliceName);
     setSlice(networkSlice);
     const DeviceGroups = await Promise.all(
-      networkSlice["site-device-group"].map((name) => getDeviceGroup(name)),
+      networkSlice["site-device-group"].map((name: string) =>
+        getDeviceGroup(name),
+      ),
     );
     setDeviceGroupContent(DeviceGroups);
   };
