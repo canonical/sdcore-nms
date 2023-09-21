@@ -12,17 +12,22 @@ import { getNetworkSlices } from "@/utils/getNetworkSlices";
 
 type Props = {
   toggleModal: () => void;
+  onSubscriberCreated: () => void;
 };
 
-export default function CreateSubscriberModal({ toggleModal }: Props) {
+export default function CreateSubscriberModal({
+  toggleModal,
+  onSubscriberCreated,
+}: Props) {
   const [imsi, setImsi] = useState<string>("");
   const [opc, setOpc] = useState<string>("");
   const [key, setKey] = useState<string>("");
   const [sequenceNumber, setSequenceNumber] = useState<string>("");
   const [slices, setSlices] = useState<any[]>([]);
   const [selectedSlice, setSelectedSlice] = useState<string | null>(null);
+  const [selectedDeviceGroup, setSelectedDeviceGroup] = useState<string>("");
 
-  const [deviceGroup, setDeviceGroup] = useState<string[]>([]);
+  const [deviceGroupOptions, setDeviceGroupOptions] = useState<string[]>([]);
 
   const [IMSIValidationError, setIMSIValidationError] = useState<string | null>(
     null,
@@ -40,7 +45,7 @@ export default function CreateSubscriberModal({ toggleModal }: Props) {
     !key ||
     !sequenceNumber ||
     !selectedSlice ||
-    deviceGroup.length === 0 ||
+    deviceGroupOptions.length === 0 ||
     IMSIValidationError !== null ||
     OPCValidationError !== null ||
     KeyValidationError !== null;
@@ -73,11 +78,18 @@ export default function CreateSubscriberModal({ toggleModal }: Props) {
     setSelectedSlice(selected);
 
     const matchedSlice = slices.find((slice) => slice.SliceName === selected);
-    if (matchedSlice) {
-      setDeviceGroup(matchedSlice["site-device-group"]);
+    if (matchedSlice && matchedSlice["site-device-group"]) {
+      setDeviceGroupOptions(matchedSlice["site-device-group"]);
+      if (matchedSlice["site-device-group"].length === 1) {
+        setSelectedDeviceGroup(matchedSlice["site-device-group"][0]);
+      }
     } else {
-      setDeviceGroup([]);
+      setDeviceGroupOptions([]);
     }
+  };
+
+  const handleDeviceGroupChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    setSelectedDeviceGroup(event.target.value);
   };
 
   const handleSave = async () => {
@@ -102,15 +114,30 @@ export default function CreateSubscriberModal({ toggleModal }: Props) {
       opc: opc,
       key: key,
       sequenceNumber: sequenceNumber,
+      deviceGroupName: selectedDeviceGroup,
     });
+    onSubscriberCreated();
     toggleModal();
   };
 
   useEffect(() => {
     const fetchSlices = async () => {
       try {
-        const slices = await getNetworkSlices();
-        setSlices(slices);
+        const fetchedSlices = await getNetworkSlices();
+        setSlices(fetchedSlices);
+
+        if (fetchedSlices.length === 1) {
+          const singleSlice = fetchedSlices[0];
+          setSelectedSlice(singleSlice.SliceName);
+          if (singleSlice["site-device-group"]) {
+            setDeviceGroupOptions(singleSlice["site-device-group"]);
+            if (singleSlice["site-device-group"].length === 1) {
+              setSelectedDeviceGroup(singleSlice["site-device-group"][0]);
+            }
+          } else {
+            setDeviceGroupOptions([]);
+          }
+        }
       } catch (error) {
         console.error("Failed to fetch network slices:", error);
       }
@@ -178,26 +205,39 @@ export default function CreateSubscriberModal({ toggleModal }: Props) {
         />
         <Select
           id="network-slice"
-          defaultValue=""
           label="Network Slice"
           stacked
           required={true}
           onChange={handleNetworkSliceChange}
-          options={slices.map((slice) => ({
-            label: slice.SliceName,
-            value: slice.SliceName,
-          }))}
+          options={[
+            {
+              disabled: true,
+              label: "Select an option",
+              value: "",
+            },
+            ...slices.map((slice) => ({
+              label: slice.SliceName,
+              value: slice.SliceName,
+            })),
+          ]}
         />
         <Select
           id="device-group"
-          defaultValue=""
           label="Device Group"
           stacked
           required={true}
-          options={deviceGroup.map((group) => ({
-            label: group,
-            value: group,
-          }))}
+          onChange={handleDeviceGroupChange}
+          options={[
+            {
+              disabled: true,
+              label: "Select an option",
+              value: "",
+            },
+            ...deviceGroupOptions.map((group) => ({
+              label: group,
+              value: group,
+            })),
+          ]}
         />
       </Form>
     </Modal>

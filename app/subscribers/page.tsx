@@ -1,4 +1,5 @@
 "use client";
+
 import { useState, useEffect } from "react";
 import {
   Button,
@@ -9,92 +10,69 @@ import {
 } from "@canonical/react-components";
 import DeleteSubscriberButton from "@/components/DeleteSubscriberButton";
 import CreateSubscriberModal from "@/components/CreateSubscriberModal";
+import { getSubscribers } from "@/utils/getSubscribers";
+import { SlRefresh } from "react-icons/sl";
 
 export type Subscriber = {
   plmnID: string;
   ueId: string;
 };
-export type Subscribers = Subscriber[];
 
 export default function Subscribers() {
   const [loading, setLoading] = useState(true);
-  const [subscribers, setSubscribers] = useState([]);
-  const [refresh, setRefresh] = useState(false);
+  const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
   const [isCreateSubscriberModalVisible, setIsCreateSubscriberModalVisible] =
     useState(false);
+
   const toggleCreateSubscriberModal = () =>
     setIsCreateSubscriberModalVisible((prev) => !prev);
 
-  const currentImsis: string[] = subscribers.map((subscriber: Subscriber) => {
-    return subscriber.ueId.split("-")[1];
-  });
+  const handleRefresh = async () => {
+    const fetchedSubscribers: Subscriber[] = await getSubscribers();
+    setSubscribers(fetchedSubscribers);
+  };
 
   useEffect(() => {
-    const init = async () => {
-      setLoading(false);
-    };
-
-    init();
+    handleRefresh();
+    setLoading(false);
   }, []);
 
-  useEffect(() => {
-    fetchSubscribers();
-  }, [refresh]);
-
-  const fetchSubscribers = async () => {
-    try {
-      const response = await fetch(`/api/subscriber`, {
-        method: "GET",
-      });
-      if (!response.ok)
-        throw new Error(
-          `Failed to fetch subscribers. Status: ${response.status}`,
-        );
-      setSubscribers(await response.json());
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const handleRefresh = () => {
-    setRefresh(!refresh);
-  };
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  const tableContent = subscribers.map((subscriber: Subscriber) => {
-    const rawIMSI = subscriber.ueId.split("-")[1];
+  const tableContent = subscribers.map(({ ueId }) => {
+    const rawIMSI = ueId.split("-")[1];
     return {
       key: rawIMSI,
       columns: [
         { content: rawIMSI },
         {
           content: (
-            <>
+            <div className="u-align--right">
               <DeleteSubscriberButton
                 imsi={rawIMSI}
-                currentSubscribers={currentImsis}
+                currentSubscribers={subscribers.map(
+                  (s) => s.ueId.split("-")[1],
+                )}
                 refreshHandler={handleRefresh}
               />
-            </>
+            </div>
           ),
         },
       ],
     };
   });
 
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <Row>
       <Col size={6}>
         <h2 className="h2-heading--1 font-regular">Subscribers</h2>
         <div className="u-align--right">
-          <Button
-            appearance="positive"
-            className="u-no-margin--bottom"
-            onClick={toggleCreateSubscriberModal}
-          >
+          <Button hasIcon appearance="base" onClick={handleRefresh}>
+            <SlRefresh size={20} />
+          </Button>
+          <Button appearance="positive" onClick={toggleCreateSubscriberModal}>
             Create
           </Button>
         </div>
@@ -102,13 +80,8 @@ export default function Subscribers() {
           defaultSort='"abcd"'
           defaultSortDirection="ascending"
           headers={[
-            {
-              content: "IMSI",
-            },
-            {
-              content: "Actions",
-              className: "u-align--right",
-            },
+            { content: "IMSI" },
+            { content: "Actions", className: "u-align--right" },
           ]}
           rows={tableContent}
         />
@@ -121,7 +94,10 @@ export default function Subscribers() {
         </Button>
       </Col>
       {isCreateSubscriberModalVisible && (
-        <CreateSubscriberModal toggleModal={toggleCreateSubscriberModal} />
+        <CreateSubscriberModal
+          toggleModal={toggleCreateSubscriberModal}
+          onSubscriberCreated={handleRefresh}
+        />
       )}
     </Row>
   );
