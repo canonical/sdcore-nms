@@ -8,11 +8,11 @@ import {
   Row,
   Col,
 } from "@canonical/react-components";
-import DeleteSubscriberButton from "@/components/DeleteSubscriberButton";
 import CreateSubscriberModal from "@/components/CreateSubscriberModal";
 import { getSubscribers } from "@/utils/getSubscribers";
 import { SlRefresh } from "react-icons/sl";
-import deleteSubscriber from "@/utils/deleteSubscriber";
+import { deleteSubscriber } from "@/utils/deleteSubscriber";
+
 export type Subscriber = {
   plmnID: string;
   ueId: string;
@@ -32,6 +32,11 @@ export default function Subscribers() {
     setSubscribers(fetchedSubscribers);
   };
 
+  const handleDeleteSubscriber = async (imsi: string) => {
+    await deleteSubscriber(imsi);
+    handleRefresh();
+  };
+
   useEffect(() => {
     handleRefresh();
     setLoading(false);
@@ -46,13 +51,13 @@ export default function Subscribers() {
         {
           content: (
             <div className="u-align--right">
-              <DeleteSubscriberButton
-                imsi={rawIMSI}
-                currentSubscribers={subscribers.map(
-                  (s) => s.ueId.split("-")[1],
-                )}
-                refreshHandler={handleRefresh}
-              />
+              <Button
+                onClick={() => handleDeleteSubscriber(rawIMSI)}
+                appearance="negative"
+                small
+              >
+                Delete
+              </Button>
             </div>
           ),
         },
