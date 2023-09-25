@@ -16,7 +16,7 @@ function isValidIP(ip: string) {
 }
 
 function isValidMTU(mtu: number) {
-  return mtu >= 1200 && mtu <= 65536;
+  return mtu >= 1200 && mtu <= 65535;
 }
 
 function isValidCIDR(cidr: string) {
