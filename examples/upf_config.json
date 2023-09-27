@@ -1,6 +1,6 @@
 [
     {
-      "hostname": "upf",
+      "hostname": "upf-external",
       "port": "8805"
     },
     {
