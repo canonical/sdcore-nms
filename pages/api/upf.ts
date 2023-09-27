@@ -22,6 +22,7 @@ async function handleGET(req: NextApiRequest, res: NextApiResponse) {
             const upfList = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
             res.status(200).json(upfList);
         } else {
+            console.error('UPF config file does not exist or is not a file');
             res.status(200).json([]);
         }
     } catch (error) {

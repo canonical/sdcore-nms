@@ -68,7 +68,11 @@ export default function NetworkSliceModal({
           method: "GET",
         });
         const data = await response.json();
-        setUpfList(data);
+        if (data.length > 0) {
+          setUpfList(data);
+        } else {
+          setApiError("Failed to retrieve the list of UPF's from the server.");
+        }
       } catch (error) {
         console.error("Error fetching UPF list:", error);
       }
@@ -88,7 +92,11 @@ export default function NetworkSliceModal({
           ...gnb,
           tac: Number(gnb.tac),
         }));
-        setGnbList(data);
+        if (data.length > 0) {
+          setGnbList(data);
+        } else {
+          setApiError("Failed to retrieve the list of GNB's from the server.");
+        }
       } catch (error) {
         console.error("Error fetching GNB list:", error);
       }

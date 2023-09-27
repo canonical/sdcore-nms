@@ -22,6 +22,7 @@ async function handleGET(req: NextApiRequest, res: NextApiResponse) {
             const gnbList = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
             res.status(200).json(gnbList);
         } else {
+            console.error('GNB config file does not exist or is not a file');
             res.status(200).json([]);
         }
     } catch (error) {
