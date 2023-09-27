@@ -91,17 +91,24 @@ export const NetworkSliceTable: React.FC<NetworkSliceTableProps> = ({
   const handleDeviceGroupCreated = async () => {
     const networkSlice = await getNetworkSlice(sliceName);
     setSlice(networkSlice);
-    const DeviceGroups = await Promise.all(
-      networkSlice["site-device-group"].map((name: string) =>
-        getDeviceGroup(name),
-      ),
-    );
-    setDeviceGroupContent(DeviceGroups);
+
+    if (Array.isArray(networkSlice["site-device-group"])) {
+      const DeviceGroups = await Promise.all(
+        networkSlice["site-device-group"].map((name: string) =>
+          getDeviceGroup(name),
+        ),
+      );
+      setDeviceGroupContent(DeviceGroups);
+    } else {
+      setDeviceGroupContent([]);
+    }
   };
 
   if (!slice) {
     return <div>Loading...</div>;
   }
+
+  console.log("Device group content:", deviceGroupContent);
 
   return (
     <>
@@ -208,7 +215,7 @@ export const NetworkSliceTable: React.FC<NetworkSliceTableProps> = ({
                         <MainTable
                           headers={[
                             {
-                              content: deviceGroup?.DeviceGroupName || "N/A",
+                              content: deviceGroup?.["group-name"] || "N/A",
                             },
                             {
                               content: (
@@ -218,7 +225,7 @@ export const NetworkSliceTable: React.FC<NetworkSliceTableProps> = ({
                                     small
                                     onClick={() =>
                                       handleDeleteDeviceGroup(
-                                        deviceGroup.DeviceGroupName,
+                                        deviceGroup?.["group-name"],
                                         slice.SliceName,
                                       )
                                     }
