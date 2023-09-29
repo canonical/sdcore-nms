@@ -5,7 +5,7 @@ export const useSubscriber = (
   opc: string,
   key: string,
   sequenceNumber: string,
-  currentSubscribers: string[]
+  currentSubscribers: string[],
 ) => {
   const handleSubscriber = useCallback(async () => {
     try {
@@ -19,12 +19,14 @@ export const useSubscriber = (
           opc,
           key,
           sequenceNumber,
-          currentSubscribers
+          currentSubscribers,
         }),
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to create subscriber. Error code: ${response.status}`);
+        throw new Error(
+          `Failed to create subscriber. Error code: ${response.status}`,
+        );
       }
     } catch (error) {
       console.error(error);

@@ -1,4 +1,5 @@
 "use client";
+
 import { useState, useEffect } from "react";
 import {
   Button,
@@ -7,118 +8,76 @@ import {
   Row,
   Col,
 } from "@canonical/react-components";
-import { SlRefresh } from "react-icons/sl";
-import EditSubscriber from "@/components/EditSubscriber";
-import DeleteSubscriberButton from "@/components/DeleteSubscriberButton";
 import CreateSubscriberModal from "@/components/CreateSubscriberModal";
-import { checkNetworkConfigured } from "@/utils/checkNetworkConfigured";
-import NetworkConfigurationEmptyState from "@/components/NetworkConfigurationEmptyState";
+import { getSubscribers } from "@/utils/getSubscribers";
+import { SlRefresh } from "react-icons/sl";
+import { deleteSubscriber } from "@/utils/deleteSubscriber";
 
 export type Subscriber = {
   plmnID: string;
   ueId: string;
 };
-export type Subscribers = Subscriber[];
 
 export default function Subscribers() {
   const [loading, setLoading] = useState(true);
-  const [subscribers, setSubscribers] = useState([]);
-  const [refresh, setRefresh] = useState(false);
-  const [isNetworkConfigured, setIsNetworkConfigured] = useState(false);
+  const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
   const [isCreateSubscriberModalVisible, setIsCreateSubscriberModalVisible] =
     useState(false);
+
   const toggleCreateSubscriberModal = () =>
     setIsCreateSubscriberModalVisible((prev) => !prev);
 
-  const currentImsis: string[] = subscribers.map((subscriber: Subscriber) => {
-    return subscriber.ueId.split("-")[1];
-  });
+  const handleRefresh = async () => {
+    const fetchedSubscribers: Subscriber[] = await getSubscribers();
+    setSubscribers(fetchedSubscribers);
+  };
+
+  const handleDeleteSubscriber = async (imsi: string) => {
+    await deleteSubscriber(imsi);
+    handleRefresh();
+  };
 
   useEffect(() => {
-    const init = async () => {
-      const configured = await checkNetworkConfigured();
-      setIsNetworkConfigured(configured);
-      setLoading(false);
-
-      if (configured) {
-        await fetchSubscribers();
-      }
-    };
-
-    init();
+    handleRefresh();
+    setLoading(false);
   }, []);
 
-  useEffect(() => {
-    fetchSubscribers();
-  }, [refresh]);
-
-  const fetchSubscribers = async () => {
-    try {
-      const response = await fetch(`/api/getSubscribers`);
-      if (!response.ok)
-        throw new Error(
-          `Failed to fetch subscribers. Status: ${response.status}`,
-        );
-      setSubscribers(await response.json());
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const handleRefresh = () => {
-    setRefresh(!refresh);
-  };
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (!isNetworkConfigured) return <NetworkConfigurationEmptyState />;
-
-  const tableContent = subscribers.map((subscriber: Subscriber) => {
-    const rawIMSI = subscriber.ueId.split("-")[1];
+  const tableContent = subscribers.map(({ ueId }) => {
+    const rawIMSI = ueId.split("-")[1];
     return {
       key: rawIMSI,
       columns: [
         { content: rawIMSI },
         {
           content: (
-            <>
-              <EditSubscriber
-                imsi={rawIMSI}
-                currentSubscribers={currentImsis}
-                refreshHandler={handleRefresh}
-              />
-              <DeleteSubscriberButton
-                imsi={rawIMSI}
-                currentSubscribers={currentImsis}
-                refreshHandler={handleRefresh}
-              />
-            </>
+            <div className="u-align--right">
+              <Button
+                onClick={() => handleDeleteSubscriber(rawIMSI)}
+                appearance="negative"
+                small
+              >
+                Delete
+              </Button>
+            </div>
           ),
         },
       ],
     };
   });
 
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <Row>
-      <Col size={8}>
+      <Col size={6}>
         <h2 className="h2-heading--1 font-regular">Subscribers</h2>
         <div className="u-align--right">
-          <Button
-            hasIcon={true}
-            disabled={!isNetworkConfigured}
-            className="u-no-margin--bottom"
-            onClick={handleRefresh}
-          >
+          <Button hasIcon appearance="base" onClick={handleRefresh}>
             <SlRefresh size={20} />
           </Button>
-          <Button
-            appearance="positive"
-            className="u-no-margin--bottom"
-            onClick={toggleCreateSubscriberModal}
-          >
+          <Button appearance="positive" onClick={toggleCreateSubscriberModal}>
             Create
           </Button>
         </div>
@@ -126,12 +85,8 @@ export default function Subscribers() {
           defaultSort='"abcd"'
           defaultSortDirection="ascending"
           headers={[
-            {
-              content: "IMSI",
-            },
-            {
-              content: "Actions",
-            },
+            { content: "IMSI" },
+            { content: "Actions", className: "u-align--right" },
           ]}
           rows={tableContent}
         />
@@ -146,7 +101,7 @@ export default function Subscribers() {
       {isCreateSubscriberModalVisible && (
         <CreateSubscriberModal
           toggleModal={toggleCreateSubscriberModal}
-          currentSubscribers={currentImsis}
+          onSubscriberCreated={handleRefresh}
         />
       )}
     </Row>
