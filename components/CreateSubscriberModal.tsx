@@ -127,10 +127,8 @@ export default function CreateSubscriberModal({
         setSlices(fetchedSlices);
 
         if (fetchedSlices.length === 1) {
-          console.log("We are logging here 0 ");
           const singleSlice = fetchedSlices[0];
           setSelectedSlice(singleSlice.SliceName);
-          console.log("Slice: ", singleSlice);
           if (singleSlice["site-device-group"]) {
             setDeviceGroupOptions(singleSlice["site-device-group"]);
             setSelectedDeviceGroup(singleSlice["site-device-group"][0]);
