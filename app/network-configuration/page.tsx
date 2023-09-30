@@ -9,7 +9,7 @@ import {
 } from "@canonical/react-components";
 import { deleteNetworkSlice } from "@/utils/deleteNetworkSlice";
 import { getNetworkSlices } from "@/utils/getNetworkSlices";
-import NetworkSliceModal from "@/components/NetworkSliceModal";
+import CreateNetworkSliceModal from "@/components/CreateNetworkSliceModal";
 import NetworkSliceEmptyState from "@/components/NetworkSliceEmptyState";
 import { NetworkSlice } from "@/components/types";
 import { NetworkSliceTable } from "@/components/NetworkSliceTable";
@@ -17,8 +17,10 @@ import { NetworkSliceTable } from "@/components/NetworkSliceTable";
 export default function NetworkConfiguration() {
   const [loading, setLoading] = useState(true);
   const [networkSlices, setNetworkSlices] = useState<NetworkSlice[]>([]);
-  const [isNetworkSliceModalVisible, setIsNetworkSliceModalVisible] =
-    useState(false);
+  const [
+    isCreateNetworkSliceModalVisible,
+    setisCreateNetworkSliceModalVisible,
+  ] = useState(false);
   const [isDeleteNetworkSliceModalOpen, setIsDeleteNetworkSliceModalOpen] =
     useState(false);
   const [selectedSliceName, setSelectedSliceName] = useState<string | null>(
@@ -35,8 +37,8 @@ export default function NetworkConfiguration() {
     fetchDataAndUpdateState();
   }, []);
 
-  const toggleNetworkSliceModal = () =>
-    setIsNetworkSliceModalVisible((prev) => !prev);
+  const toggleCreateNetworkSliceModal = () =>
+    setisCreateNetworkSliceModalVisible((prev) => !prev);
 
   const openDeleteConfirmationModal = (sliceName: string) => {
     setSelectedSliceName(sliceName);
@@ -52,7 +54,8 @@ export default function NetworkConfiguration() {
     }
   };
 
-  const closeDeleteModal = () => setIsDeleteNetworkSliceModalOpen(false);
+  const closeDeleteNetworkSliceModal = () =>
+    setIsDeleteNetworkSliceModalOpen(false);
 
   if (loading) return <div>Loading...</div>;
 
@@ -68,23 +71,12 @@ export default function NetworkConfiguration() {
     <div>
       <Row>
         <Col size={6}>
-          {isDeleteNetworkSliceModalOpen && (
-            <ConfirmationModal
-              title="Confirm delete"
-              confirmButtonLabel="Delete"
-              onConfirm={handleConfirmDelete}
-              close={closeDeleteModal}
-            >
-              <p>
-                {`This will permanently delete the network slice "${selectedSliceName}".`}
-                <br />
-                You cannot undo this action.
-              </p>
-            </ConfirmationModal>
-          )}
           <h2>Network Slices</h2>
           <div className="u-align--right">
-            <Button appearance="positive" onClick={toggleNetworkSliceModal}>
+            <Button
+              appearance="positive"
+              onClick={toggleCreateNetworkSliceModal}
+            >
               Create
             </Button>
           </div>
@@ -104,11 +96,25 @@ export default function NetworkConfiguration() {
           ))}
         </Col>
       </Row>
-      {isNetworkSliceModalVisible && (
-        <NetworkSliceModal
-          toggleModal={toggleNetworkSliceModal}
+      {isCreateNetworkSliceModalVisible && (
+        <CreateNetworkSliceModal
+          toggleModal={toggleCreateNetworkSliceModal}
           onSliceCreated={fetchDataAndUpdateState}
         />
+      )}
+      {isDeleteNetworkSliceModalOpen && (
+        <ConfirmationModal
+          title="Confirm delete"
+          confirmButtonLabel="Delete"
+          onConfirm={handleConfirmDelete}
+          close={closeDeleteNetworkSliceModal}
+        >
+          <p>
+            {`This will permanently delete the network slice "${selectedSliceName}".`}
+            <br />
+            You cannot undo this action.
+          </p>
+        </ConfirmationModal>
       )}
     </div>
   );

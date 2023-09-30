@@ -25,7 +25,7 @@ interface GnbItem {
   tac: number;
 }
 
-export default function NetworkSliceModal({
+export default function CreateNetworkSliceModal({
   toggleModal,
   onSliceCreated,
 }: NetworkSliceModalProps) {
