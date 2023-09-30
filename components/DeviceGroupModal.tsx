@@ -90,14 +90,16 @@ export default function DeviceGroupModal({
       setApiError("Please select a value for the downstream bitrate.");
       return;
     }
+    const MBRUpstreamBps = MBRUpstreamMbps * 1000000;
+    const MBRDownstreamBps = MBRDownstreamMbps * 1000000;
     try {
       await createDeviceGroup({
         name: name,
         ueIpPool: ueIpPool,
         dns: dns,
         mtu: mtu,
-        MBRUpstreamMbps: MBRUpstreamMbps,
-        MBRDownstreamMbps: MBRDownstreamMbps,
+        MBRUpstreamBps: MBRUpstreamBps,
+        MBRDownstreamBps: MBRDownstreamBps,
         networkSliceName: networkSliceName,
       });
       onDeviceGroupCreated();
