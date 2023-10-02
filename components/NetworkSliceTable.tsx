@@ -108,8 +108,6 @@ export const NetworkSliceTable: React.FC<NetworkSliceTableProps> = ({
     return <div>Loading...</div>;
   }
 
-  console.log("Device group content:", deviceGroupContent);
-
   return (
     <>
       {isDeviceGroupModalVisible && slice?.SliceName && (
