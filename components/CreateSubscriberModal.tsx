@@ -131,7 +131,9 @@ export default function CreateSubscriberModal({
           setSelectedSlice(singleSlice.SliceName);
           if (singleSlice["site-device-group"]) {
             setDeviceGroupOptions(singleSlice["site-device-group"]);
-            setSelectedDeviceGroup(singleSlice["site-device-group"][0]);
+            if (singleSlice["site-device-group"].length >= 1) {
+              setSelectedDeviceGroup(singleSlice["site-device-group"][0]);
+            }
           } else {
             setDeviceGroupOptions([]);
           }
