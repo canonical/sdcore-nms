@@ -14,6 +14,6 @@ export WEBUI_ENDPOINT=http://10.1.182.28:5000
 export UPF_CONFIG_PATH=/path/to/upf_config.json
 export GNB_CONFIG_PATH=/path/to/gnb_config.json
 
-docker pull ghcr.io/canonical/sdcore-nms:0.2
-docker run -it --env UPF_CONFIG_PATH --env GNB_CONFIG_PATH ghcr.io/canonical/sdcore-nms:0.2
+docker pull ghcr.io/canonical/sdcore-nms:0.2.0
+docker run -it --env UPF_CONFIG_PATH --env GNB_CONFIG_PATH ghcr.io/canonical/sdcore-nms:0.2.0
 ```
