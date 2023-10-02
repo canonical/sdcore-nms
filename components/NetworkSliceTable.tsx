@@ -7,6 +7,7 @@ import {
   Button,
   MainTable,
   Icon,
+  ConfirmationModal,
   ICONS,
 } from "@canonical/react-components";
 import { NetworkSlice } from "@/components/types";
@@ -30,42 +31,38 @@ export const NetworkSliceTable: React.FC<NetworkSliceTableProps> = ({
   );
   const [isDeviceGroupModalVisible, setIsDeviceGroupModalVisible] =
     useState(false);
+  const [isDeleteDeviceGroupModalOpen, setIsDeleteDeviceGroupModalOpen] =
+    useState(false);
   const toggleDeviceGroupModal = () => {
     setIsDeviceGroupModalVisible(!isDeviceGroupModalVisible);
   };
-
-  useEffect(() => {
-    const fetchNetworkSlice = async () => {
-      const fetchedSlice = await getNetworkSlice(sliceName);
-      setSlice(fetchedSlice);
-    };
-
-    fetchNetworkSlice();
-  }, [sliceName]);
-
-  useEffect(() => {
-    if (expandedRow && slice && slice["site-device-group"]) {
-      handleViewDeviceGroups(slice["site-device-group"]);
-    }
-  }, [expandedRow, slice]);
-
-  const handleViewDeviceGroups = async (deviceGroupNames: string[]) => {
-    const groupContents = await Promise.all(
-      deviceGroupNames.map((name) => getDeviceGroup(name)),
-    );
-    setDeviceGroupContent(groupContents);
-  };
-
-  const handleToggleRow = (slice: NetworkSlice) => {
-    const sliceKey = `device-groups-${slice.SliceName}`;
-    setExpandedRow(expandedRow === sliceKey ? null : sliceKey);
-  };
-
-  const handleDeleteDeviceGroup = async (
+  const [selectedDeviceGroup, setSelectedDeviceGroup] = useState<string | null>(
+    null,
+  );
+  const [selectedNetworkSlice, setSelectedNetworkSlice] = useState<
+    string | null
+  >(null);
+  const openDeleteConfirmationModal = (
     deviceGroupName: string,
-    networkSliceName: string,
+    sliceName: string,
   ) => {
-    await deleteDeviceGroup({ name: deviceGroupName, networkSliceName });
+    setSelectedDeviceGroup(deviceGroupName);
+    setSelectedNetworkSlice(sliceName);
+    setIsDeleteDeviceGroupModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!selectedDeviceGroup) {
+      return;
+    }
+    if (!selectedNetworkSlice) {
+      return;
+    }
+
+    await deleteDeviceGroup({
+      name: selectedDeviceGroup,
+      networkSliceName: selectedNetworkSlice,
+    });
 
     const updatedSlice = await getNetworkSlice(sliceName);
     setSlice(updatedSlice);
@@ -82,7 +79,35 @@ export const NetworkSliceTable: React.FC<NetworkSliceTableProps> = ({
         setExpandedRow(null);
       }
     }
+    setSelectedDeviceGroup(null);
+    setIsDeleteDeviceGroupModalOpen(false);
   };
+
+  useEffect(() => {
+    const fetchNetworkSliceData = async () => {
+      const fetchedSlice = await getNetworkSlice(sliceName);
+      setSlice(fetchedSlice);
+      if (expandedRow && fetchedSlice && fetchedSlice["site-device-group"]) {
+        fetchAndSetDeviceGroups(fetchedSlice["site-device-group"]);
+      }
+    };
+    fetchNetworkSliceData();
+  }, [sliceName, expandedRow]);
+
+  const fetchAndSetDeviceGroups = async (deviceGroupNames: string[]) => {
+    const groupContents = await Promise.all(
+      deviceGroupNames.map((name) => getDeviceGroup(name)),
+    );
+    setDeviceGroupContent(groupContents);
+  };
+
+  const handleToggleRow = (slice: NetworkSlice) => {
+    const sliceKey = `device-groups-${slice.SliceName}`;
+    setExpandedRow(expandedRow === sliceKey ? null : sliceKey);
+  };
+
+  const closeDeleteDeviceGroupModal = () =>
+    setIsDeleteDeviceGroupModalOpen(false);
 
   const handleCreateDeviceGroup = async () => {
     toggleDeviceGroupModal();
@@ -116,6 +141,20 @@ export const NetworkSliceTable: React.FC<NetworkSliceTableProps> = ({
           onDeviceGroupCreated={handleDeviceGroupCreated}
           networkSliceName={slice.SliceName}
         />
+      )}
+      {isDeleteDeviceGroupModalOpen && (
+        <ConfirmationModal
+          title="Confirm delete"
+          confirmButtonLabel="Delete"
+          onConfirm={handleConfirmDelete}
+          close={closeDeleteDeviceGroupModal}
+        >
+          <p>
+            {`This will permanently delete the device group "${selectedDeviceGroup}" in  network slice "${selectedNetworkSlice}".`}
+            <br />
+            You cannot undo this action.
+          </p>
+        </ConfirmationModal>
       )}
       <MainTable
         expanding
@@ -222,7 +261,7 @@ export const NetworkSliceTable: React.FC<NetworkSliceTableProps> = ({
                                     appearance={"base"}
                                     small
                                     onClick={() =>
-                                      handleDeleteDeviceGroup(
+                                      openDeleteConfirmationModal(
                                         deviceGroup?.["group-name"],
                                         slice.SliceName,
                                       )
