@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import NetworkSliceModal from "@/components/NetworkSliceModal";
+import CreateNetworkSliceModal from "@/components/CreateNetworkSliceModal";
 import { Button, Row, Col, Strip } from "@canonical/react-components";
 
 interface NetworkSliceEmptyStateProps {
@@ -42,7 +42,7 @@ export default function NetworkSliceEmptyState({
       </table>
 
       {isModalVisible && (
-        <NetworkSliceModal
+        <CreateNetworkSliceModal
           toggleModal={toggleModal}
           onSliceCreated={handleSliceCreated}
         />
