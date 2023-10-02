@@ -1,10 +1,4 @@
-<div align="center">
-  <img src="./onf-icon.svg" alt="ONF Icon" width="200" height="200">
-</div>
-<br/>
-<div align="center">
-  <h1>SD-Core NMS</h1>
-</div>
+# SD-Core NMS
 
 A Network Management System for managing the SD-Core 5G core network.
 
