@@ -62,13 +62,13 @@ rockcraft pack -v
 Move the ROCK to Docker's registry
 
 ```bash
-sudo skopeo --insecure-policy copy oci-archive:sdcore-nms_0.1_amd64.rock docker-daemon:sdcore-nms:0.1
+sudo skopeo --insecure-policy copy oci-archive:sdcore-nms_0.2.0_amd64.rock docker-daemon:sdcore-nms:0.2.0
 ```
 
 Run the NMS
 
 ```bash
-docker run -p 3000:3000 sdcore-nms:0.1
+docker run -p 3000:3000 sdcore-nms:0.2.0
 ```
 
 You will have the NMS available in `http://localhost:3000`.
