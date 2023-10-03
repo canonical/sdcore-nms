@@ -7,6 +7,7 @@ import {
   MainTable,
   Row,
   Col,
+  ConfirmationModal,
 } from "@canonical/react-components";
 import CreateSubscriberModal from "@/components/CreateSubscriberModal";
 import { getSubscribers } from "@/utils/getSubscribers";
@@ -23,18 +24,34 @@ export default function Subscribers() {
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
   const [isCreateSubscriberModalVisible, setIsCreateSubscriberModalVisible] =
     useState(false);
-
+  const [isDeleteSubscriberModalOpen, setIsDeleteSubscriberModalOpen] =
+    useState(false);
   const toggleCreateSubscriberModal = () =>
     setIsCreateSubscriberModalVisible((prev) => !prev);
+  const [selectedSubscriber, setSelectedSubscriber] = useState<string | null>(
+    null,
+  );
 
   const handleRefresh = async () => {
     const fetchedSubscribers: Subscriber[] = await getSubscribers();
     setSubscribers(fetchedSubscribers);
   };
 
-  const handleDeleteSubscriber = async (imsi: string) => {
-    await deleteSubscriber(imsi);
+  const openDeleteConfirmationModal = (subscriber: string) => {
+    setSelectedSubscriber(subscriber);
+    setIsDeleteSubscriberModalOpen(true);
+  };
+
+  const closeDeleteSubscriberModal = () =>
+    setIsDeleteSubscriberModalOpen(false);
+
+  const handleConfirmDelete = async () => {
+    if (!selectedSubscriber) {
+      return;
+    }
+    await deleteSubscriber(selectedSubscriber);
     handleRefresh();
+    setIsDeleteSubscriberModalOpen(false);
   };
 
   useEffect(() => {
@@ -52,7 +69,7 @@ export default function Subscribers() {
           content: (
             <div className="u-align--right">
               <Button
-                onClick={() => handleDeleteSubscriber(rawIMSI)}
+                onClick={() => openDeleteConfirmationModal(rawIMSI)}
                 appearance="negative"
                 small
               >
@@ -103,6 +120,20 @@ export default function Subscribers() {
           toggleModal={toggleCreateSubscriberModal}
           onSubscriberCreated={handleRefresh}
         />
+      )}
+      {isDeleteSubscriberModalOpen && (
+        <ConfirmationModal
+          title="Confirm delete"
+          confirmButtonLabel="Delete"
+          onConfirm={handleConfirmDelete}
+          close={closeDeleteSubscriberModal}
+        >
+          <p>
+            {`This will permanently delete the subscriber "${selectedSubscriber}".`}
+            <br />
+            You cannot undo this action.
+          </p>
+        </ConfirmationModal>
       )}
     </Row>
   );
