@@ -1,4 +1,7 @@
 "use client";
+import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
+import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
+import ExpandMoreOutlinedIcon from "@mui/icons-material/ExpandMoreOutlined";
 
 import React, { useState, useEffect } from "react";
 import {
@@ -6,9 +9,7 @@ import {
   Col,
   Button,
   MainTable,
-  Icon,
   ConfirmationModal,
-  ICONS,
 } from "@canonical/react-components";
 import { NetworkSlice } from "@/components/types";
 import { getDeviceGroup } from "@/utils/getDeviceGroup";
@@ -226,7 +227,10 @@ export const NetworkSliceTable: React.FC<NetworkSliceTableProps> = ({
                         handleCreateDeviceGroup();
                       }}
                     >
-                      <Icon name={ICONS.plus} />
+                      <AddOutlinedIcon
+                        fontSize="small"
+                        style={{ color: "#666" }}
+                      />
                     </Button>
                     <Button
                       small
@@ -238,7 +242,10 @@ export const NetworkSliceTable: React.FC<NetworkSliceTableProps> = ({
                       appearance={"base"}
                       onClick={() => handleToggleRow(slice)}
                     >
-                      <Icon name={ICONS.chevronDown} />
+                      <ExpandMoreOutlinedIcon
+                        fontSize="small"
+                        style={{ color: "#666" }}
+                      />
                     </Button>
                   </div>
                 ),
@@ -258,6 +265,7 @@ export const NetworkSliceTable: React.FC<NetworkSliceTableProps> = ({
                               content: (
                                 <div className="u-align--right">
                                   <Button
+                                    hasIcon
                                     appearance={"base"}
                                     small
                                     onClick={() =>
@@ -267,7 +275,10 @@ export const NetworkSliceTable: React.FC<NetworkSliceTableProps> = ({
                                       )
                                     }
                                   >
-                                    <Icon name={ICONS.delete} />
+                                    <DeleteOutlinedIcon
+                                      fontSize="small"
+                                      style={{ color: "#666" }}
+                                    />
                                   </Button>
                                 </div>
                               ),
