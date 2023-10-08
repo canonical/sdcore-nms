@@ -8,15 +8,33 @@ license: Apache-2.0
 platforms:
   amd64:
 
-parts:
-  node:  # FIXME: Node should be installed using `stage-snap`. Bug: https://github.com/canonical/rockcraft/issues/307
-    plugin: nil
-    override-build: |
-      curl -s "https://nodejs.org/dist/v18.16.1/node-v18.16.1-linux-x64.tar.gz" | tar --strip-components=1 -xzf - -C "${CRAFT_PART_INSTALL}"
+package-repositories:
+  - type: apt
+    components: [main]
+    priority: always
+    suites: [nodistro]
+    key-id: 6F71F525282841EEDAF851B42F59B5F99B1BE0B4
+    key-server: https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key
+    url: https://deb.nodesource.com/node_18.x
 
-  frontend:
+services:
+  nms:
+    command: npm run start
+    override: replace
+    startup: enabled
+    working-dir: app
+    environment:
+      UPF_CONFIG_PATH: /etc/upf/upf.json
+      GNB_CONFIG_PATH: /etc/gnb/gnb.json
+      WEBUI_ENDPOINT: http://10.1.182.9:5000
+
+parts:
+
+  nms:
     plugin: nil
     source: .
+    stage-packages:
+      - nodejs
     build-snaps:
       - node/18/stable
     override-build: |
@@ -27,4 +45,4 @@ parts:
       
       cp -r .next ${CRAFT_PART_INSTALL}/app/
       cp -r node_modules ${CRAFT_PART_INSTALL}/app/
-      cp package*.json ${CRAFT_PART_INSTALL}/app/
+      cp package.json ${CRAFT_PART_INSTALL}/app/
