@@ -11,7 +11,7 @@ import {
 } from "@canonical/react-components";
 import CreateSubscriberModal from "@/components/CreateSubscriberModal";
 import { getSubscribers } from "@/utils/getSubscribers";
-import { SlRefresh } from "react-icons/sl";
+import SyncOutlinedIcon from "@mui/icons-material/SyncOutlined";
 import { deleteSubscriber } from "@/utils/deleteSubscriber";
 
 export type Subscriber = {
@@ -92,7 +92,7 @@ export default function Subscribers() {
         <h2 className="h2-heading--1 font-regular">Subscribers</h2>
         <div className="u-align--right">
           <Button hasIcon appearance="base" onClick={handleRefresh}>
-            <SlRefresh size={20} />
+            <SyncOutlinedIcon style={{ color: "#666" }} />
           </Button>
           <Button appearance="positive" onClick={toggleCreateSubscriberModal}>
             Create
