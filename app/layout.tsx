@@ -2,6 +2,7 @@
 import "./globals.scss";
 import { Inter } from "next/font/google";
 import React, { useState, useEffect } from "react";
+import { usePathname } from 'next/navigation'
 import { checkBackendAvailable } from "@/utils/checkBackendAvailable";
 import {
   Notification,
@@ -9,7 +10,6 @@ import {
   List,
   Navigation,
   Row,
-  Strip,
 } from "@canonical/react-components";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -22,6 +22,9 @@ export default function RootLayout({
   const [backendAvailable, setBackendAvailable] = useState<null | boolean>(
     null,
   );
+  const pathname = usePathname()
+
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -53,10 +56,12 @@ export default function RootLayout({
               {
                 label: "Network Configuration",
                 url: "/network-configuration",
+                isSelected: pathname === "/network-configuration",
               },
               {
                 label: "Subscribers",
                 url: "/subscribers",
+                isSelected: pathname === "/subscribers",
               },
             ]}
           />
