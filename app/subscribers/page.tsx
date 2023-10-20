@@ -4,8 +4,6 @@ import React, { useState } from "react";
 import {
   Button,
   MainTable,
-  Row,
-  Col,
   ConfirmationButton,
 } from "@canonical/react-components";
 import CreateSubscriberModal from "@/components/CreateSubscriberModal";
@@ -15,6 +13,8 @@ import { deleteSubscriber } from "@/utils/deleteSubscriber";
 import Loader from "@/components/Loader";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/utils/queryKeys";
+import PageHeader from "@/components/PageHeader";
+import PageContent from "@/components/PageContent";
 
 export type Subscriber = {
   plmnID: string;
@@ -81,17 +81,16 @@ const Subscribers = () => {
   }
 
   return (
-    <Row>
-      <Col size={6}>
-        <h1 className="p-heading--4">Subscribers ({subscribers.length})</h1>
-        <div className="u-align--right">
-          <Button hasIcon appearance="base" onClick={handleRefresh} title="refresh subscriber list">
-            <SyncOutlinedIcon style={{ color: "#666" }} />
-          </Button>
-          <Button appearance="positive" onClick={toggleModal}>
-            Create
-          </Button>
-        </div>
+    <>
+      <PageHeader title={`Subscribers (${subscribers.length})`}>
+        <Button hasIcon appearance="base" onClick={handleRefresh} title="refresh subscriber list">
+          <SyncOutlinedIcon style={{ color: "#666" }} />
+        </Button>
+        <Button appearance="positive" onClick={toggleModal}>
+          Create
+        </Button>
+      </PageHeader>
+      <PageContent>
         <MainTable
           defaultSort='"abcd"'
           defaultSortDirection="ascending"
@@ -101,9 +100,9 @@ const Subscribers = () => {
           ]}
           rows={tableContent}
         />
-      </Col>
+      </PageContent>
       {isModalVisible && <CreateSubscriberModal toggleModal={toggleModal} />}
-    </Row>
+    </>
   );
 };
 export default Subscribers;
