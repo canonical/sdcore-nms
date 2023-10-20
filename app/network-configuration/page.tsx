@@ -1,8 +1,6 @@
 "use client";
 import React, { useState } from "react";
 import {
-  Row,
-  Col,
   Button,
   Card,
   ConfirmationButton,
@@ -15,6 +13,8 @@ import { NetworkSliceTable } from "@/components/NetworkSliceTable";
 import Loader from "@/components/Loader";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/utils/queryKeys";
+import PageHeader from "@/components/PageHeader";
+import PageContent from "@/components/PageContent";
 
 const NetworkConfiguration = () => {
   const queryClient = useQueryClient();
@@ -38,21 +38,18 @@ const NetworkConfiguration = () => {
   }
 
   return (
-    <div>
-      <Row>
-        <Col size={6}>
-          <h1 className="p-heading--4">Network Slices ({networkSlices.length})</h1>
-          {networkSlices.length === 0 && <NetworkSliceEmptyState />}
-          {networkSlices.length > 0 && (
-            <>
-              <div className="u-align--right">
-                <Button
-                  appearance="positive"
-                  onClick={toggleCreateNetworkSliceModal}
-                >
-                  Create
-                </Button>
-              </div>
+    <>
+      {networkSlices.length > 0 && (
+        <PageHeader title={`Network slices (${networkSlices.length})`}>
+            <Button appearance="positive" onClick={toggleCreateNetworkSliceModal}>
+              Create
+            </Button>
+        </PageHeader>
+      )}
+      <PageContent>
+        {networkSlices.length === 0 && <NetworkSliceEmptyState />}
+        {networkSlices.length > 0 && (
+          <>
               {networkSlices.map((slice) => (
                 <Card key={slice.SliceName}>
                   <h2 className="p-heading--5">{slice.SliceName}</h2>
@@ -82,14 +79,13 @@ const NetworkConfiguration = () => {
               ))}
             </>
           )}
-        </Col>
-      </Row>
+      </PageContent>
       {isModalVisible && (
         <CreateNetworkSliceModal
           toggleModal={toggleCreateNetworkSliceModal}
         />
       )}
-    </div>
+    </>
   );
 };
 export default NetworkConfiguration;
