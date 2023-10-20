@@ -1,7 +1,7 @@
 "use client";
 import "./globals.scss";
 import { Inter } from "next/font/google";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { usePathname } from 'next/navigation'
 import { checkBackendAvailable } from "@/utils/checkBackendAvailable";
 import {
@@ -11,8 +11,10 @@ import {
   Navigation,
   Row,
 } from "@canonical/react-components";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const inter = Inter({ subsets: ["latin"] });
+const queryClient = new QueryClient();
 
 export default function RootLayout({
   children,
@@ -23,8 +25,6 @@ export default function RootLayout({
     null,
   );
   const pathname = usePathname()
-
-
 
   useEffect(() => {
     const fetchData = async () => {
@@ -37,6 +37,9 @@ export default function RootLayout({
 
   return (
     <html lang="en">
+      <head>
+        <title>SD Core</title>
+      </head>
       <body className={inter.className}>
         <div
           style={{
@@ -70,7 +73,11 @@ export default function RootLayout({
               {"Backend not available"}
             </Notification>
           )}
-          {backendAvailable === true && children}
+          {backendAvailable === true && (
+            <QueryClientProvider client={queryClient}>
+                {children}
+            </QueryClientProvider>
+          )}
           <div style={{ flex: 1 }}></div>
           <footer className="l-footer--sticky p-strip--light">
             <Row>

@@ -1,150 +1,107 @@
 "use client";
-import { ChangeEvent, useState, useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 import {
-  Button,
   Modal,
   Form,
   Input,
   Select,
+  ActionButton,
 } from "@canonical/react-components";
 import { createSubscriber } from "@/utils/createSubscriber";
 import { getNetworkSlices } from "@/utils/getNetworkSlices";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/utils/queryKeys";
+import * as Yup from "yup";
+import { useFormik } from "formik";
+
+interface SubscriberValues {
+  imsi: string;
+  opc: string;
+  key: string;
+  sequenceNumber: string;
+  selectedSlice: string | null;
+  deviceGroup: string;
+}
 
 type Props = {
   toggleModal: () => void;
-  onSubscriberCreated: () => void;
 };
 
-export default function CreateSubscriberModal({
-  toggleModal,
-  onSubscriberCreated,
-}: Props) {
-  const [imsi, setImsi] = useState<string>("");
-  const [opc, setOpc] = useState<string>("");
-  const [key, setKey] = useState<string>("");
-  const [sequenceNumber, setSequenceNumber] = useState<string>("");
-  const [slices, setSlices] = useState<any[]>([]);
-  const [selectedSlice, setSelectedSlice] = useState<string | null>(null);
-  const [selectedDeviceGroup, setSelectedDeviceGroup] = useState<string>("");
+const CreateSubscriberModal = ({ toggleModal }: Props) => {
+  const queryClient = useQueryClient();
 
-  const [deviceGroupOptions, setDeviceGroupOptions] = useState<string[]>([]);
+  const SubscriberSchema = Yup.object().shape({
+    imsi: Yup.string().min(14).max(15)
+      .matches(/^[0-9]+$/, { message: 'Only numbers are allowed.'})
+      .required("IMSI must be 14 or 15 digits"),
+    opc: Yup.string().length(32)
+      .matches(/^[A-Za-z0-9]+$/, { message: 'Only alphanumeric characters are allowed.'})
+      .required("OPC must be a 32 character hexadecimal"),
+    key: Yup.string().length(32)
+      .matches(/^[A-Za-z0-9]+$/, { message: 'Only alphanumeric characters are allowed.'})
+      .required("Key must be a 32 character hexadecimal"),
+    sequenceNumber: Yup.string().required("Sequence number is required"),
+    deviceGroup: Yup.string().required(""),
+  });
 
-  const [IMSIValidationError, setIMSIValidationError] = useState<string | null>(
-    null,
-  );
-  const [OPCValidationError, setOPCValidationError] = useState<string | null>(
-    null,
-  );
-  const [KeyValidationError, setKeyValidationError] = useState<string | null>(
-    null,
-  );
+  const formik = useFormik<SubscriberValues>({
+    initialValues: {
+      imsi: "",
+      opc: "",
+      key: "",
+      sequenceNumber: "",
+      selectedSlice: null,
+      deviceGroup: "",
+    },
+    validationSchema: SubscriberSchema,
+    onSubmit: async (values) => {
+      await createSubscriber({
+        imsi: values.imsi,
+        plmnId: "20893",
+        opc: values.opc,
+        key: values.key,
+        sequenceNumber: values.sequenceNumber,
+        deviceGroupName: values.deviceGroup,
+      });
+      void queryClient.invalidateQueries({ queryKey: [queryKeys.subscribers] });
+      toggleModal();
+    },
+  });
 
-  const isCreateDisabled =
-    !imsi ||
-    !opc ||
-    !key ||
-    !sequenceNumber ||
-    !selectedSlice ||
-    deviceGroupOptions.length === 0 ||
-    IMSIValidationError !== null ||
-    OPCValidationError !== null ||
-    KeyValidationError !== null;
+  const { data: slices = [] } = useQuery({
+    queryKey: [queryKeys.networkSlices],
+    queryFn: getNetworkSlices,
+  });
 
-  const handleImsiChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value;
-    setImsi(value);
-    setIMSIValidationError(null);
-  };
+  const selectedSlice = slices.find((slice) => slice.SliceName === formik.values.selectedSlice);
 
-  const handleOpcChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value;
-    setOpc(value);
-    setOPCValidationError(null);
-  };
-
-  const handleKeyChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value;
-    setKey(value);
-    setKeyValidationError(null);
-  };
-
-  const handleSequenceNumberChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value;
-    setSequenceNumber(value);
-  };
-
-  const handleNetworkSliceChange = (event: ChangeEvent<HTMLSelectElement>) => {
-    const selected = event.target.value;
-    setSelectedSlice(selected);
-
-    const matchedSlice = slices.find((slice) => slice.SliceName === selected);
-    if (matchedSlice && matchedSlice["site-device-group"]) {
-      setDeviceGroupOptions(matchedSlice["site-device-group"]);
-      if (matchedSlice["site-device-group"].length === 1) {
-        setSelectedDeviceGroup(matchedSlice["site-device-group"][0]);
-      }
-    } else {
-      setDeviceGroupOptions([]);
+  const setDeviceGroup = useCallback((deviceGroup: string) => {
+    if (formik.values.deviceGroup !== deviceGroup) {
+      formik.setFieldValue("deviceGroup", deviceGroup);
     }
-  };
-
-  const handleDeviceGroupChange = (event: ChangeEvent<HTMLSelectElement>) => {
-    setSelectedDeviceGroup(event.target.value);
-  };
-
-  const handleSave = async () => {
-    if (imsi.length < 14 || imsi.length > 15) {
-      setIMSIValidationError("IMSI must be 14 or 15 digits.");
-      return;
-    }
-
-    if (opc.length !== 32) {
-      setOPCValidationError("OPC must be a 32 character hexadecimal.");
-      return;
-    }
-
-    if (key.length !== 32) {
-      setKeyValidationError("Key must be a 32 character hexadecimal.");
-      return;
-    }
-
-    await createSubscriber({
-      imsi: imsi,
-      plmnId: "20893",
-      opc: opc,
-      key: key,
-      sequenceNumber: sequenceNumber,
-      deviceGroupName: selectedDeviceGroup,
-    });
-    onSubscriberCreated();
-    toggleModal();
-  };
+  }, [formik]);
 
   useEffect(() => {
-    const fetchSlices = async () => {
-      try {
-        const fetchedSlices = await getNetworkSlices();
-        setSlices(fetchedSlices);
+    if (selectedSlice && selectedSlice["site-device-group"] && selectedSlice["site-device-group"].length === 1) {
+      setDeviceGroup(selectedSlice["site-device-group"][0]);
+    } else {
+      setDeviceGroup("");
+    }
+  }, [slices, selectedSlice, setDeviceGroup]);
 
-        if (fetchedSlices.length === 1) {
-          const singleSlice = fetchedSlices[0];
-          setSelectedSlice(singleSlice.SliceName);
-          if (singleSlice["site-device-group"]) {
-            setDeviceGroupOptions(singleSlice["site-device-group"]);
-            if (singleSlice["site-device-group"].length >= 1) {
-              setSelectedDeviceGroup(singleSlice["site-device-group"][0]);
-            }
-          } else {
-            setDeviceGroupOptions([]);
-          }
-        }
-      } catch (error) {
-        console.error("Failed to fetch network slices:", error);
-      }
-    };
+  const setSelectedSlice = useCallback((newSlice: string) => {
+    if (formik.values.selectedSlice !== newSlice) {
+      formik.setFieldValue("selectedSlice", newSlice);
+    }
+  }, [formik]);
 
-    fetchSlices();
-  }, []);
+  useEffect(() => {
+    if (!selectedSlice && slices.length > 0) {
+      setSelectedSlice(slices[0].SliceName);
+    }
+  }, [slices, selectedSlice, setSelectedSlice]);
+
+  const deviceGroupOptions = selectedSlice && selectedSlice["site-device-group"] ? selectedSlice["site-device-group"] : [];
 
   return (
     <Modal
@@ -152,14 +109,15 @@ export default function CreateSubscriberModal({
       title="Add New Subscriber"
       buttonRow={
         <>
-          <Button
-            onClick={handleSave}
+          <ActionButton
             appearance="positive"
-            disabled={isCreateDisabled}
             className="u-no-margin--bottom"
+            onClick={formik.submitForm}
+            disabled={!(formik.isValid && formik.dirty)}
+            loading={formik.isSubmitting}
           >
             Create
-          </Button>
+          </ActionButton>
         </>
       }
     >
@@ -169,46 +127,50 @@ export default function CreateSubscriberModal({
           placeholder="208930100007487"
           id="imsi"
           label="IMSI"
-          onChange={handleImsiChange}
           stacked
-          error={IMSIValidationError}
-          required={true}
+          required
+          {...formik.getFieldProps("imsi")}
+          error={formik.touched.imsi ? formik.errors.imsi : null}
         />
         <Input
           type="text"
           id="opc"
           placeholder="981d464c7c52eb6e5036234984ad0bcf"
           label="OPC"
-          onChange={handleOpcChange}
+          help="Operator code"
           stacked
-          error={OPCValidationError}
-          required={true}
+          required
+          {...formik.getFieldProps("opc")}
+          error={formik.touched.opc ? formik.errors.opc : null}
         />
         <Input
           type="text"
           id="key"
           placeholder="5122250214c33e723a5dd523fc145fc0"
           label="Key"
-          onChange={handleKeyChange}
+          help="Permanent subscription key"
           stacked
-          error={KeyValidationError}
-          required={true}
+          required
+          {...formik.getFieldProps("key")}
+          error={formik.touched.key ? formik.errors.key : null}
         />
         <Input
           type="text"
           id="sequence-number"
           placeholder="16f3b3f70fc2"
           label="Sequence Number"
-          onChange={handleSequenceNumberChange}
           stacked
-          required={true}
+          required
+          {...formik.getFieldProps("sequenceNumber")}
+          error={formik.touched.sequenceNumber ? formik.errors.sequenceNumber : null}
         />
         <Select
           id="network-slice"
           label="Network Slice"
           stacked
-          required={true}
-          onChange={handleNetworkSliceChange}
+          required
+          {...formik.getFieldProps("selectedSlice")}
+          error={formik.touched.selectedSlice ? formik.errors.selectedSlice : null}
           options={[
             {
               disabled: true,
@@ -225,8 +187,9 @@ export default function CreateSubscriberModal({
           id="device-group"
           label="Device Group"
           stacked
-          required={true}
-          onChange={handleDeviceGroupChange}
+          required
+          {...formik.getFieldProps("deviceGroup")}
+          error={formik.touched.deviceGroup ? formik.errors.deviceGroup : null}
           options={[
             {
               disabled: true,
@@ -242,4 +205,6 @@ export default function CreateSubscriberModal({
       </Form>
     </Modal>
   );
-}
+};
+
+export default CreateSubscriberModal;

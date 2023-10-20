@@ -4,11 +4,7 @@ export const checkNetworkSliceExists = async () => {
       method: "GET",
     });
 
-    if (response.status === 200) {
-      return true;
-    } else {
-      return false;
-    }
+    return response.status === 200;
   } catch (error) {
     return false;
   }

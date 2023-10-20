@@ -8,7 +8,7 @@ type Props = {
   refreshHandler: () => void;
 };
 
-export default function DeleteSubscriberButton(props: Props) {
+const DeleteSubscriberButton = (props: Props) => {
   const [deleting, setDeleting] = useState<boolean>(false);
 
   const handleDeleteSubscriber = async () => {
@@ -47,4 +47,6 @@ export default function DeleteSubscriberButton(props: Props) {
       {deleting ? "Deleting..." : "Delete"}
     </Button>
   );
-}
+};
+
+export default DeleteSubscriberButton;
