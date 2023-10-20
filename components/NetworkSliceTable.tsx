@@ -1,170 +1,53 @@
 "use client";
-import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
 import ExpandMoreOutlinedIcon from "@mui/icons-material/ExpandMoreOutlined";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
-  Row,
-  Col,
   Button,
   MainTable,
-  ConfirmationModal,
 } from "@canonical/react-components";
-import { NetworkSlice } from "@/components/types";
-import { getDeviceGroup } from "@/utils/getDeviceGroup";
-import { deleteDeviceGroup } from "@/utils/deleteDeviceGroup";
-import { getNetworkSlice } from "@/utils/getNetworkSlice";
 import DeviceGroupModal from "@/components/DeviceGroupModal";
+import { queryKeys } from "@/utils/queryKeys";
+import { useQueryClient } from "@tanstack/react-query";
+import { NetworkSlice } from "@/components/types";
+import { NetworkSliceGroups } from "@/components/NetworkSliceGroups";
 
 type NetworkSliceTableProps = {
-  sliceName: string;
+  slice: NetworkSlice;
 };
 
 export const NetworkSliceTable: React.FC<NetworkSliceTableProps> = ({
-  sliceName,
+  slice,
 }) => {
-  const [slice, setSlice] = useState<NetworkSlice | null>(null);
-
-  const [expandedRow, setExpandedRow] = useState<string | null>(null);
-  const [deviceGroupContent, setDeviceGroupContent] = useState<any[] | null>(
-    null,
-  );
-  const [isDeviceGroupModalVisible, setIsDeviceGroupModalVisible] =
-    useState(false);
-  const [isDeleteDeviceGroupModalOpen, setIsDeleteDeviceGroupModalOpen] =
-    useState(false);
-  const toggleDeviceGroupModal = () => {
-    setIsDeviceGroupModalVisible(!isDeviceGroupModalVisible);
-  };
-  const [selectedDeviceGroup, setSelectedDeviceGroup] = useState<string | null>(
-    null,
-  );
-  const [selectedNetworkSlice, setSelectedNetworkSlice] = useState<
-    string | null
-  >(null);
-  const openDeleteConfirmationModal = (
-    deviceGroupName: string,
-    sliceName: string,
-  ) => {
-    setSelectedDeviceGroup(deviceGroupName);
-    setSelectedNetworkSlice(sliceName);
-    setIsDeleteDeviceGroupModalOpen(true);
-  };
-
-  const handleConfirmDelete = async () => {
-    if (!selectedDeviceGroup) {
-      return;
-    }
-    if (!selectedNetworkSlice) {
-      return;
-    }
-
-    await deleteDeviceGroup({
-      name: selectedDeviceGroup,
-      networkSliceName: selectedNetworkSlice,
-    });
-
-    const updatedSlice = await getNetworkSlice(sliceName);
-    setSlice(updatedSlice);
-
-    if (updatedSlice["site-device-group"]) {
-      const updatedDeviceGroups = await Promise.all(
-        updatedSlice["site-device-group"].map((name: string) =>
-          getDeviceGroup(name),
-        ),
-      );
-      setDeviceGroupContent(updatedDeviceGroups);
-
-      if (updatedDeviceGroups.length === 0) {
-        setExpandedRow(null);
-      }
-    }
-    setSelectedDeviceGroup(null);
-    setIsDeleteDeviceGroupModalOpen(false);
-  };
-
-  useEffect(() => {
-    const fetchNetworkSliceData = async () => {
-      const fetchedSlice = await getNetworkSlice(sliceName);
-      setSlice(fetchedSlice);
-      if (expandedRow && fetchedSlice && fetchedSlice["site-device-group"]) {
-        fetchAndSetDeviceGroups(fetchedSlice["site-device-group"]);
-      }
-    };
-    fetchNetworkSliceData();
-  }, [sliceName, expandedRow]);
-
-  const fetchAndSetDeviceGroups = async (deviceGroupNames: string[]) => {
-    const groupContents = await Promise.all(
-      deviceGroupNames.map((name) => getDeviceGroup(name)),
-    );
-    setDeviceGroupContent(groupContents);
-  };
-
-  const handleToggleRow = (slice: NetworkSlice) => {
-    const sliceKey = `device-groups-${slice.SliceName}`;
-    setExpandedRow(expandedRow === sliceKey ? null : sliceKey);
-  };
-
-  const closeDeleteDeviceGroupModal = () =>
-    setIsDeleteDeviceGroupModalOpen(false);
-
-  const handleCreateDeviceGroup = async () => {
-    toggleDeviceGroupModal();
-  };
+  const queryClient = useQueryClient();
+  const [isExpanded, setExpanded] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const toggleModal = () => setIsModalVisible(!isModalVisible);
 
   const handleDeviceGroupCreated = async () => {
-    const networkSlice = await getNetworkSlice(sliceName);
-    setSlice(networkSlice);
-
-    if (Array.isArray(networkSlice["site-device-group"])) {
-      const DeviceGroups = await Promise.all(
-        networkSlice["site-device-group"].map((name: string) =>
-          getDeviceGroup(name),
-        ),
-      );
-      setDeviceGroupContent(DeviceGroups);
-    } else {
-      setDeviceGroupContent([]);
-    }
+    await queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
+    await queryClient.invalidateQueries({ queryKey: [queryKeys.allDeviceGroups, slice.SliceName] });
   };
-
-  if (!slice) {
-    return <div>Loading...</div>;
-  }
 
   return (
     <>
-      {isDeviceGroupModalVisible && slice?.SliceName && (
+      {isModalVisible && slice?.SliceName && (
         <DeviceGroupModal
-          toggleModal={toggleDeviceGroupModal}
+          toggleModal={toggleModal}
           onDeviceGroupCreated={handleDeviceGroupCreated}
           networkSliceName={slice.SliceName}
         />
-      )}
-      {isDeleteDeviceGroupModalOpen && (
-        <ConfirmationModal
-          title="Confirm delete"
-          confirmButtonLabel="Delete"
-          onConfirm={handleConfirmDelete}
-          close={closeDeleteDeviceGroupModal}
-        >
-          <p>
-            {`This will permanently delete the device group "${selectedDeviceGroup}" in  network slice "${selectedNetworkSlice}".`}
-            <br />
-            You cannot undo this action.
-          </p>
-        </ConfirmationModal>
       )}
       <MainTable
         expanding
         headers={[
           {
-            content: "",
+            content: "Key",
           },
           {
-            content: "",
+            content: "Value",
+            className: "u-align--right",
           },
         ]}
         rows={[
@@ -223,9 +106,8 @@ export const NetworkSliceTable: React.FC<NetworkSliceTableProps> = ({
                       small
                       hasIcon
                       appearance={"base"}
-                      onClick={() => {
-                        handleCreateDeviceGroup();
-                      }}
+                      onClick={toggleModal}
+                      title="add device group"
                     >
                       <AddOutlinedIcon
                         fontSize="small"
@@ -240,136 +122,20 @@ export const NetworkSliceTable: React.FC<NetworkSliceTableProps> = ({
                         slice["site-device-group"].length === 0
                       }
                       appearance={"base"}
-                      onClick={() => handleToggleRow(slice)}
+                      onClick={() => setExpanded(!isExpanded)}
+                      title="expand device groups"
                     >
                       <ExpandMoreOutlinedIcon
                         fontSize="small"
-                        style={{ color: "#666" }}
+                        style={{ color: "#666", transform: isExpanded ? "rotate(180deg)" : "rotate(0)" }}
                       />
                     </Button>
                   </div>
                 ),
               },
             ],
-            expandedContent:
-              deviceGroupContent && deviceGroupContent.length > 0
-                ? deviceGroupContent.map((deviceGroup, index: number) => (
-                    <Row key={`deviceGroupRow-${index}`}>
-                      <Col size={8}>
-                        <MainTable
-                          headers={[
-                            {
-                              content: deviceGroup?.["group-name"] || "N/A",
-                            },
-                            {
-                              content: (
-                                <div className="u-align--right">
-                                  <Button
-                                    hasIcon
-                                    appearance={"base"}
-                                    small
-                                    onClick={() =>
-                                      openDeleteConfirmationModal(
-                                        deviceGroup?.["group-name"],
-                                        slice.SliceName,
-                                      )
-                                    }
-                                  >
-                                    <DeleteOutlinedIcon
-                                      fontSize="small"
-                                      style={{ color: "#666" }}
-                                    />
-                                  </Button>
-                                </div>
-                              ),
-                              className: "u-align--right",
-                            },
-                          ]}
-                          rows={[
-                            {
-                              columns: [
-                                { content: "Subscriber IP Pool" },
-                                {
-                                  content:
-                                    deviceGroup?.["ip-domain-expanded"]?.[
-                                      "ue-ip-pool"
-                                    ] || "N/A",
-
-                                  className: "u-align--right",
-                                },
-                              ],
-                            },
-                            {
-                              columns: [
-                                { content: "DNS" },
-                                {
-                                  content:
-                                    deviceGroup?.["ip-domain-expanded"]?.[
-                                      "dns-primary"
-                                    ] || "N/A",
-
-                                  className: "u-align--right",
-                                },
-                              ],
-                            },
-                            {
-                              columns: [
-                                { content: "MTU" },
-                                {
-                                  content:
-                                    deviceGroup?.["ip-domain-expanded"]?.[
-                                      "mtu"
-                                    ] || "N/A",
-
-                                  className: "u-align--right",
-                                },
-                              ],
-                            },
-                            {
-                              columns: [
-                                {
-                                  content: "Maximum Bitrate - Downstream",
-                                },
-                                {
-                                  content: deviceGroup?.[
-                                    "ip-domain-expanded"
-                                  ]?.["ue-dnn-qos"]?.["dnn-mbr-downlink"]
-                                    ? `${
-                                        deviceGroup?.["ip-domain-expanded"]?.[
-                                          "ue-dnn-qos"
-                                        ]?.["dnn-mbr-downlink"] / 1_000_000
-                                      } Mbps`
-                                    : "N/A",
-                                  className: "u-align--right",
-                                },
-                              ],
-                            },
-                            {
-                              columns: [
-                                {
-                                  content: "Maximum Bitrate - Upstream",
-                                },
-                                {
-                                  content: deviceGroup?.[
-                                    "ip-domain-expanded"
-                                  ]?.["ue-dnn-qos"]?.["dnn-mbr-uplink"]
-                                    ? `${
-                                        deviceGroup?.["ip-domain-expanded"]?.[
-                                          "ue-dnn-qos"
-                                        ]?.["dnn-mbr-uplink"] / 1_000_000
-                                      } Mbps`
-                                    : "N/A",
-                                  className: "u-align--right",
-                                },
-                              ],
-                            },
-                          ]}
-                        />
-                      </Col>
-                    </Row>
-                  ))
-                : null,
-            expanded: expandedRow === `device-groups-${slice.SliceName}`,
+            expandedContent: <NetworkSliceGroups slice={slice} isExpanded={isExpanded} />,
+            expanded: isExpanded,
             key: `device-groups-${slice.SliceName}`,
           },
         ]}

@@ -1,4 +1,6 @@
-export const getNetworkSlice = async (sliceName: string) => {
+import { NetworkSlice } from "@/components/types";
+
+export const getNetworkSlice = async (sliceName: string): Promise<NetworkSlice> => {
   try {
     const response = await fetch(`/api/network-slice/${sliceName}`, {
       method: "GET",

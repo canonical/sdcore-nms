@@ -3,31 +3,21 @@ import React, { useState } from "react";
 import CreateNetworkSliceModal from "@/components/CreateNetworkSliceModal";
 import { Button, Row, Col, Strip } from "@canonical/react-components";
 
-interface NetworkSliceEmptyStateProps {
-  onSliceCreatedInEmptyState: () => void;
-}
-
-export default function NetworkSliceEmptyState({
-  onSliceCreatedInEmptyState,
-}: NetworkSliceEmptyStateProps) {
+const NetworkSliceEmptyState = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   const toggleModal = () => {
     setIsModalVisible(!isModalVisible);
   };
 
-  const handleSliceCreated = () => {
-    onSliceCreatedInEmptyState();
-  };
-
   return (
     <div>
-      <table aria-label="Vanilla framework no content empty state">
+      <table>
         <caption>
           <Strip>
             <Row>
               <Col size={8} medium={4} small={3} className="u-align--left">
-                <p className="p-heading--4">No network slice available</p>
+                <p className="p-heading--4">No network slices available</p>
                 <Button
                   appearance="positive"
                   className="mt-8"
@@ -44,9 +34,9 @@ export default function NetworkSliceEmptyState({
       {isModalVisible && (
         <CreateNetworkSliceModal
           toggleModal={toggleModal}
-          onSliceCreated={handleSliceCreated}
         />
       )}
     </div>
   );
-}
+};
+export default NetworkSliceEmptyState;

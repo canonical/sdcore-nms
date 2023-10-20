@@ -1,63 +1,45 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Button,
-  Badge,
   MainTable,
   Row,
   Col,
-  ConfirmationModal,
+  ConfirmationButton,
 } from "@canonical/react-components";
 import CreateSubscriberModal from "@/components/CreateSubscriberModal";
 import { getSubscribers } from "@/utils/getSubscribers";
 import SyncOutlinedIcon from "@mui/icons-material/SyncOutlined";
 import { deleteSubscriber } from "@/utils/deleteSubscriber";
+import Loader from "@/components/Loader";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/utils/queryKeys";
 
 export type Subscriber = {
   plmnID: string;
   ueId: string;
 };
 
-export default function Subscribers() {
-  const [loading, setLoading] = useState(true);
-  const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
-  const [isCreateSubscriberModalVisible, setIsCreateSubscriberModalVisible] =
-    useState(false);
-  const [isDeleteSubscriberModalOpen, setIsDeleteSubscriberModalOpen] =
-    useState(false);
-  const toggleCreateSubscriberModal = () =>
-    setIsCreateSubscriberModalVisible((prev) => !prev);
-  const [selectedSubscriber, setSelectedSubscriber] = useState<string | null>(
-    null,
-  );
+const Subscribers = () => {
+  const queryClient = useQueryClient();
+  const [isModalVisible, setModalVisible] = useState(false);
+
+  const { data: subscribers = [], isLoading: loading } = useQuery({
+    queryKey: [queryKeys.subscribers],
+    queryFn: getSubscribers,
+  });
 
   const handleRefresh = async () => {
-    const fetchedSubscribers: Subscriber[] = await getSubscribers();
-    setSubscribers(fetchedSubscribers);
+    void queryClient.invalidateQueries({ queryKey: [queryKeys.subscribers] });
   };
 
-  const openDeleteConfirmationModal = (subscriber: string) => {
-    setSelectedSubscriber(subscriber);
-    setIsDeleteSubscriberModalOpen(true);
+  const handleConfirmDelete = async (subscriber: string) => {
+    await deleteSubscriber(subscriber);
+    void handleRefresh();
   };
 
-  const closeDeleteSubscriberModal = () =>
-    setIsDeleteSubscriberModalOpen(false);
-
-  const handleConfirmDelete = async () => {
-    if (!selectedSubscriber) {
-      return;
-    }
-    await deleteSubscriber(selectedSubscriber);
-    handleRefresh();
-    setIsDeleteSubscriberModalOpen(false);
-  };
-
-  useEffect(() => {
-    handleRefresh();
-    setLoading(false);
-  }, []);
+  const toggleModal = () => setModalVisible((prev) => !prev);
 
   const tableContent = subscribers.map(({ ueId }) => {
     const rawIMSI = ueId.split("-")[1];
@@ -68,13 +50,25 @@ export default function Subscribers() {
         {
           content: (
             <div className="u-align--right">
-              <Button
-                onClick={() => openDeleteConfirmationModal(rawIMSI)}
+              <ConfirmationButton
                 appearance="negative"
-                small
+                className="u-no-margin--bottom"
+                shiftClickEnabled
+                showShiftClickHint
+                confirmationModalProps={{
+                  title: "Confirm Delete",
+                  confirmButtonLabel: "Delete",
+                  onConfirm: () => handleConfirmDelete(rawIMSI),
+                  children: (
+                    <p>
+                      This will permanently delete the subscriber <b>{rawIMSI}</b><br/>
+                      This action cannot be undone.
+                    </p>
+                  ),
+                }}
               >
                 Delete
-              </Button>
+              </ConfirmationButton>
             </div>
           ),
         },
@@ -83,18 +77,18 @@ export default function Subscribers() {
   });
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <Loader text="Loading..." />;
   }
 
   return (
     <Row>
       <Col size={6}>
-        <h2 className="h2-heading--1 font-regular">Subscribers</h2>
+        <h1 className="p-heading--4">Subscribers ({subscribers.length})</h1>
         <div className="u-align--right">
-          <Button hasIcon appearance="base" onClick={handleRefresh}>
+          <Button hasIcon appearance="base" onClick={handleRefresh} title="refresh subscriber list">
             <SyncOutlinedIcon style={{ color: "#666" }} />
           </Button>
-          <Button appearance="positive" onClick={toggleCreateSubscriberModal}>
+          <Button appearance="positive" onClick={toggleModal}>
             Create
           </Button>
         </div>
@@ -107,34 +101,10 @@ export default function Subscribers() {
           ]}
           rows={tableContent}
         />
-        <Button className="p-chip">
-          total
-          <Badge
-            badgeType="UNDEFINED_LARGE_NUMBER"
-            value={subscribers.length}
-          />
-        </Button>
       </Col>
-      {isCreateSubscriberModalVisible && (
-        <CreateSubscriberModal
-          toggleModal={toggleCreateSubscriberModal}
-          onSubscriberCreated={handleRefresh}
-        />
-      )}
-      {isDeleteSubscriberModalOpen && (
-        <ConfirmationModal
-          title="Confirm delete"
-          confirmButtonLabel="Delete"
-          onConfirm={handleConfirmDelete}
-          close={closeDeleteSubscriberModal}
-        >
-          <p>
-            {`This will permanently delete the subscriber "${selectedSubscriber}".`}
-            <br />
-            You cannot undo this action.
-          </p>
-        </ConfirmationModal>
-      )}
+      {isModalVisible && <CreateSubscriberModal toggleModal={toggleModal} />}
     </Row>
   );
-}
+};
+export default Subscribers;
+

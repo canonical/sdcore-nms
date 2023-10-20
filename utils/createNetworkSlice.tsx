@@ -50,12 +50,18 @@ export const createNetworkSlice = async ({
     });
 
     if (!response.ok) {
+      const result = await response.json();
+      if (result.error) {
+        throw new Error(result.error);
+      }
+      debugger;
       throw new Error(`Error creating network. Error code: ${response.status}`);
     }
 
     return response.json();
-  } catch (error) {
+  } catch (error: unknown) {
     console.error(error);
-    throw new Error("Failed to configure the network.");
+    const details = error instanceof Error ? error.message : "Failed to configure the network.";
+    throw new Error(details);
   }
 };
