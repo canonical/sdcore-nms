@@ -3,6 +3,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 const WEBUI_ENDPOINT = process.env.WEBUI_ENDPOINT;
 
+
 export default async function handleNetworkSlice(req: NextApiRequest, res: NextApiResponse) {
   switch (req.method) {
     case "GET":
@@ -21,7 +22,20 @@ function isValidName(name: string): boolean {
   return /^[a-zA-Z0-9-_]+$/.test(name);
 }
 
-
+/**
+ * @openapi
+ * /api/network-slice/{sliceID}:
+ *   get:
+ *     description: Returns the list of network slices
+ *     parameters:
+ *       - name: sliceID
+ *         in: path
+ *         required: true
+ *         type: string
+ *     responses:
+ *       200:
+ *         description: List of network slices
+ */
 async function handleGET(req: NextApiRequest, res: NextApiResponse) {
   const { name } = req.query
 
@@ -64,7 +78,17 @@ async function handleGET(req: NextApiRequest, res: NextApiResponse) {
 }
 
 
-
+/**
+ * @openapi
+ * /api/network-slice/{sliceID}:
+ *   post:
+ *     description: Create a new network slice
+ *     parameters:
+ *       - name: slice ID
+ *         in: path
+ *         required: true
+ *         type: string
+ */
 async function handlePOST(req: NextApiRequest, res: NextApiResponse) {
   const { name } = req.query
 

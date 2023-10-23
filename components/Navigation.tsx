@@ -5,7 +5,7 @@ import Logo from "./Logo";
 import { usePathname } from "next/navigation";
 
 const Navigation: FC = () => {
-  const pathname = usePathname()
+  const pathname = usePathname();
   const [isCollapsed, setCollapsed] = useState(false);
 
   const softToggleMenu = () => {
@@ -69,7 +69,11 @@ const Navigation: FC = () => {
                       className="p-side-navigation__link"
                       href="/network-configuration"
                       title="Network slices"
-                      aria-current={pathname === "/network-configuration" ? "page" : undefined}
+                      aria-current={
+                        pathname === "/network-configuration"
+                          ? "page"
+                          : undefined
+                      }
                     >
                       <Icon
                         className="is-light p-side-navigation__icon"
@@ -83,7 +87,9 @@ const Navigation: FC = () => {
                       className="p-side-navigation__link"
                       href={`/subscribers`}
                       title={`Subscribers`}
-                      aria-current={pathname === "/subscribers" ? "page" : undefined}
+                      aria-current={
+                        pathname === "/subscribers" ? "page" : undefined
+                      }
                     >
                       <Icon
                         className="is-light p-side-navigation__icon"
@@ -94,6 +100,19 @@ const Navigation: FC = () => {
                   </li>
                 </ul>
                 <ul className="p-side-navigation__list sidenav-bottom-ul">
+                  <li className="p-side-navigation__item">
+                    <a
+                      className="p-side-navigation__link"
+                      href="/api"
+                      title="API"
+                    >
+                      <Icon
+                        className="is-light p-side-navigation__icon"
+                        name="code"
+                      />{" "}
+                      API
+                    </a>
+                  </li>
                   <li className="p-side-navigation__item">
                     <a
                       className="p-side-navigation__link"
@@ -119,7 +138,7 @@ const Navigation: FC = () => {
                     >
                       <Icon
                         className="is-light p-side-navigation__icon"
-                        name="code"
+                        name="submit-bug"
                       />{" "}
                       Report a bug
                     </a>
@@ -130,7 +149,9 @@ const Navigation: FC = () => {
             <div className="sidenav-toggle-wrapper">
               <Button
                 appearance="base"
-                aria-label={`${isCollapsed ? "expand" : "collapse"} main navigation`}
+                aria-label={`${
+                  isCollapsed ? "expand" : "collapse"
+                } main navigation`}
                 hasIcon
                 dense
                 className="sidenav-toggle is-dark u-no-margin l-navigation-collapse-toggle u-hide--small"
