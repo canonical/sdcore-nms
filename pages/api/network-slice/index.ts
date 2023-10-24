@@ -4,9 +4,11 @@ import { NextApiRequest, NextApiResponse } from "next";
 const WEBUI_ENDPOINT = process.env.WEBUI_ENDPOINT;
 
 /**
- * @swagger
+ * @openapi
  * /api/network-slice/:
  *   get:
+ *     tags:
+ *       - Network Slices
  *     description: Returns the list of network slices
  *     responses:
  *       200:

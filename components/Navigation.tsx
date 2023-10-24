@@ -104,6 +104,8 @@ const Navigation: FC = () => {
                     <a
                       className="p-side-navigation__link"
                       href="/api"
+                      target="_blank"
+                      rel="noreferrer"
                       title="API"
                     >
                       <Icon

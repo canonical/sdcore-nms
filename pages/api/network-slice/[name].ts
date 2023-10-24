@@ -24,17 +24,19 @@ function isValidName(name: string): boolean {
 
 /**
  * @openapi
- * /api/network-slice/{sliceID}:
+ * /api/network-slice/{sliceName}:
  *   get:
- *     description: Returns the list of network slices
+ *     tags:
+ *       - Network Slices
+ *     description: Returns the network slice
  *     parameters:
- *       - name: sliceID
+ *       - name: sliceName
  *         in: path
  *         required: true
  *         type: string
  *     responses:
  *       200:
- *         description: List of network slices
+ *         description: Network slice
  */
 async function handleGET(req: NextApiRequest, res: NextApiResponse) {
   const { name } = req.query
@@ -78,16 +80,69 @@ async function handleGET(req: NextApiRequest, res: NextApiResponse) {
 }
 
 
+
 /**
  * @openapi
- * /api/network-slice/{sliceID}:
+ * /api/network-slice/{sliceName}:
  *   post:
+ *     tags:
+ *       - Network Slices
  *     description: Create a new network slice
  *     parameters:
- *       - name: slice ID
+ *       - name: sliceName
  *         in: path
  *         required: true
- *         type: string
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *      description: Network slice object
+ *      required: true
+ *      content:
+ *        application/json:
+ *          schema:
+ *            type: object
+ *            properties:
+ *              slice-id:
+ *                type: object
+ *                properties:
+ *                  sst:
+ *                    type: string
+ *                  sd:
+ *                    type: string
+ *              site-device-group:
+ *                type: array
+ *                items:
+ *                  type: string
+ *              site-info:
+ *                type: object
+ *                properties:
+ *                  site-name:
+ *                    type: string
+ *                  plmn:
+ *                    type: object
+ *                    properties:
+ *                      mcc:
+ *                        type: string
+ *                      mnc:
+ *                        type: string
+ *                  gNodeBs:
+ *                    type: array
+ *                    items:
+ *                      type: string
+ *                  upf:
+ *                    type: object
+ *                    properties:
+ *                      upf-name:
+ *                        type: string
+ *                      upf-port:
+ *                        type: string
+ *     responses:
+ *       200:
+ *         description: Network slice created
+ *       400:
+ *         description: Invalid network slice content
+ *       500:
+ *         description: Error creating network slice
  */
 async function handlePOST(req: NextApiRequest, res: NextApiResponse) {
   const { name } = req.query
@@ -126,6 +181,27 @@ async function handlePOST(req: NextApiRequest, res: NextApiResponse) {
   }
 }
 
+/**
+ * @openapi
+ * /api/network-slice/{sliceName}:
+ *   delete:
+ *     tags:
+ *       - Network Slices
+ *     description: Delete an existing network slice
+ *     parameters:
+ *       - name: sliceName
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       202:
+ *         description: Network slice deleted successfully
+ *       400:
+ *         description: Invalid network slice name provided
+ *       500:
+ *         description: Error deleting network slice
+ */
 async function handleDELETE(req: NextApiRequest, res: NextApiResponse) {
     const { name } = req.query
 
