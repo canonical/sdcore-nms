@@ -3,7 +3,19 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 const WEBUI_ENDPOINT = process.env.WEBUI_ENDPOINT;
 
-
+/**
+ * @openapi
+ * /api/network-slice/:
+ *   get:
+ *     tags:
+ *       - Network Slices
+ *     description: Returns the list of network slices
+ *     responses:
+ *       200:
+ *         description: List of network slices
+ *       500:
+ *        description: Error retrieving network slices
+ */
 export default async function handleNetworkSlice(req: NextApiRequest, res: NextApiResponse) {
   switch (req.method) {
     case "GET":

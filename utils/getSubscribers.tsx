@@ -1,4 +1,4 @@
-import { Subscriber } from "@/app/subscribers/page";
+import { Subscriber } from "@/app/(network)/subscribers/page";
 
 export const getSubscribers = async (): Promise<Subscriber[]> => {
   try {
@@ -15,6 +15,6 @@ export const getSubscribers = async (): Promise<Subscriber[]> => {
     return subscribers;
   } catch (error) {
     console.error(error);
-    throw  error;
+    throw error;
   }
 };

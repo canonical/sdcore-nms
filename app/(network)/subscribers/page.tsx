@@ -61,7 +61,9 @@ const Subscribers = () => {
                   onConfirm: () => handleConfirmDelete(rawIMSI),
                   children: (
                     <p>
-                      This will permanently delete the subscriber <b>{rawIMSI}</b><br/>
+                      This will permanently delete the subscriber{" "}
+                      <b>{rawIMSI}</b>
+                      <br />
                       This action cannot be undone.
                     </p>
                   ),
@@ -83,7 +85,12 @@ const Subscribers = () => {
   return (
     <>
       <PageHeader title={`Subscribers (${subscribers.length})`}>
-        <Button hasIcon appearance="base" onClick={handleRefresh} title="refresh subscriber list">
+        <Button
+          hasIcon
+          appearance="base"
+          onClick={handleRefresh}
+          title="refresh subscriber list"
+        >
           <SyncOutlinedIcon style={{ color: "#666" }} />
         </Button>
         <Button appearance="positive" onClick={toggleModal}>
@@ -106,4 +113,3 @@ const Subscribers = () => {
   );
 };
 export default Subscribers;
-
