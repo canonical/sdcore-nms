@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Input,
   Notification,
@@ -31,6 +31,8 @@ const CreateNetworkSliceModal = ({
 }: NetworkSliceModalProps) => {
   const queryClient = useQueryClient();
   const [apiError, setApiError] = useState<string | null>(null);
+  const [upfApiError, setUpfApiError] = useState<string | null>(null);
+  const [gnbApiError, setGnbApiError] = useState<string | null>(null);
 
   const NetworkSliceSchema = Yup.object().shape({
     name: Yup.string().min(1).max(20, "Name should not exceed 20 characters")
@@ -75,18 +77,28 @@ const CreateNetworkSliceModal = ({
     queryFn: getUpfList,
   });
 
-  if (!isUpfLoading && upfList.length === 0) {
-    setApiError("Failed to retrieve the list of UPFs from the server.");
-  }
+  useEffect(() => {
+    const checkUpfList = async () => {
+      if (!isUpfLoading && upfList.length === 0) {
+        setUpfApiError("Failed to retrieve the list of UPFs from the server.");
+      }
+    };
+    checkUpfList();
+  }, [isUpfLoading, upfList]);
 
   const { data: gnbList = [], isLoading: isGnbLoading } = useQuery({
     queryKey: [queryKeys.gnbList],
     queryFn: getGnbList,
   });
 
-  if (!isGnbLoading && gnbList.length === 0) {
-    setApiError("Failed to retrieve the list of GNBs from the server.");
-  }
+  useEffect(() => {
+    const checkGnbList = async () => {
+      if (!isGnbLoading && gnbList.length === 0) {
+        setGnbApiError("Failed to retrieve the list of GNBs from the server.");
+      }
+    };
+    checkGnbList();
+  }, [isGnbLoading, gnbList]);
 
   const handleUpfChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const upf = upfList.find((item) => e.target.value === `${item.hostname}:${item.port}`);
@@ -118,6 +130,16 @@ const CreateNetworkSliceModal = ({
       {apiError && (
         <Notification severity="negative" title="Error">
           {apiError}
+        </Notification>
+      )}
+      {upfApiError && (
+        <Notification severity="negative" title="Error">
+          {upfApiError}
+        </Notification>
+      )}
+      {gnbApiError && (
+        <Notification severity="negative" title="Error">
+          {gnbApiError}
         </Notification>
       )}
       <Form>
