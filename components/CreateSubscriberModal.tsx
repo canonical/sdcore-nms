@@ -31,14 +31,22 @@ const CreateSubscriberModal = ({ toggleModal }: Props) => {
   const queryClient = useQueryClient();
 
   const SubscriberSchema = Yup.object().shape({
-    imsi: Yup.string().min(14).max(15)
-      .matches(/^[0-9]+$/, { message: 'Only numbers are allowed.'})
+    imsi: Yup.string()
+      .min(14)
+      .max(15)
+      .matches(/^[0-9]+$/, { message: "Only numbers are allowed." })
       .required("IMSI must be 14 or 15 digits"),
-    opc: Yup.string().length(32)
-      .matches(/^[A-Za-z0-9]+$/, { message: 'Only alphanumeric characters are allowed.'})
+    opc: Yup.string()
+      .length(32)
+      .matches(/^[A-Za-z0-9]+$/, {
+        message: "Only alphanumeric characters are allowed.",
+      })
       .required("OPC must be a 32 character hexadecimal"),
-    key: Yup.string().length(32)
-      .matches(/^[A-Za-z0-9]+$/, { message: 'Only alphanumeric characters are allowed.'})
+    key: Yup.string()
+      .length(32)
+      .matches(/^[A-Za-z0-9]+$/, {
+        message: "Only alphanumeric characters are allowed.",
+      })
       .required("Key must be a 32 character hexadecimal"),
     sequenceNumber: Yup.string().required("Sequence number is required"),
     deviceGroup: Yup.string().required(""),
@@ -57,7 +65,6 @@ const CreateSubscriberModal = ({ toggleModal }: Props) => {
     onSubmit: async (values) => {
       await createSubscriber({
         imsi: values.imsi,
-        plmnId: "20893",
         opc: values.opc,
         key: values.key,
         sequenceNumber: values.sequenceNumber,
@@ -73,27 +80,39 @@ const CreateSubscriberModal = ({ toggleModal }: Props) => {
     queryFn: getNetworkSlices,
   });
 
-  const selectedSlice = slices.find((slice) => slice.SliceName === formik.values.selectedSlice);
+  const selectedSlice = slices.find(
+    (slice) => slice.SliceName === formik.values.selectedSlice,
+  );
 
-  const setDeviceGroup = useCallback((deviceGroup: string) => {
-    if (formik.values.deviceGroup !== deviceGroup) {
-      formik.setFieldValue("deviceGroup", deviceGroup);
-    }
-  }, [formik]);
+  const setDeviceGroup = useCallback(
+    (deviceGroup: string) => {
+      if (formik.values.deviceGroup !== deviceGroup) {
+        formik.setFieldValue("deviceGroup", deviceGroup);
+      }
+    },
+    [formik],
+  );
 
   useEffect(() => {
-    if (selectedSlice && selectedSlice["site-device-group"] && selectedSlice["site-device-group"].length === 1) {
+    if (
+      selectedSlice &&
+      selectedSlice["site-device-group"] &&
+      selectedSlice["site-device-group"].length === 1
+    ) {
       setDeviceGroup(selectedSlice["site-device-group"][0]);
     } else {
       setDeviceGroup("");
     }
   }, [slices, selectedSlice, setDeviceGroup]);
 
-  const setSelectedSlice = useCallback((newSlice: string) => {
-    if (formik.values.selectedSlice !== newSlice) {
-      formik.setFieldValue("selectedSlice", newSlice);
-    }
-  }, [formik]);
+  const setSelectedSlice = useCallback(
+    (newSlice: string) => {
+      if (formik.values.selectedSlice !== newSlice) {
+        formik.setFieldValue("selectedSlice", newSlice);
+      }
+    },
+    [formik],
+  );
 
   useEffect(() => {
     if (!selectedSlice && slices.length > 0) {
@@ -101,7 +120,10 @@ const CreateSubscriberModal = ({ toggleModal }: Props) => {
     }
   }, [slices, selectedSlice, setSelectedSlice]);
 
-  const deviceGroupOptions = selectedSlice && selectedSlice["site-device-group"] ? selectedSlice["site-device-group"] : [];
+  const deviceGroupOptions =
+    selectedSlice && selectedSlice["site-device-group"]
+      ? selectedSlice["site-device-group"]
+      : [];
 
   return (
     <Modal
@@ -162,7 +184,9 @@ const CreateSubscriberModal = ({ toggleModal }: Props) => {
           stacked
           required
           {...formik.getFieldProps("sequenceNumber")}
-          error={formik.touched.sequenceNumber ? formik.errors.sequenceNumber : null}
+          error={
+            formik.touched.sequenceNumber ? formik.errors.sequenceNumber : null
+          }
         />
         <Select
           id="network-slice"
@@ -170,7 +194,9 @@ const CreateSubscriberModal = ({ toggleModal }: Props) => {
           stacked
           required
           {...formik.getFieldProps("selectedSlice")}
-          error={formik.touched.selectedSlice ? formik.errors.selectedSlice : null}
+          error={
+            formik.touched.selectedSlice ? formik.errors.selectedSlice : null
+          }
           options={[
             {
               disabled: true,
