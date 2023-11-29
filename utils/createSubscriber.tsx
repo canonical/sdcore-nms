@@ -1,6 +1,5 @@
 interface CreateSubscriberArgs {
   imsi: string;
-  plmnId: string;
   opc: string;
   key: string;
   sequenceNumber: string;
@@ -9,7 +8,6 @@ interface CreateSubscriberArgs {
 
 export const createSubscriber = async ({
   imsi,
-  plmnId,
   opc,
   key,
   sequenceNumber,
@@ -17,7 +15,6 @@ export const createSubscriber = async ({
 }: CreateSubscriberArgs) => {
   const subscriberData = {
     UeId: imsi,
-    plmnId: plmnId,
     opc: opc,
     key: key,
     sequenceNumber: sequenceNumber,
