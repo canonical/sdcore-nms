@@ -52,7 +52,7 @@ jobs:
         with:
           sarif_file: "trivy-results.sarif"
 
-      - name: Import and push to github package
-        run: |
+      # - name: Push to github package
+      #   run: |
 
-          docker push ghcr.io/canonical/${{env.image_name}}:${{env.version}}"
+      #     docker push ghcr.io/canonical/${{env.image_name}}:${{env.version}}"
