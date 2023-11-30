@@ -3,10 +3,7 @@ import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
 import ExpandMoreOutlinedIcon from "@mui/icons-material/ExpandMoreOutlined";
 
 import React, { useState } from "react";
-import {
-  Button,
-  MainTable,
-} from "@canonical/react-components";
+import { Button, MainTable } from "@canonical/react-components";
 import DeviceGroupModal from "@/components/DeviceGroupModal";
 import { queryKeys } from "@/utils/queryKeys";
 import { useQueryClient } from "@tanstack/react-query";
@@ -26,8 +23,12 @@ export const NetworkSliceTable: React.FC<NetworkSliceTableProps> = ({
   const toggleModal = () => setIsModalVisible(!isModalVisible);
 
   const handleDeviceGroupCreated = async () => {
-    await queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
-    await queryClient.invalidateQueries({ queryKey: [queryKeys.allDeviceGroups, slice.SliceName] });
+    await queryClient.invalidateQueries({
+      queryKey: [queryKeys.networkSlices],
+    });
+    await queryClient.invalidateQueries({
+      queryKey: [queryKeys.allDeviceGroups, slice.SliceName],
+    });
   };
 
   return (
@@ -97,7 +98,12 @@ export const NetworkSliceTable: React.FC<NetworkSliceTableProps> = ({
           },
           {
             columns: [
-              { content: "Device Groups" },
+              {
+                content: `Device Groups (${
+                  !slice["site-device-group"] ||
+                  slice["site-device-group"].length
+                })`,
+              },
               {
                 content: (
                   <div className="u-align--right">
@@ -127,14 +133,21 @@ export const NetworkSliceTable: React.FC<NetworkSliceTableProps> = ({
                     >
                       <ExpandMoreOutlinedIcon
                         fontSize="small"
-                        style={{ color: "#666", transform: isExpanded ? "rotate(180deg)" : "rotate(0)" }}
+                        style={{
+                          color: "#666",
+                          transform: isExpanded
+                            ? "rotate(180deg)"
+                            : "rotate(0)",
+                        }}
                       />
                     </Button>
                   </div>
                 ),
               },
             ],
-            expandedContent: <NetworkSliceGroups slice={slice} isExpanded={isExpanded} />,
+            expandedContent: (
+              <NetworkSliceGroups slice={slice} isExpanded={isExpanded} />
+            ),
             expanded: isExpanded,
             key: `device-groups-${slice.SliceName}`,
           },
