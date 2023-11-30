@@ -3,7 +3,7 @@ name: Main branch CI
 on:
   push:
   schedule:
-    - cron: '0 0 * * 0'
+    - cron: "0 0 * * 0"
 
 jobs:
   lint-report:
@@ -11,7 +11,7 @@ jobs:
 
   build:
     uses: ./.github/workflows/build.yaml
-  
+
   integration-tests:
     needs: build
     uses: ./.github/workflows/integration_tests.yaml
