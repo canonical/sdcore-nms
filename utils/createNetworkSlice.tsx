@@ -12,6 +12,8 @@ interface CreateNetworkSliceArgs {
   gnbList: GnbItem[];
 }
 
+const DeviceGroupName = "default";
+
 export const createNetworkSlice = async ({
   name,
   mcc,
@@ -25,7 +27,7 @@ export const createNetworkSlice = async ({
       sst: "1",
       sd: "010203",
     },
-    "site-device-group": ["default"],
+    "site-device-group": [DeviceGroupName],
     "site-info": {
       "site-name": "demo",
       plmn: {
@@ -83,13 +85,16 @@ export const createNetworkSlice = async ({
       );
     }
 
-    const devicegroupResponse = await fetch(`/api/device-group/${name}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+    const devicegroupResponse = await fetch(
+      `/api/device-group/${DeviceGroupName}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(deviceGroupData),
       },
-      body: JSON.stringify(deviceGroupData),
-    });
+    );
 
     if (!devicegroupResponse.ok) {
       throw new Error(
