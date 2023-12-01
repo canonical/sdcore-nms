@@ -12,6 +12,8 @@ interface CreateNetworkSliceArgs {
   gnbList: GnbItem[];
 }
 
+const DeviceGroupName = "default";
+
 export const createNetworkSlice = async ({
   name,
   mcc,
@@ -25,7 +27,7 @@ export const createNetworkSlice = async ({
       sst: "1",
       sd: "010203",
     },
-    "site-device-group": null,
+    "site-device-group": [DeviceGroupName],
     "site-info": {
       "site-name": "demo",
       plmn: {
@@ -40,8 +42,31 @@ export const createNetworkSlice = async ({
     },
   };
 
+  const deviceGroupData = {
+    "site-info": "demo",
+    "ip-domain-name": "pool1",
+    "ip-domain-expanded": {
+      dnn: "internet",
+      "ue-ip-pool": "172.250.1.0/16",
+      "dns-primary": "8.8.8.8",
+      mtu: 1600,
+      "ue-dnn-qos": {
+        "dnn-mbr-uplink": 200 * 1000000,
+        "dnn-mbr-downlink": 20 * 1000000,
+        "bitrate-unit": "bps",
+        "traffic-class": {
+          name: "platinum",
+          arp: 6,
+          pdb: 300,
+          pelr: 6,
+          qci: 8,
+        },
+      },
+    },
+  };
+
   try {
-    const response = await fetch(`/api/network-slice/${name}`, {
+    const networksliceResponse = await fetch(`/api/network-slice/${name}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -49,19 +74,41 @@ export const createNetworkSlice = async ({
       body: JSON.stringify(sliceData),
     });
 
-    if (!response.ok) {
-      const result = await response.json();
+    if (!networksliceResponse.ok) {
+      const result = await networksliceResponse.json();
       if (result.error) {
         throw new Error(result.error);
       }
       debugger;
-      throw new Error(`Error creating network. Error code: ${response.status}`);
+      throw new Error(
+        `Error creating network. Error code: ${networksliceResponse.status}`,
+      );
     }
 
-    return response.json();
+    const devicegroupResponse = await fetch(
+      `/api/device-group/${DeviceGroupName}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(deviceGroupData),
+      },
+    );
+
+    if (!devicegroupResponse.ok) {
+      throw new Error(
+        `Error creating device group. Error code: ${devicegroupResponse.status}`,
+      );
+    }
+
+    return networksliceResponse.json();
   } catch (error: unknown) {
     console.error(error);
-    const details = error instanceof Error ? error.message : "Failed to configure the network.";
+    const details =
+      error instanceof Error
+        ? error.message
+        : "Failed to configure the network.";
     throw new Error(details);
   }
 };
