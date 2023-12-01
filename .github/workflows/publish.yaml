@@ -54,5 +54,4 @@ jobs:
 
       - name: Push to github package
         run: |
-
-          docker push ghcr.io/canonical/${{env.image_name}}:${{env.version}}"
+          docker push ghcr.io/canonical/${{env.image_name}}:${{env.version}}
