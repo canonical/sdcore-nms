@@ -69,8 +69,7 @@ export const deleteSubscriber = async (imsi: string) => {
         }
       }
     }
-
-    const response = await fetch(`/api/subscriber/${imsi}`, {
+    const response = await fetch(`/api/subscriber/imsi-${imsi}`, {
       method: "DELETE",
     });
 
