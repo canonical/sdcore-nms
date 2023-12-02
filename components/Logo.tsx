@@ -9,6 +9,8 @@ const Logo: FC = () => {
         <Image
           src="https://assets.ubuntu.com/v1/82818827-CoF_white.svg"
           alt="circle of friends"
+          width={32}
+          height={32}
           className="logo-image"
         />
       </div>
