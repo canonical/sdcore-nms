@@ -4,7 +4,8 @@ import {
   Notification,
   Modal,
   Form,
-  Select, ActionButton,
+  Select,
+  ActionButton,
 } from "@canonical/react-components";
 import { createNetworkSlice } from "@/utils/createNetworkSlice";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -26,22 +27,35 @@ interface NetworkSliceModalProps {
   toggleModal: () => void;
 }
 
-const CreateNetworkSliceModal = ({
-  toggleModal,
-}: NetworkSliceModalProps) => {
+const CreateNetworkSliceModal = ({ toggleModal }: NetworkSliceModalProps) => {
   const queryClient = useQueryClient();
   const [apiError, setApiError] = useState<string | null>(null);
   const [upfApiError, setUpfApiError] = useState<string | null>(null);
   const [gnbApiError, setGnbApiError] = useState<string | null>(null);
 
   const NetworkSliceSchema = Yup.object().shape({
-    name: Yup.string().min(1).max(20, "Name should not exceed 20 characters")
-      .matches(/^[a-zA-Z0-9-_]+$/, { message: 'Only alphanumeric characters, dashes and underscores.'})
+    name: Yup.string()
+      .min(1)
+      .max(20, "Name should not exceed 20 characters")
+      .matches(/^[a-zA-Z0-9-_]+$/, {
+        message: "Only alphanumeric characters, dashes and underscores.",
+      })
       .required("Name is required."),
-    mcc: Yup.string().length(3).required("MCC must be exactly 3 digits"),
-    mnc: Yup.string().min(2).max(3).required("MNC must be 2 or 3 digits"),
-    upf: Yup.object().shape({hostname: Yup.string().required("Please select a UPF")}).required("Please select a UPF."),
-    gnbList: Yup.array().min(1).required("Please select at least one gNodeB."),
+    mcc: Yup.string()
+      .matches(/^\d{3}$/, "MCC must be 3 digits")
+      .length(3)
+      .required("MCC is required."),
+    mnc: Yup.string()
+      .matches(/^\d{2,3}$/, "MNC must be 2 or 3 digits")
+      .min(2)
+      .max(3)
+      .required("MNC is required."),
+    upf: Yup.object()
+      .shape({ hostname: Yup.string().required("Please select a UPF") })
+      .required("Selectng a UPF is required."),
+    gnbList: Yup.array()
+      .min(1)
+      .required("Selectng at least 1 gNodeB is required."),
   });
 
   const formik = useFormik<NetworkSliceValues>({
@@ -63,11 +77,15 @@ const CreateNetworkSliceModal = ({
           upfPort: values.upf.port,
           gnbList: values.gnbList,
         });
-        await queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
+        await queryClient.invalidateQueries({
+          queryKey: [queryKeys.networkSlices],
+        });
         toggleModal();
       } catch (error) {
         console.error(error);
-        setApiError((error as Error).message || "An unexpected error occurred.");
+        setApiError(
+          (error as Error).message || "An unexpected error occurred.",
+        );
       }
     },
   });
@@ -101,13 +119,19 @@ const CreateNetworkSliceModal = ({
   }, [isGnbLoading, gnbList]);
 
   const handleUpfChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const upf = upfList.find((item) => e.target.value === `${item.hostname}:${item.port}`);
+    const upf = upfList.find(
+      (item) => e.target.value === `${item.hostname}:${item.port}`,
+    );
     void formik.setFieldValue("upf", upf);
-  }
+  };
 
   const handleGnbChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedOptions = Array.from(e.target.selectedOptions);
-    const items = gnbList.filter((item) => selectedOptions.some((option) => option.value === `${item.name}:${item.tac}`));
+    const items = gnbList.filter((item) =>
+      selectedOptions.some(
+        (option) => option.value === `${item.name}:${item.tac}`,
+      ),
+    );
     void formik.setFieldValue("gnbList", items);
   };
 
@@ -118,7 +142,7 @@ const CreateNetworkSliceModal = ({
       buttonRow={
         <ActionButton
           appearance="positive"
-          className="mt-8 u-no-margin--bottom"
+          className="u-no-margin--bottom mt-8"
           onClick={formik.submitForm}
           disabled={!(formik.isValid && formik.dirty)}
           loading={formik.isSubmitting}
@@ -154,7 +178,7 @@ const CreateNetworkSliceModal = ({
           error={formik.touched.name ? formik.errors.name : null}
         />
         <Input
-          type="number"
+          type="text"
           id="mcc"
           label="MCC"
           help="Mobile Country Code"
@@ -165,7 +189,7 @@ const CreateNetworkSliceModal = ({
           error={formik.touched.mcc ? formik.errors.mcc : null}
         />
         <Input
-          type="number"
+          type="text"
           id="mnc"
           label="MNC"
           help="Mobile Network Code (2 or 3 digits)"
