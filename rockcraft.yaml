@@ -8,15 +8,6 @@ license: Apache-2.0
 platforms:
   amd64:
 
-package-repositories:
-  - type: apt
-    components: [main]
-    priority: always
-    suites: [nodistro]
-    key-id: 6F71F525282841EEDAF851B42F59B5F99B1BE0B4
-    key-server: https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key
-    url: https://deb.nodesource.com/node_18.x
-
 services:
   nms:
     command: npm run start
@@ -33,10 +24,10 @@ parts:
   nms:
     plugin: nil
     source: .
-    stage-packages:
-      - nodejs
+    stage-snaps:
+      - node/20/stable
     build-snaps:
-      - node/18/stable
+      - node/20/stable
     override-build: |
       mkdir -p ${CRAFT_PART_INSTALL}/app
       
