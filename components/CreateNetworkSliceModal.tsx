@@ -42,10 +42,7 @@ const CreateNetworkSliceModal = ({ toggleModal }: NetworkSliceModalProps) => {
       })
       .required("Name is required."),
     mcc: Yup.string()
-      .matches(
-        /^(00[1-9]|0[1-9]\d|[1-9]\d\d)$/,
-        "MCC must be between 001 and 999",
-      )
+      .matches(/^\d{3}$/, "MCC must be 3 digits")
       .length(3)
       .required("MCC is required."),
     mnc: Yup.string()
