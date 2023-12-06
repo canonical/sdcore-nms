@@ -48,7 +48,7 @@ export const createNetworkSlice = async ({
       dnn: "internet",
       "ue-ip-pool": "172.250.1.0/16",
       "dns-primary": "8.8.8.8",
-      mtu: 1600,
+      mtu: 1460,
       "ue-dnn-qos": {
         "dnn-mbr-uplink": 200 * 1000000,
         "dnn-mbr-downlink": 20 * 1000000,
