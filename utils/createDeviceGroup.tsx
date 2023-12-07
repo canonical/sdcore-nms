@@ -41,6 +41,17 @@ export const createDeviceGroup = async ({
   };
 
   try {
+    const checkResponse = await fetch(`/api/device-group/${name}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (checkResponse.ok) {
+      throw new Error("Device group already exists");
+    }
+
     const response = await fetch(`/api/device-group/${name}`, {
       method: "POST",
       headers: {
@@ -91,8 +102,12 @@ export const createDeviceGroup = async ({
     }
 
     return true;
-  } catch (error) {
+  } catch (error: unknown) {
     console.error(error);
-    throw new Error("Failed to create device group.");
+    const details =
+      error instanceof Error
+        ? error.message
+        : "Failed to configure the network.";
+    throw new Error(details);
   }
 };

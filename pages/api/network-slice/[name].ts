@@ -63,9 +63,8 @@ async function handleGET(req: NextApiRequest, res: NextApiResponse) {
 
 
     if (!response.ok) {
-      throw new Error(
-        `Error getting network slice. Error code: ${response.status}`
-      );
+      res.status(response.status).json({ error: "Error retrieving network slice." });
+      return;
     }
 
     const data = await response.json();

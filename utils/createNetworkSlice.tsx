@@ -65,6 +65,17 @@ export const createNetworkSlice = async ({
   };
 
   try {
+    const checkResponse = await fetch(`/api/network-slice/${name}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (checkResponse.ok) {
+      throw new Error("Network slice already exists");
+    }
+
     const networksliceResponse = await fetch(`/api/network-slice/${name}`, {
       method: "POST",
       headers: {

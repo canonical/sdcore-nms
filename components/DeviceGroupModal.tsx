@@ -11,10 +11,10 @@ import * as Yup from "yup";
 import { useFormik } from "formik";
 
 const regexIp =
-    /^(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)$/;
+  /^(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)$/;
 
 const regexpCIDR =
-    /^((25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\/([1-9]|[1-2][0-9]|3[0-2])$/;
+  /^((25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\/([1-9]|[1-2][0-9]|3[0-2])$/;
 
 interface DeviceGroupValues {
   name: string;
@@ -39,14 +39,28 @@ const DeviceGroupModal = ({
   const [apiError, setApiError] = useState<string | null>(null);
 
   const DeviceGroupSchema = Yup.object().shape({
-    name: Yup.string().min(1).max(20, "Name should not exceed 20 characters.")
-      .matches(/^[a-zA-Z0-9-_]+$/, { message: 'Only alphanumeric characters, dashes and underscores.'})
+    name: Yup.string()
+      .min(1)
+      .max(20, "Name should not exceed 20 characters.")
+      .matches(/^[a-zA-Z0-9-_]+$/, {
+        message: "Only alphanumeric characters, dashes and underscores.",
+      })
       .required("Name is required."),
-    ueIpPool: Yup.string().required("IP is required").matches(regexpCIDR, "Invalid IP Address Pool."),
-    dns: Yup.string().required("IP is required").matches(regexIp, "Invalid IP Address."),
+    ueIpPool: Yup.string()
+      .required("IP is required")
+      .matches(regexpCIDR, "Invalid IP Address Pool."),
+    dns: Yup.string()
+      .required("IP is required")
+      .matches(regexIp, "Invalid IP Address."),
     mtu: Yup.number().min(1200).max(65535).required("Invalid MTU."),
-    MBRDownstreamMbps: Yup.number().min(0).max(1000000).required("Value should be between 0 and 1,000,000."),
-    MBRUpstreamMbps: Yup.number().min(0).max(1000000).required("Value should be between 0 and 1,000,000."),
+    MBRDownstreamMbps: Yup.number()
+      .min(0)
+      .max(1000000)
+      .required("Value should be between 0 and 1,000,000."),
+    MBRUpstreamMbps: Yup.number()
+      .min(0)
+      .max(1000000)
+      .required("Value should be between 0 and 1,000,000."),
   });
 
   const formik = useFormik<DeviceGroupValues>({
@@ -76,7 +90,9 @@ const DeviceGroupModal = ({
         toggleModal();
       } catch (error) {
         console.error(error);
-        setApiError("Failed to create device group.");
+        setApiError(
+          (error as Error).message || "An unexpected error occurred.",
+        );
       }
     },
   });
@@ -88,7 +104,7 @@ const DeviceGroupModal = ({
       buttonRow={
         <ActionButton
           appearance="positive"
-          className="mt-8 u-no-margin--bottom"
+          className="u-no-margin--bottom mt-8"
           onClick={formik.submitForm}
           disabled={!(formik.isValid && formik.dirty)}
           loading={formik.isSubmitting}
@@ -153,7 +169,11 @@ const DeviceGroupModal = ({
             required
             label="Downstream"
             {...formik.getFieldProps("MBRDownstreamMbps")}
-            error={formik.touched.MBRDownstreamMbps ? formik.errors.MBRDownstreamMbps : null}
+            error={
+              formik.touched.MBRDownstreamMbps
+                ? formik.errors.MBRDownstreamMbps
+                : null
+            }
           />
           <Input
             placeholder="5"
@@ -163,7 +183,11 @@ const DeviceGroupModal = ({
             required
             label="Upstream"
             {...formik.getFieldProps("MBRUpstreamMbps")}
-            error={formik.touched.MBRUpstreamMbps ? formik.errors.MBRUpstreamMbps : null}
+            error={
+              formik.touched.MBRUpstreamMbps
+                ? formik.errors.MBRUpstreamMbps
+                : null
+            }
           />
         </fieldset>
       </Form>
