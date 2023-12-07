@@ -39,14 +39,14 @@ const DeviceGroupModal = ({
   const [apiError, setApiError] = useState<string | null>(null);
 
   const DeviceGroupSchema = Yup.object().shape({
-    name: Yup.string().min(1).max(20, "Name should not exceed 20 characters")
+    name: Yup.string().min(1).max(20, "Name should not exceed 20 characters.")
       .matches(/^[a-zA-Z0-9-_]+$/, { message: 'Only alphanumeric characters, dashes and underscores.'})
       .required("Name is required."),
-    ueIpPool: Yup.string().required("IP is required").matches(regexpCIDR, "Invalid IP Address Pool"),
-    dns: Yup.string().required("IP is required").matches(regexIp, "Invalid IP Address"),
-    mtu: Yup.number().min(1200).max(65535).required("Invalid MTU"),
-    MBRDownstreamMbps: Yup.number().min(0).max(1000000).required("Value should be between 0 and 1,000,000"),
-    MBRUpstreamMbps: Yup.number().min(0).max(1000000).required("Value should be between 0 and 1,000,000"),
+    ueIpPool: Yup.string().required("IP is required").matches(regexpCIDR, "Invalid IP Address Pool."),
+    dns: Yup.string().required("IP is required").matches(regexIp, "Invalid IP Address."),
+    mtu: Yup.number().min(1200).max(65535).required("Invalid MTU."),
+    MBRDownstreamMbps: Yup.number().min(0).max(1000000).required("Value should be between 0 and 1,000,000."),
+    MBRUpstreamMbps: Yup.number().min(0).max(1000000).required("Value should be between 0 and 1,000,000."),
   });
 
   const formik = useFormik<DeviceGroupValues>({
@@ -134,10 +134,10 @@ const DeviceGroupModal = ({
           error={formik.touched.dns ? formik.errors.dns : null}
         />
         <Input
-          type="text"
+          type="number"
           id="mtu"
           label="MTU"
-          defaultValue={"1460"}
+          defaultValue={1460}
           stacked
           required
           {...formik.getFieldProps("mtu")}
