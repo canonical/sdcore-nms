@@ -84,7 +84,8 @@ const CreateNetworkSliceModal = ({ toggleModal }: NetworkSliceModalProps) => {
       } catch (error) {
         console.error(error);
         setApiError(
-          (error as Error).message || "An unexpected error occurred.",
+          (error as Error).message ||
+            "An unexpected error occurred. Please try again.",
         );
       }
     },
