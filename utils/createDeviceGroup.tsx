@@ -102,8 +102,12 @@ export const createDeviceGroup = async ({
     }
 
     return true;
-  } catch (error) {
+  } catch (error: unknown) {
     console.error(error);
-    throw new Error("Failed to create device group.");
+    const details =
+      error instanceof Error
+        ? error.message
+        : "Failed to configure the network.";
+    throw new Error(details);
   }
 };
