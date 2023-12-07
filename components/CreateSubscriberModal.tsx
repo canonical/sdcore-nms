@@ -19,7 +19,7 @@ interface SubscriberValues {
   opc: string;
   key: string;
   sequenceNumber: string;
-  selectedSlice: string | null;
+  selectedSlice: string;
   deviceGroup: string;
 }
 
@@ -58,7 +58,7 @@ const CreateSubscriberModal = ({ toggleModal }: Props) => {
       opc: "",
       key: "",
       sequenceNumber: "",
-      selectedSlice: null,
+      selectedSlice: "",
       deviceGroup: "",
     },
     validationSchema: SubscriberSchema,
@@ -100,8 +100,6 @@ const CreateSubscriberModal = ({ toggleModal }: Props) => {
       selectedSlice["site-device-group"].length === 1
     ) {
       setDeviceGroup(selectedSlice["site-device-group"][0]);
-    } else {
-      setDeviceGroup("");
     }
   }, [slices, selectedSlice, setDeviceGroup]);
 
