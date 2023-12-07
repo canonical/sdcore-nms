@@ -42,20 +42,20 @@ const CreateNetworkSliceModal = ({ toggleModal }: NetworkSliceModalProps) => {
       })
       .required("Name is required."),
     mcc: Yup.string()
-      .matches(/^\d{3}$/, "MCC must be 3 digits")
+      .matches(/^\d{3}$/, "MCC must be 3 digits.")
       .length(3)
       .required("MCC is required."),
     mnc: Yup.string()
-      .matches(/^\d{2,3}$/, "MNC must be 2 or 3 digits")
+      .matches(/^\d{2,3}$/, "MNC must be 2 or 3 digits.")
       .min(2)
       .max(3)
       .required("MNC is required."),
     upf: Yup.object()
-      .shape({ hostname: Yup.string().required("Please select a UPF") })
-      .required("Selectng a UPF is required."),
+      .shape({ hostname: Yup.string().required("Please select a UPF.") })
+      .required("Selecting a UPF is required."),
     gnbList: Yup.array()
       .min(1)
-      .required("Selectng at least 1 gNodeB is required."),
+      .required("Selecting at least 1 gNodeB is required."),
   });
 
   const formik = useFormik<NetworkSliceValues>({
