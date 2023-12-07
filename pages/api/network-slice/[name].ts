@@ -63,7 +63,7 @@ async function handleGET(req: NextApiRequest, res: NextApiResponse) {
 
 
     if (!response.ok) {
-      res.status(response.status).json({ error: "Invalid name provided." });
+      res.status(response.status).json({ error: "Error retrieving network slice." });
       return;
     }
 

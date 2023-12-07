@@ -41,6 +41,17 @@ export const createDeviceGroup = async ({
   };
 
   try {
+    const checkResponse = await fetch(`/api/device-group/${name}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (checkResponse.ok) {
+      throw new Error("Device group already exists");
+    }
+
     const response = await fetch(`/api/device-group/${name}`, {
       method: "POST",
       headers: {
