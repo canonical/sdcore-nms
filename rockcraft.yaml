@@ -33,7 +33,8 @@ parts:
       
       npm ci
       npm run build
-      
+
       cp -r .next ${CRAFT_PART_INSTALL}/app/
       cp -r node_modules ${CRAFT_PART_INSTALL}/app/
       cp package.json ${CRAFT_PART_INSTALL}/app/
+      cp -r pages ${CRAFT_PART_INSTALL}/app/
