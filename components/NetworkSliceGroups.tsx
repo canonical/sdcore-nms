@@ -41,6 +41,73 @@ export const NetworkSliceGroups: React.FC<NetworkSliceTableProps> = ({
     return <span className="u-text--muted">No device groups found.</span>;
   }
 
+  const getDeleteButton = (deviceGroupName: string, deviceGroupSubscribers: string[], sliceName: string) =>
+  {
+    if (deviceGroupSubscribers &&
+        deviceGroupSubscribers.length > 0)
+    {
+      return (
+        <div className="u-align--right">
+          <ConfirmationButton
+            appearance="base"
+            className="u-no-margin--bottom is-small"
+            title="Delete device group"
+            confirmationModalProps={{
+              title: "Delete warning",
+              confirmButtonLabel: "Aceptar",
+              onConfirm: () => {},
+              children: (
+                <p>
+                  Device group <b>{deviceGroupName}</b> cannot be deleted.
+                  <br />
+                  Please remove the following subscribers first:
+                  <br />
+                  {deviceGroupSubscribers.join(", ")}.
+                </p>
+              ),
+            }}
+          >
+            <DeleteOutlinedIcon
+              fontSize="small"
+              style={{ color: "#666" }}
+            />
+          </ConfirmationButton>
+        </div>
+      )
+    }
+    else {
+      return (
+        <div className="u-align--right">
+          <ConfirmationButton
+            appearance="base"
+            className="u-no-margin--bottom is-small"
+            shiftClickEnabled
+            showShiftClickHint
+            title="Delete device group"
+            confirmationModalProps={{
+              title: "Confirm Delete",
+              confirmButtonLabel: "Delete",
+              onConfirm: () => handleConfirmDelete(deviceGroupName, sliceName),
+              children: (
+                <p>
+                  This will permanently delete the device group <b>{deviceGroupName}</b>.
+                  <br />
+                  You cannot undo this action.
+                </p>
+              ),
+            }}
+          >
+            <DeleteOutlinedIcon
+              fontSize="small"
+              style={{ color: "#666" }}
+            />
+          </ConfirmationButton>
+        </div>
+      )
+    }
+
+  }
+
   return deviceGroupContent.map((deviceGroup) => (
       <Row key={deviceGroup["group-name"]}>
         <Col size={8}>
@@ -50,34 +117,7 @@ export const NetworkSliceGroups: React.FC<NetworkSliceTableProps> = ({
                 content: deviceGroup?.["group-name"] || "N/A",
               },
               {
-                content: (
-                  <div className="u-align--right">
-                    <ConfirmationButton
-                      appearance="base"
-                      className="u-no-margin--bottom is-small"
-                      shiftClickEnabled
-                      showShiftClickHint
-                      title="Delete device group"
-                      confirmationModalProps={{
-                        title: "Confirm Delete",
-                        confirmButtonLabel: "Delete",
-                        onConfirm: () => handleConfirmDelete(deviceGroup?.["group-name"], slice.SliceName),
-                        children: (
-                          <p>
-                            This will permanently delete the device group <b>{deviceGroup?.["group-name"]}</b> in  network slice <b>{slice.SliceName}</b>.
-                            <br />
-                            You cannot undo this action.
-                          </p>
-                        ),
-                      }}
-                    >
-                      <DeleteOutlinedIcon
-                        fontSize="small"
-                        style={{ color: "#666" }}
-                      />
-                    </ConfirmationButton>
-                  </div>
-                ),
+                content: getDeleteButton(deviceGroup?.["group-name"], deviceGroup?.["imsis"] , slice.SliceName),
                 className: "u-align--right",
               },
             ]}
