@@ -33,6 +33,51 @@ const NetworkConfiguration = () => {
     void queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
   };
 
+  const getDeleteButton = (sliceName: string, deviceGroups: string[] | undefined) =>
+  {
+    if (deviceGroups &&
+        deviceGroups.length > 0)
+    {
+      return <ConfirmationButton
+                appearance="negative"
+                className="u-no-margin--bottom"
+                confirmationModalProps={{
+                  title: "Warning",
+                  confirmButtonLabel: "Delete",
+                  buttonRow:(null),
+                  onConfirm: () => {},
+                  children: (
+                    <p>
+                      Network slice <b>{sliceName}</b> cannot be deleted.<br/>
+                      Please remove the following device groups first:
+                      <br />
+                        {deviceGroups.join(", ")}.
+                    </p>
+                  ),
+              }} >
+                Delete
+              </ConfirmationButton>
+    }
+    return <ConfirmationButton
+              appearance="negative"
+              className="u-no-margin--bottom"
+              shiftClickEnabled
+              showShiftClickHint
+              confirmationModalProps={{
+                title: "Confirm Delete",
+                confirmButtonLabel: "Delete",
+                onConfirm: () => handleConfirmDelete(sliceName),
+                children: (
+                  <p>
+                    This will permanently delete the network slice <b>{sliceName}</b><br/>
+                    This action cannot be undone.
+                  </p>
+                ),
+            }} >
+              Delete
+            </ConfirmationButton>
+  }
+
   if (loading) {
     return <Loader text="Loading..." />;
   }
@@ -56,24 +101,7 @@ const NetworkConfiguration = () => {
                   <NetworkSliceTable slice={slice} />
                   <hr />
                   <div className="u-align--right">
-                    <ConfirmationButton
-                      appearance="negative"
-                      className="u-no-margin--bottom"
-                      shiftClickEnabled
-                      showShiftClickHint
-                      confirmationModalProps={{
-                        title: "Confirm Delete",
-                        confirmButtonLabel: "Delete",
-                        onConfirm: () => handleConfirmDelete(slice.SliceName),
-                        children: (
-                          <p>
-                            This will permanently delete the network slice <b>{slice.SliceName}</b><br/>
-                            This action cannot be undone.
-                          </p>
-                        ),
-                    }} >
-                      Delete
-                    </ConfirmationButton>
+                    {getDeleteButton(slice.SliceName, slice["site-device-group"])}
                   </div>
                 </Card>
               ))}
