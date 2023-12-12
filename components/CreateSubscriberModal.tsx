@@ -1,11 +1,12 @@
 "use client";
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
-  Modal,
+  ActionButton,
   Form,
   Input,
+  Modal,
+  Notification,
   Select,
-  ActionButton,
 } from "@canonical/react-components";
 import { createSubscriber } from "@/utils/createSubscriber";
 import { getNetworkSlices } from "@/utils/getNetworkSlices";
@@ -29,6 +30,7 @@ type Props = {
 
 const CreateSubscriberModal = ({ toggleModal }: Props) => {
   const queryClient = useQueryClient();
+  const [apiError, setApiError] = useState<string | null>(null);
 
   const SubscriberSchema = Yup.object().shape({
     imsi: Yup.string()
@@ -63,15 +65,22 @@ const CreateSubscriberModal = ({ toggleModal }: Props) => {
     },
     validationSchema: SubscriberSchema,
     onSubmit: async (values) => {
-      await createSubscriber({
-        imsi: values.imsi,
-        opc: values.opc,
-        key: values.key,
-        sequenceNumber: values.sequenceNumber,
-        deviceGroupName: values.deviceGroup,
-      });
-      void queryClient.invalidateQueries({ queryKey: [queryKeys.subscribers] });
-      toggleModal();
+      try{
+        await createSubscriber({
+          imsi: values.imsi,
+          opc: values.opc,
+          key: values.key,
+          sequenceNumber: values.sequenceNumber,
+          deviceGroupName: values.deviceGroup,
+        });
+        void queryClient.invalidateQueries({ queryKey: [queryKeys.subscribers] });
+        toggleModal();
+      } catch (error) {
+        console.error(error);
+        setApiError(
+          (error as Error).message || "An unexpected error occurred.",
+        );
+      }
     },
   });
 
@@ -141,6 +150,11 @@ const CreateSubscriberModal = ({ toggleModal }: Props) => {
         </>
       }
     >
+      {apiError && (
+        <Notification severity="negative" title="Error">
+          {apiError}
+        </Notification>
+      )}
       <Form stacked>
         <Input
           type="text"
