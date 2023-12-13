@@ -28,6 +28,7 @@ export const createSubscriber = async ({
       },
     });
 
+    // Workaround for https://github.com/omec-project/webconsole/issues/109
     const existingSubscriberData = await checkResponse.json();
     if (checkResponse.ok && existingSubscriberData["AuthenticationSubscription"]["authenticationMethod"]) {
       throw new Error("Subscriber already exists.");
