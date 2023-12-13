@@ -18,7 +18,7 @@ export default async function handleSubscriber(req: NextApiRequest, res: NextApi
 }
 
 function isValidName(name: string): boolean {
-  return /^[a-zA-Z0-9-_]+$/.test(name);
+    return /^[a-zA-Z0-9-_]+$/.test(name);
 }
 
 async function handleGET(req: NextApiRequest, res: NextApiResponse) {

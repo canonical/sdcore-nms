@@ -32,9 +32,6 @@ export const createSubscriber = async ({
     if (checkResponse.ok && existingSubscriberData["AuthenticationSubscription"]["authenticationMethod"]) {
       throw new Error("Subscriber already exists.");
     }
-    else{
-      console.error(checkResponse);
-    }
 
     const response = await fetch(`/api/subscriber/imsi-${imsi}`, {
       method: "POST",
@@ -91,7 +88,7 @@ export const createSubscriber = async ({
     const details =
       error instanceof Error
         ? error.message
-        : "Failed to configure the network.";
+        : "Failed to create the subscriber.";
     throw new Error(details);
   }
 };
