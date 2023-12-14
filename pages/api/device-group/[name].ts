@@ -87,7 +87,7 @@ async function handleGET(req: NextApiRequest, res: NextApiResponse) {
     });
 
     if (!response.ok) {
-      res.status(response.status).json({ error: "Error retrieving network slice." });
+      res.status(response.status).json({ error: "Error retrieving device group." });
       return;
     }
 

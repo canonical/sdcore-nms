@@ -21,6 +21,19 @@ export const createSubscriber = async ({
   };
 
   try {
+    const checkResponse = await fetch(`/api/subscriber/imsi-${imsi}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    // Workaround for https://github.com/omec-project/webconsole/issues/109
+    const existingSubscriberData = await checkResponse.json();
+    if (checkResponse.ok && existingSubscriberData["AuthenticationSubscription"]["authenticationMethod"]) {
+      throw new Error("Subscriber already exists.");
+    }
+
     const response = await fetch(`/api/subscriber/imsi-${imsi}`, {
       method: "POST",
       headers: {
@@ -73,6 +86,10 @@ export const createSubscriber = async ({
     return response.json();
   } catch (error) {
     console.error(error);
-    throw new Error("Failed to create the subscriber.");
+    const details =
+      error instanceof Error
+        ? error.message
+        : "Failed to create the subscriber.";
+    throw new Error(details);
   }
 };
