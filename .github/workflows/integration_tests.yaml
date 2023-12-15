@@ -31,7 +31,7 @@ jobs:
           sleep 10  # Wait for the container to be ready
           curl localhost:3000/network-configuration | grep -i '5G NMS'
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: steps.test_image.outcome == 'success'
         with:
           name: rock
