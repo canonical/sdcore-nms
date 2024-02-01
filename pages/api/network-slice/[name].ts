@@ -10,6 +10,8 @@ export default async function handleNetworkSlice(req: NextApiRequest, res: NextA
       return handleGET(req, res);
     case "POST":
       return handlePOST(req, res);
+    case "PATCH":
+      return handlePATCH(req, res);
     case "DELETE":
       return handleDELETE(req, res);
     default:
@@ -161,6 +163,43 @@ async function handlePOST(req: NextApiRequest, res: NextApiResponse) {
   try {
     const response = await fetch(url, {
       method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(req.body),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error creating network slice. Error code: ${response.status}`);
+    }
+
+    res.status(200).json({ message: "Network Slice created successfully" });
+  } catch (error) {
+    console.error("Error details:", error);
+    res.status(500).json({
+      error: "An error occurred while creating the network slice",
+    });
+  }
+}
+
+async function handlePATCH(req: NextApiRequest, res: NextApiResponse) {
+  const { name } = req.query
+
+  if (typeof name !== 'string') {
+    res.status(400).json({ error: "Invalid name provided." });
+    return;
+  }
+
+  if (!isValidName(name)) {
+    res.status(400).json({ error: "Invalid name provided." });
+    return;
+  }
+  
+  const url = `${WEBUI_ENDPOINT}/config/v1/network-slice/${name}`;
+
+  try {
+    const response = await fetch(url, {
+      method: "PATCH",
       headers: {
         "Content-Type": "application/json",
       },

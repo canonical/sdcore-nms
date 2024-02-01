@@ -9,6 +9,7 @@ export const getNetworkSlice = async (sliceName: string): Promise<NetworkSlice> 
       throw new Error("Failed to fetch network slice");
     }
     const slice = await response.json();
+    console.error(slice);
     return slice;
   } catch (error) {
     console.error(error);
