@@ -71,12 +71,8 @@ const NetworkSliceModal = ({ networkSlice, toggleModal }: NetworkSliceModalProps
     }
   }
 
-  const modalButtonText = (networkSlice: NetworkSlice | undefined) => {
-    if (networkSlice) {
-      return "Edit"
-    } else {
-      return "Create"
-    }
+  const buttonText = (networkSlice: NetworkSlice | undefined) => {
+    return networkSlice ? "Edit" : "Create"
   }
 
   const getNetworkSliceUpfs = () => {
@@ -86,14 +82,9 @@ const NetworkSliceModal = ({ networkSlice, toggleModal }: NetworkSliceModalProps
       return {} as UpfItem
     }
   }
-  const upfsItem :UpfItem =getNetworkSliceUpfs()
 
   const getUpfString = () => {
-    if (networkSlice) {
-      return `${formik.values.upf.hostname}:${formik.values.upf.port}`
-    } else {
-      return ""
-    }
+    return networkSlice ? `${formik.values.upf.hostname}:${formik.values.upf.port}` : ""
   }
 
   const stringgnb = networkSlice?.["site-info"].gNodeBs?.map((item) =>{
@@ -101,11 +92,7 @@ const NetworkSliceModal = ({ networkSlice, toggleModal }: NetworkSliceModalProps
   });
 
   const getGnbString = () => {
-    if (networkSlice) {
-      return stringgnb
-    } else {
-      return ""
-    }
+    return networkSlice ? stringgnb : ""
   } 
 
   const formik = useFormik<NetworkSliceValues>({
@@ -113,7 +100,7 @@ const NetworkSliceModal = ({ networkSlice, toggleModal }: NetworkSliceModalProps
       mcc: networkSlice?.["site-info"]["plmn"].mcc || "",
       mnc: networkSlice?.["site-info"]["plmn"].mnc || "",
       name: networkSlice?.SliceName || "",
-      upf: upfsItem,//{} as UpfItem,//sliceUpf,//{} as UpfItem,
+      upf: getNetworkSliceUpfs(),
       gnbList: [],
     },
     validationSchema: NetworkSliceSchema,
@@ -208,7 +195,7 @@ const NetworkSliceModal = ({ networkSlice, toggleModal }: NetworkSliceModalProps
           disabled={!(formik.isValid && formik.dirty)}
           loading={formik.isSubmitting}
         >
-          {modalButtonText(networkSlice)}
+          {buttonText(networkSlice)}
         </ActionButton>
       }
     >

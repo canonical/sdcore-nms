@@ -39,11 +39,16 @@ const NetworkConfiguration = () => {
     void queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
   };
 
-  const getEditButton = (slice: NetworkSlice) =>
+  const handleEditButton = (networkSlice: NetworkSlice) => {
+    setNetworkSlice(networkSlice);
+    toggleEditNetworkSliceModal();
+  }
+
+  const getEditButton = (networkSlice: NetworkSlice) =>
   {
     return <Button
               appearance=""
-              onClick={() =>{setNetworkSlice(slice); toggleEditNetworkSliceModal();}}
+              onClick={() =>{handleEditButton(networkSlice)}}
               className="u-no-margin--bottom">
               Edit
             </Button>

@@ -30,7 +30,11 @@ interface GnbItem {
       });
   
       if (!checkResponse.ok) {
-        throw new Error("Error editing Network Slice" + name);
+        const result = await checkResponse.json();
+        if (result.error) {
+          throw new Error(result.error);
+        }
+        throw new Error("Error editing Network Slice " + name);
       }
 
       var slice = await checkResponse.json();
@@ -55,7 +59,7 @@ interface GnbItem {
         }
         debugger;
         throw new Error(
-          `Error creating network. Error code: ${networksliceResponse.status}`,
+          `Error editing network. Error code: ${networksliceResponse.status}`,
         );
       }
   
