@@ -1,8 +1,10 @@
 "use client";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 
-import React from "react";
-import { Col, ConfirmationButton, MainTable, Row, } from "@canonical/react-components";
+import React, { useState } from "react";
+import { Button, Col, ConfirmationButton, MainTable, Row, } from "@canonical/react-components";
+import DeviceGroupModal from "@/components/DeviceGroupModal";
 import { getAllDeviceGroups } from "@/utils/getDeviceGroup";
 import { deleteDeviceGroup } from "@/utils/deleteDeviceGroup";
 import { queryKeys } from "@/utils/queryKeys";
@@ -19,6 +21,22 @@ export const NetworkSliceGroups: React.FC<NetworkSliceTableProps> = ({
   slice, isExpanded
 }) => {
   const queryClient = useQueryClient();
+  const [modal, setIsModalVisible] = useState({
+    id: null,
+    active: false,
+  });
+  const toggleModal = () => {
+    setIsModalVisible((prevModal) => ({
+      ...prevModal,
+      active: !prevModal.active,
+    }));
+  };
+  const showModal = (id: any) => {
+    setIsModalVisible(() => ({
+      id,
+      active: true,
+    }));
+  };
   const { data: deviceGroupContent = [], isLoading } = useQuery({
     queryKey: [queryKeys.allDeviceGroups, slice.SliceName, slice["site-device-group"]?.join(",")],
     queryFn: () => getAllDeviceGroups(slice),
@@ -31,6 +49,12 @@ export const NetworkSliceGroups: React.FC<NetworkSliceTableProps> = ({
       networkSliceName,
     });
     await queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
+  };
+
+  const handleDeviceGroupEdited = async () => {
+    await queryClient.invalidateQueries({
+      queryKey: [queryKeys.allDeviceGroups],
+    });
   };
 
   if (isLoading) {
@@ -100,9 +124,36 @@ export const NetworkSliceGroups: React.FC<NetworkSliceTableProps> = ({
     )
   }
 
-  return deviceGroupContent.map((deviceGroup) => (
+  const getEditButton = (modal_id: number) =>
+    {
+      const editIcon=<EditOutlinedIcon
+                        fontSize="small"
+                        style={{ color: "#666" }}
+                      />
+      return (
+          <Button
+            className="u-no-margin--bottom is-small"
+            small
+            hasIcon
+            appearance={"base"}
+            onClick={() => showModal(modal_id)}
+            title="Edit"
+          >
+            {editIcon}
+          </Button>
+      )
+    }
+
+  return deviceGroupContent.map((deviceGroup, deviceGroup_id) => (
       <Row key={deviceGroup["group-name"]}>
         <Col size={8}>
+          {modal.active && modal.id === deviceGroup_id && (
+            <DeviceGroupModal
+              toggleModal={toggleModal}
+              onDeviceGroupAction={handleDeviceGroupEdited}
+              deviceGroup={deviceGroup}
+            />
+          )}
           <MainTable
             headers={[
               {
@@ -111,6 +162,7 @@ export const NetworkSliceGroups: React.FC<NetworkSliceTableProps> = ({
               {
                 content:
                   (<div className="u-align--right">
+                    {getEditButton(deviceGroup_id)}
                     {getDeleteButton(deviceGroup?.["group-name"], deviceGroup?.["imsis"] , slice.SliceName)}
                   </div>
                   ),

@@ -36,7 +36,7 @@ export const NetworkSliceTable: React.FC<NetworkSliceTableProps> = ({
       {isModalVisible && slice?.SliceName && (
         <DeviceGroupModal
           toggleModal={toggleModal}
-          onDeviceGroupCreated={handleDeviceGroupCreated}
+          onDeviceGroupAction={handleDeviceGroupCreated}
           networkSliceName={slice.SliceName}
         />
       )}
