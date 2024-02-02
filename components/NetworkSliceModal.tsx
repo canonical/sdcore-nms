@@ -7,7 +7,9 @@ import {
   Select,
   ActionButton,
 } from "@canonical/react-components";
+import { NetworkSlice } from "@/components/types";
 import { createNetworkSlice } from "@/utils/createNetworkSlice";
+import { editNetworkSlice } from "@/utils/editNetworkSlice";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/utils/queryKeys";
 import { getUpfList, UpfItem } from "@/utils/getUpfList";
@@ -24,10 +26,11 @@ interface NetworkSliceValues {
 }
 
 interface NetworkSliceModalProps {
+  networkSlice: NetworkSlice | undefined;
   toggleModal: () => void;
 }
 
-const CreateNetworkSliceModal = ({ toggleModal }: NetworkSliceModalProps) => {
+const NetworkSliceModal = ({ networkSlice, toggleModal }: NetworkSliceModalProps) => {
   const queryClient = useQueryClient();
   const [apiError, setApiError] = useState<string | null>(null);
   const [upfApiError, setUpfApiError] = useState<string | null>(null);
@@ -58,25 +61,83 @@ const CreateNetworkSliceModal = ({ toggleModal }: NetworkSliceModalProps) => {
       .required("Selecting at least 1 gNodeB is required."),
   });
 
+  const sliceUpf: UpfItem = {hostname: networkSlice?.["site-info"]["upf"]["upf-name"] || "", port:networkSlice?.["site-info"]["upf"]["upf-port"] || ""};
+  
+  const modalTitle = (networkSliceName: string | undefined) => {
+    if (networkSliceName) {
+      return "Edit Network Slice: " + networkSliceName
+    } else {
+      return "Create Network Slice"
+    }
+  }
+
+  const modalButtonText = (networkSlice: NetworkSlice | undefined) => {
+    if (networkSlice) {
+      return "Edit"
+    } else {
+      return "Create"
+    }
+  }
+
+  const getNetworkSliceUpfs = () => {
+    if (networkSlice) {
+      return {hostname: networkSlice?.["site-info"]["upf"]["upf-name"] || "", port:networkSlice?.["site-info"]["upf"]["upf-port"] || ""};
+    } else {
+      return {} as UpfItem
+    }
+  }
+  const upfsItem :UpfItem =getNetworkSliceUpfs()
+
+  const getUpfString = () => {
+    if (networkSlice) {
+      return `${formik.values.upf.hostname}:${formik.values.upf.port}`
+    } else {
+      return ""
+    }
+  }
+
+  const stringgnb = networkSlice?.["site-info"].gNodeBs?.map((item) =>{
+    return `${item.name}:${item.tac}`
+  });
+
+  const getGnbString = () => {
+    if (networkSlice) {
+      return stringgnb
+    } else {
+      return ""
+    }
+  } 
+
   const formik = useFormik<NetworkSliceValues>({
     initialValues: {
-      mcc: "",
-      mnc: "",
-      name: "",
-      upf: {} as UpfItem,
+      mcc: networkSlice?.["site-info"]["plmn"].mcc || "",
+      mnc: networkSlice?.["site-info"]["plmn"].mnc || "",
+      name: networkSlice?.SliceName || "",
+      upf: upfsItem,//{} as UpfItem,//sliceUpf,//{} as UpfItem,
       gnbList: [],
     },
     validationSchema: NetworkSliceSchema,
     onSubmit: async (values) => {
       try {
-        await createNetworkSlice({
-          name: values.name,
-          mcc: values.mcc.toString(),
-          mnc: values.mnc.toString(),
-          upfName: values.upf.hostname,
-          upfPort: values.upf.port,
-          gnbList: values.gnbList,
-        });
+        if (networkSlice){
+          await editNetworkSlice({
+            name: values.name,
+            mcc: values.mcc.toString(),
+            mnc: values.mnc.toString(),
+            upfName: values.upf.hostname,
+            upfPort: values.upf.port,
+            gnbList: values.gnbList,
+          });
+        } else {
+          await createNetworkSlice({
+            name: values.name,
+            mcc: values.mcc.toString(),
+            mnc: values.mnc.toString(),
+            upfName: values.upf.hostname,
+            upfPort: values.upf.port,
+            gnbList: values.gnbList,
+          });
+        }
         await queryClient.invalidateQueries({
           queryKey: [queryKeys.networkSlices],
         });
@@ -137,7 +198,7 @@ const CreateNetworkSliceModal = ({ toggleModal }: NetworkSliceModalProps) => {
 
   return (
     <Modal
-      title="Create Network Slice"
+      title={modalTitle(networkSlice?.SliceName)}
       close={toggleModal}
       buttonRow={
         <ActionButton
@@ -147,7 +208,7 @@ const CreateNetworkSliceModal = ({ toggleModal }: NetworkSliceModalProps) => {
           disabled={!(formik.isValid && formik.dirty)}
           loading={formik.isSubmitting}
         >
-          Create
+          {modalButtonText(networkSlice)}
         </ActionButton>
       }
     >
@@ -174,6 +235,7 @@ const CreateNetworkSliceModal = ({ toggleModal }: NetworkSliceModalProps) => {
           placeholder="default"
           stacked
           required
+          disabled={networkSlice}
           {...formik.getFieldProps("name")}
           error={formik.touched.name ? formik.errors.name : null}
         />
@@ -200,7 +262,7 @@ const CreateNetworkSliceModal = ({ toggleModal }: NetworkSliceModalProps) => {
           error={formik.touched.mnc ? formik.errors.mnc : null}
         />
         <Select
-          defaultValue=""
+          defaultValue={getUpfString()}
           id="upf"
           label="UPF"
           stacked
@@ -220,6 +282,7 @@ const CreateNetworkSliceModal = ({ toggleModal }: NetworkSliceModalProps) => {
         />
         <Select
           id="gnb"
+          defaultValue={getGnbString()}
           stacked
           required
           options={[
@@ -242,4 +305,4 @@ const CreateNetworkSliceModal = ({ toggleModal }: NetworkSliceModalProps) => {
   );
 };
 
-export default CreateNetworkSliceModal;
+export default NetworkSliceModal;

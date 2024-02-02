@@ -12,8 +12,11 @@ export type NetworkSlice = {
       mcc: string;
       mnc: string;
     };
-    gNodeBs?: [];
-    upf: {
+    gNodeBs?: [{
+      name: string;
+      tac: number;
+    }];
+    "upf": {
       "upf-name": string;
       "upf-port": string;
     };
