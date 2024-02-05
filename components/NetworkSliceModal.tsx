@@ -61,8 +61,6 @@ const NetworkSliceModal = ({ networkSlice, toggleModal }: NetworkSliceModalProps
       .required("Selecting at least 1 gNodeB is required."),
   });
 
-  const sliceUpf: UpfItem = {hostname: networkSlice?.["site-info"]["upf"]["upf-name"] || "", port:networkSlice?.["site-info"]["upf"]["upf-port"] || ""};
-  
   const modalTitle = (networkSliceName: string | undefined) => {
     if (networkSliceName) {
       return "Edit Network Slice: " + networkSliceName
@@ -75,32 +73,20 @@ const NetworkSliceModal = ({ networkSlice, toggleModal }: NetworkSliceModalProps
     return networkSlice ? "Edit" : "Create"
   }
 
-  const getNetworkSliceUpfs = () => {
+  const getUpfFromNetworkSlice = () => {
     if (networkSlice) {
-      return {hostname: networkSlice?.["site-info"]["upf"]["upf-name"] || "", port:networkSlice?.["site-info"]["upf"]["upf-port"] || ""};
+      return {hostname: networkSlice?.["site-info"]["upf"]["upf-name"] || "", port: networkSlice?.["site-info"]["upf"]["upf-port"] || ""};
     } else {
-      return {} as UpfItem
+      return {} as UpfItem;
     }
   }
-
-  const getUpfString = () => {
-    return networkSlice ? `${formik.values.upf.hostname}:${formik.values.upf.port}` : ""
-  }
-
-  const stringgnb = networkSlice?.["site-info"].gNodeBs?.map((item) =>{
-    return `${item.name}:${item.tac}`
-  });
-
-  const getGnbString = () => {
-    return networkSlice ? stringgnb : ""
-  } 
 
   const formik = useFormik<NetworkSliceValues>({
     initialValues: {
       mcc: networkSlice?.["site-info"]["plmn"].mcc || "",
       mnc: networkSlice?.["site-info"]["plmn"].mnc || "",
       name: networkSlice?.SliceName || "",
-      upf: getNetworkSliceUpfs(),
+      upf: getUpfFromNetworkSlice(),
       gnbList: networkSlice?.["site-info"].gNodeBs || [],
     },
     validationSchema: NetworkSliceSchema,
@@ -183,6 +169,16 @@ const NetworkSliceModal = ({ networkSlice, toggleModal }: NetworkSliceModalProps
     void formik.setFieldValue("gnbList", items);
   };
 
+  const getGnbListValueAsString = () => {
+    return (formik.values.gnbList.map((item) =>{
+      return `${item.name}:${item.tac}`
+    }));
+  };
+
+  const getUpfValueAsString = () => {
+    return formik.values.upf.hostname ? `${formik.values.upf.hostname}:${formik.values.upf.port}` : "";
+  };
+
   return (
     <Modal
       title={modalTitle(networkSlice?.SliceName)}
@@ -249,11 +245,11 @@ const NetworkSliceModal = ({ networkSlice, toggleModal }: NetworkSliceModalProps
           error={formik.touched.mnc ? formik.errors.mnc : null}
         />
         <Select
-          defaultValue={getUpfString()}
           id="upf"
           label="UPF"
           stacked
           required
+          value = {getUpfValueAsString()}
           onChange={handleUpfChange}
           options={[
             {
@@ -269,9 +265,9 @@ const NetworkSliceModal = ({ networkSlice, toggleModal }: NetworkSliceModalProps
         />
         <Select
           id="gnb"
-          defaultValue={getGnbString()}
           stacked
           required
+          value = {getGnbListValueAsString()}
           options={[
             {
               value: "",
