@@ -39,7 +39,8 @@ const ModalTitle = (networkSliceName: string | undefined, deviceGroupName: strin
   } else if (networkSliceName == undefined && deviceGroupName) {
     return "Edit Device Group: " + deviceGroupName
   } else {
-    throw new Error("Either Network Slice name or Device Group must be specified.")
+    console.error("Either Network Slice name or Device Group must be specified.")
+    return null
   }
 }
 
@@ -127,6 +128,16 @@ const DeviceGroupModal = ({
     },
   });
 
+  if (!modalTitle) {
+    return (
+      <Modal
+        title={"Error while trying to edit device group"}
+        close={toggleModal}
+      >
+        An unexpected error occurred.
+      </Modal>
+    )
+  }
   return (
     <Modal
       title={modalTitle}
