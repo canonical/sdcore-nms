@@ -44,11 +44,7 @@ const ModalTitle = (networkSliceName: string | undefined, deviceGroupName: strin
 }
 
 const ModalButtonText = (deviceGroupName: string | undefined) => {
-  if (deviceGroupName == undefined ) {
-    return "Create"
-  } else {
-    return "Save Changes"
-  }
+  return deviceGroupName ? "Save Changes" : "Create"
 }
 
 const DeviceGroupModal = ({

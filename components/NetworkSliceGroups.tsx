@@ -57,6 +57,8 @@ export const NetworkSliceGroups: React.FC<NetworkSliceTableProps> = ({
     });
   };
 
+  const [apiError, setApiError] = useState<string | null>(null);
+
   if (isLoading) {
     return <Loader text="Loading..." />;
   }
@@ -68,8 +70,7 @@ export const NetworkSliceGroups: React.FC<NetworkSliceTableProps> = ({
   const getDeleteButton = (deviceGroupName: string, subscribers: string[], sliceName: string) =>
   {
     const deleteIcon=<DeleteOutlinedIcon
-                        fontSize="small"
-                        style={{ color: "#666" }}
+                        className="device-group-action-button"
                       />
     if (subscribers &&
         subscribers.length > 0)
@@ -127,8 +128,7 @@ export const NetworkSliceGroups: React.FC<NetworkSliceTableProps> = ({
   const getEditButton = (modal_id: number) =>
     {
       const editIcon=<EditOutlinedIcon
-                        fontSize="small"
-                        style={{ color: "#666" }}
+                        className="device-group-action-button"
                       />
       return (
           <Button

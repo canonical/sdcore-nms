@@ -7,6 +7,22 @@ interface DeviceGroupArgs {
   MBRDownstreamBps: number;
 }
 
+const getDeviceGroup = async (deviceGroupName: string) => {
+  try {
+    const response = await fetch(`/api/device-group/${deviceGroupName}`, {
+      method: "GET",
+    });
+    if (!response.ok)
+      throw new Error(
+        `Failed to fetch device group. Status: ${response.status}`,
+      );
+    const deviceGroup = await response.json();
+    return deviceGroup;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 export const editDeviceGroup = async ({
   name,
   ueIpPool,
@@ -15,30 +31,34 @@ export const editDeviceGroup = async ({
   MBRUpstreamBps,
   MBRDownstreamBps,
 }: DeviceGroupArgs) => {
-  const deviceGroupData = {
-    "site-info": "demo",
-    "ip-domain-name": "pool1",
-    "ip-domain-expanded": {
-      dnn: "internet",
-      "ue-ip-pool": ueIpPool,
-      "dns-primary": dns,
-      mtu: mtu,
-      "ue-dnn-qos": {
-        "dnn-mbr-uplink": MBRUpstreamBps,
-        "dnn-mbr-downlink": MBRDownstreamBps,
-        "bitrate-unit": "bps",
-        "traffic-class": {
-          name: "platinum",
-          arp: 6,
-          pdb: 300,
-          pelr: 6,
-          qci: 8,
+  try {
+    const currentConfig = await getDeviceGroup(name)
+    var imsis = currentConfig["imsis"]
+
+    const deviceGroupData = {
+      "site-info": "demo",
+      "imsis": imsis,
+      "ip-domain-name": "pool1",
+      "ip-domain-expanded": {
+        dnn: "internet",
+        "ue-ip-pool": ueIpPool,
+        "dns-primary": dns,
+        mtu: mtu,
+        "ue-dnn-qos": {
+          "dnn-mbr-uplink": MBRUpstreamBps,
+          "dnn-mbr-downlink": MBRDownstreamBps,
+          "bitrate-unit": "bps",
+          "traffic-class": {
+            name: "platinum",
+            arp: 6,
+            pdb: 300,
+            pelr: 6,
+            qci: 8,
+          },
         },
       },
-    },
-  };
+    };
 
-  try {
     const response = await fetch(`/api/device-group/${name}`, {
       method: "POST",
       headers: {
