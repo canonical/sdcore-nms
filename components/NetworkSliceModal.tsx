@@ -101,7 +101,7 @@ const NetworkSliceModal = ({ networkSlice, toggleModal }: NetworkSliceModalProps
       mnc: networkSlice?.["site-info"]["plmn"].mnc || "",
       name: networkSlice?.SliceName || "",
       upf: getNetworkSliceUpfs(),
-      gnbList: [],
+      gnbList: networkSlice?.["site-info"].gNodeBs || [],
     },
     validationSchema: NetworkSliceSchema,
     onSubmit: async (values) => {
@@ -222,7 +222,7 @@ const NetworkSliceModal = ({ networkSlice, toggleModal }: NetworkSliceModalProps
           placeholder="default"
           stacked
           required
-          disabled={networkSlice}
+          disabled={networkSlice ? true : false}
           {...formik.getFieldProps("name")}
           error={formik.touched.name ? formik.errors.name : null}
         />
