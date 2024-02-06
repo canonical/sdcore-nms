@@ -4,5 +4,4 @@ export const queryKeys = {
   subscribers: "subscribers",
   upfList: "upf-list",
   gnbList: "gnb-list",
-  networkSlice: "network-slice"
 };

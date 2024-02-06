@@ -26,7 +26,7 @@ interface NetworkSliceValues {
 }
 
 interface NetworkSliceModalProps {
-  networkSlice: NetworkSlice | undefined;
+  networkSlice?: NetworkSlice;
   toggleModal: () => void;
 }
 
@@ -61,21 +61,17 @@ const NetworkSliceModal = ({ networkSlice, toggleModal }: NetworkSliceModalProps
       .required("Selecting at least 1 gNodeB is required."),
   });
 
-  const modalTitle = (networkSliceName: string | undefined) => {
-    if (networkSliceName) {
-      return "Edit Network Slice: " + networkSliceName
-    } else {
-      return "Create Network Slice"
-    }
+  const modalTitle = () => {
+      return networkSlice?.SliceName ? ("Edit Network Slice: " + networkSlice.SliceName) : "Create Network Slice"
   }
 
-  const buttonText = (networkSlice: NetworkSlice | undefined) => {
+  const buttonText = () => {
     return networkSlice ? "Edit" : "Create"
   }
 
   const getUpfFromNetworkSlice = () => {
     if (networkSlice) {
-      return {hostname: networkSlice?.["site-info"]["upf"]["upf-name"] || "", port: networkSlice?.["site-info"]["upf"]["upf-port"] || ""};
+      return {hostname: networkSlice["site-info"]["upf"]["upf-name"], port: networkSlice["site-info"]["upf"]["upf-port"]};
     } else {
       return {} as UpfItem;
     }
@@ -181,7 +177,7 @@ const NetworkSliceModal = ({ networkSlice, toggleModal }: NetworkSliceModalProps
 
   return (
     <Modal
-      title={modalTitle(networkSlice?.SliceName)}
+      title={modalTitle()}
       close={toggleModal}
       buttonRow={
         <ActionButton
@@ -191,7 +187,7 @@ const NetworkSliceModal = ({ networkSlice, toggleModal }: NetworkSliceModalProps
           disabled={!(formik.isValid && formik.dirty)}
           loading={formik.isSubmitting}
         >
-          {buttonText(networkSlice)}
+          {buttonText()}
         </ActionButton>
       }
     >

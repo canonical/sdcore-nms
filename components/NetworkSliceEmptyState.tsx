@@ -33,7 +33,6 @@ const NetworkSliceEmptyState = () => {
 
       {isModalVisible && (
         <NetworkSliceModal
-          networkSlice={undefined}
           toggleModal={toggleModal}
         />
       )}

@@ -132,7 +132,6 @@ const NetworkConfiguration = () => {
       </PageContent>
       {isCreateModalVisible && (
         <NetworkSliceModal
-          networkSlice={undefined}
           toggleModal={toggleCreateNetworkSliceModal}
         />
       )}
