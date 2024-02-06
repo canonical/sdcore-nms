@@ -7,7 +7,7 @@ import {
 } from "@canonical/react-components";
 import { deleteNetworkSlice } from "@/utils/deleteNetworkSlice";
 import { getNetworkSlices } from "@/utils/getNetworkSlices";
-import CreateNetworkSliceModal from "@/components/CreateNetworkSliceModal";
+import NetworkSliceModal from "@/components/NetworkSliceModal";
 import NetworkSliceEmptyState from "@/components/NetworkSliceEmptyState";
 import { NetworkSliceTable } from "@/components/NetworkSliceTable";
 import Loader from "@/components/Loader";
@@ -15,10 +15,13 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/utils/queryKeys";
 import PageHeader from "@/components/PageHeader";
 import PageContent from "@/components/PageContent";
+import { NetworkSlice } from "@/components/types";
 
 const NetworkConfiguration = () => {
   const queryClient = useQueryClient();
-  const [isModalVisible, setModalVisible] = useState(false);
+  const [isCreateModalVisible, setCreateModalVisible] = useState(false);
+  const [isEditModalVisible, setEditModalVisible] = useState(false);
+  const [networkSlice, setNetworkSlice] = useState<NetworkSlice | undefined>(undefined);
 
   const { data: networkSlices = [], isLoading: loading } = useQuery({
     queryKey: [queryKeys.networkSlices],
@@ -26,12 +29,30 @@ const NetworkConfiguration = () => {
   });
 
   const toggleCreateNetworkSliceModal = () =>
-    setModalVisible((prev) => !prev);
+    setCreateModalVisible((prev) => !prev);
+
+  const toggleEditNetworkSliceModal = () =>
+    setEditModalVisible((prev) => !prev);
 
   const handleConfirmDelete = async (sliceName: string) => {
     await deleteNetworkSlice(sliceName);
     void queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
   };
+
+  const handleEditButton = (networkSlice: NetworkSlice) => {
+    setNetworkSlice(networkSlice);
+    toggleEditNetworkSliceModal();
+  }
+
+  const getEditButton = (networkSlice: NetworkSlice) =>
+  {
+    return <Button
+              appearance=""
+              onClick={() =>{handleEditButton(networkSlice)}}
+              className="u-no-margin--bottom">
+              Edit
+            </Button>
+  }
 
   const getDeleteButton = (sliceName: string, deviceGroups: string[] | undefined) =>
   {
@@ -101,6 +122,7 @@ const NetworkConfiguration = () => {
                   <NetworkSliceTable slice={slice} />
                   <hr />
                   <div className="u-align--right">
+                    {getEditButton(slice)}
                     {getDeleteButton(slice.SliceName, slice["site-device-group"])}
                   </div>
                 </Card>
@@ -108,9 +130,15 @@ const NetworkConfiguration = () => {
             </>
           )}
       </PageContent>
-      {isModalVisible && (
-        <CreateNetworkSliceModal
+      {isCreateModalVisible && (
+        <NetworkSliceModal
           toggleModal={toggleCreateNetworkSliceModal}
+        />
+      )}
+      {isEditModalVisible && (
+        <NetworkSliceModal
+          networkSlice={networkSlice}
+          toggleModal={toggleEditNetworkSliceModal}
         />
       )}
     </>

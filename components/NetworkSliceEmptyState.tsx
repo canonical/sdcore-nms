@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import CreateNetworkSliceModal from "@/components/CreateNetworkSliceModal";
+import NetworkSliceModal from "@/components/NetworkSliceModal";
 import { Button, Row, Col, Strip } from "@canonical/react-components";
 
 const NetworkSliceEmptyState = () => {
@@ -32,7 +32,7 @@ const NetworkSliceEmptyState = () => {
       </table>
 
       {isModalVisible && (
-        <CreateNetworkSliceModal
+        <NetworkSliceModal
           toggleModal={toggleModal}
         />
       )}
