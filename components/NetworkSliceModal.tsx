@@ -66,7 +66,7 @@ const NetworkSliceModal = ({ networkSlice, toggleModal }: NetworkSliceModalProps
   }
 
   const buttonText = () => {
-    return networkSlice ? "Edit" : "Create"
+    return networkSlice ? "Save Changes" : "Create"
   }
 
   const getUpfFromNetworkSlice = () => {
