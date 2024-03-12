@@ -54,7 +54,7 @@ export const deleteSubscriber = async (imsi: string) => {
 
         const deviceGroup = await deviceGroupResponse.json();
 
-        if (deviceGroup.imsis.includes(imsi)) {
+        if (deviceGroup.imsis?.includes(imsi)) {
           deviceGroup.imsis = deviceGroup.imsis.filter(
             (id: string) => id !== imsi,
           );
