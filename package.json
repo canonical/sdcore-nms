@@ -33,7 +33,7 @@
     "swagger-ui-react": "^5.12.3",
     "tailwindcss": "3.4.3",
     "typescript": "5.4.3",
-    "vanilla-framework": "^4.9.0",
+    "vanilla-framework": "^4.9.1",
     "yup": "1.4.0"
   },
   "devDependencies": {
