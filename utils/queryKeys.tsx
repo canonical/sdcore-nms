@@ -4,4 +4,5 @@ export const queryKeys = {
   subscribers: "subscribers",
   upfList: "upf-list",
   gnbList: "gnb-list",
+  deviceGroups : "device-groups",
 };
