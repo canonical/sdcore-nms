@@ -142,32 +142,20 @@ const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups}: Props
     [formik],
   );
 
-  useEffect(() => {
-    if (!subscriber && selectedSlice && selectedSlice["site-device-group"]) {
-      if (selectedSlice["site-device-group"].length ===1) {
-        setDeviceGroup(selectedSlice["site-device-group"][0]);
-      }
-      else {
-        setDeviceGroup("");
-      }
-    }
-  }, [slices, selectedSlice]);
-
   const deviceGroupOptions =
     selectedSlice && selectedSlice["site-device-group"]
       ? selectedSlice["site-device-group"]
       : [];
 
   useEffect(() => {
-    if (subscriber && selectedSlice && selectedSlice["site-device-group"]) {
-      if (oldNetworkSliceName == selectedSlice?.SliceName) {
-        setDeviceGroup(oldDeviceGroupName);
-      }
-      else if (selectedSlice["site-device-group"].length === 1){
-        setDeviceGroup(selectedSlice["site-device-group"][0]);
-      }
-      else if (selectedSlice["site-device-group"].length > 1)
-        setDeviceGroup("");
+    if (subscriber && selectedSlice && oldNetworkSliceName == selectedSlice.SliceName) {
+      setDeviceGroup(oldDeviceGroupName);
+    }
+    else if (selectedSlice && selectedSlice["site-device-group"]?.length === 1){
+      setDeviceGroup(selectedSlice["site-device-group"][0]);
+    }
+    else if (selectedSlice && selectedSlice["site-device-group"]?.length > 1){
+      setDeviceGroup("");
     }
   }, [deviceGroupOptions]);
 
