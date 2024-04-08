@@ -5,7 +5,7 @@ import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import React, { useState } from "react";
 import { Button, Col, ConfirmationButton, MainTable, Row, } from "@canonical/react-components";
 import DeviceGroupModal from "@/components/DeviceGroupModal";
-import { getAllDeviceGroups } from "@/utils/getDeviceGroup";
+import { getDeviceGroupsFromNetworkSlice } from "@/utils/getDeviceGroup";
 import { deleteDeviceGroup } from "@/utils/deleteDeviceGroup";
 import { queryKeys } from "@/utils/queryKeys";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -39,7 +39,7 @@ export const NetworkSliceGroups: React.FC<NetworkSliceTableProps> = ({
   };
   const { data: deviceGroupContent = [], isLoading } = useQuery({
     queryKey: [queryKeys.allDeviceGroups, slice.SliceName, slice["site-device-group"]?.join(",")],
-    queryFn: () => getAllDeviceGroups(slice),
+    queryFn: () => getDeviceGroupsFromNetworkSlice(slice),
     enabled: isExpanded,
   });
 

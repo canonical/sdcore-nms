@@ -8,7 +8,7 @@ import {
 } from "@canonical/react-components";
 import SubscriberModal from "@/components/SubscriberModal";
 import { getSubscribers } from "@/utils/getSubscribers";
-import { getDeviceGroupsDetails } from "@/utils/getDeviceGroup";
+import { getDeviceGroups } from "@/utils/getDeviceGroup";
 import { getNetworkSlices } from "@/utils/getNetworkSlices";
 import SyncOutlinedIcon from "@mui/icons-material/SyncOutlined";
 import { deleteSubscriber } from "@/utils/deleteSubscriber";
@@ -36,7 +36,7 @@ const Subscribers = () => {
 
   const { data: deviceGroups = [], isLoading: isDeviceGroupsLoading } = useQuery({
     queryKey: [queryKeys.deviceGroups],
-    queryFn: getDeviceGroupsDetails,
+    queryFn: getDeviceGroups,
   });
 
   const { data: slices = [], isLoading: isSlicesLoading } = useQuery({
@@ -45,12 +45,13 @@ const Subscribers = () => {
   });
 
   const handleRefresh = async () => {
-    void queryClient.invalidateQueries({ queryKey: [queryKeys.subscribers] });
+    await queryClient.invalidateQueries({ queryKey: [queryKeys.subscribers] });
+    await queryClient.invalidateQueries({ queryKey: [queryKeys.deviceGroups] });
   };
 
   const handleConfirmDelete = async (subscriber: string) => {
     await deleteSubscriber(subscriber);
-    void handleRefresh();
+    await handleRefresh();
   };
 
   const toggleCreateModal = () => setCreateModalVisible((prev) => !prev);

@@ -23,10 +23,9 @@ export const editSubscriber = async ({
     };
 
     try {
-        //console.error(subscriberData);
         updateSubscriber(subscriberData);
-        console.error(oldDeviceGroupName)
-        console.error(newDeviceGroupName)
+        console.log(oldDeviceGroupName);
+        console.log(newDeviceGroupName);
         if (oldDeviceGroupName != newDeviceGroupName) {
             var oldDeviceGroupData = await getDeviceGroupData(oldDeviceGroupName);
             oldDeviceGroupData["imsis"].pop(imsi);
@@ -57,11 +56,16 @@ const updateSubscriber = async (subscriberData: any) => {
     });
     
     // Workaround for https://github.com/omec-project/webconsole/issues/109
-    const existingSubscriberData = await checkResponse.json();
+    var existingSubscriberData = await checkResponse.json();
     if (!checkResponse.ok || !existingSubscriberData["AuthenticationSubscription"]["authenticationMethod"]) {
         throw new Error("Subscriber does not exist.");
     }
     console.error(existingSubscriberData)
+
+    existingSubscriberData["AuthenticationSubscription"]["opc"]["opcValue"] = subscriberData.opc;
+    existingSubscriberData["AuthenticationSubscription"]["permanentKey"]["permanentKeyValue"] = subscriberData.key;
+    existingSubscriberData["AuthenticationSubscription"]["sequenceNumber"] = subscriberData.sequenceNumber;
+
     const response = await fetch(`/api/subscriber/imsi-${subscriberData.UeId}`, {
         method: "POST",
         headers: {
@@ -83,7 +87,6 @@ const updateSubscriber = async (subscriberData: any) => {
 
 const getDeviceGroupData = async (deviceGroupName: string) => {
   try {
-
     const existingDeviceGroupResponse = await fetch(
         `/api/device-group/${deviceGroupName}`,
         {

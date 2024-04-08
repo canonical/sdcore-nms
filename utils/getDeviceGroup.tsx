@@ -1,6 +1,6 @@
 import { NetworkSlice } from "@/components/types";
 
-export const getAllDeviceGroups = async (slice?: NetworkSlice) => {
+export const getDeviceGroupsFromNetworkSlice = async (slice?: NetworkSlice) => {
   if (!slice || !slice["site-device-group"]) {
     return [];
   }
@@ -13,6 +13,30 @@ export const getAllDeviceGroups = async (slice?: NetworkSlice) => {
 
   return allDeviceGroups.filter((item) => item !== undefined);
 }
+
+export const getDeviceGroups = async () => {
+  try {
+    const response = await fetch(`/api/device-group/`, {
+      method: "GET",
+    });
+    if (!response.ok)
+      throw new Error(
+        `Failed to fetch device group. Status: ${response.status}`,
+      );
+    const deviceGroups = await response.json();
+
+    const deviceGroupsDetails = await Promise.all(
+      deviceGroups.map(async (name: string) =>
+        await getDeviceGroup(name),
+      ),
+    );
+  
+    return deviceGroupsDetails.filter((item) => item !== undefined);
+
+  } catch (error) {
+    console.error(error);
+  }
+};
 
 const getDeviceGroup = async (deviceGroupName: string) => {
   try {
@@ -30,29 +54,4 @@ const getDeviceGroup = async (deviceGroupName: string) => {
   }
 };
 
-export const getDeviceGroupsDetails = async () => {
-  try {
-    const response = await fetch(`/api/device-group/`, {
-      method: "GET",
-    });
-    if (!response.ok)
-      throw new Error(
-        `Failed to fetch device group. Status: ${response.status}`,
-      );
-    const deviceGroups = await response.json();
-    //console.error(deviceGroups);
 
-    const allDeviceGroups = await Promise.all(
-      deviceGroups.map(async (name: string) =>
-        await getDeviceGroup(name),
-      ),
-    );
-    //console.error(allDeviceGroups);
-  
-    return allDeviceGroups.filter((item) => item !== undefined);
-
-    //return deviceGroups;
-  } catch (error) {
-    console.error(error);
-  }
-};

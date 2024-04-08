@@ -22,14 +22,13 @@ export default async function handleDeviceGroup(req: NextApiRequest, res: NextAp
       return handleGET(req, res);
     default:
       res.setHeader("Allow", ["GET"]);
-      res.status(405).end(`Method ${req.method} Not Allowed`);
+      res.status(405).end(`Method ${req.method} Not Allowed.`);
   }
 }
 
 
 async function handleGET(req: NextApiRequest, res: NextApiResponse) {
   const url = `${WEBUI_ENDPOINT}/config/v1/device-group/`;
-
   try {
     const response = await fetch(url, {
       method: "GET",
@@ -43,14 +42,12 @@ async function handleGET(req: NextApiRequest, res: NextApiResponse) {
         `Error retrieving device group. Error code: ${response.status}`
       );
     }
-
     const data = await response.json();
-
     res.status(200).json(data);
   } catch (error) {
     console.error("Error details:", error);
     res.status(500).json({
-      error: "An error occurred while retrieving the device groups",
+      error: "An error occurred while retrieving the device groups.",
     });
   }
 }
