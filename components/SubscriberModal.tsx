@@ -11,9 +11,7 @@ import {
 import { NetworkSlice } from "@/components/types";
 import { createSubscriber } from "@/utils/createSubscriber";
 import { editSubscriber } from "@/utils/editSubscriber";
-import { getNetworkSlices } from "@/utils/getNetworkSlices";
-import { getDeviceGroups } from "@/utils/getDeviceGroup";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/utils/queryKeys";
 import * as Yup from "yup";
 import { useFormik } from "formik";
@@ -112,6 +110,7 @@ const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups}: Props
         }
         await queryClient.invalidateQueries({ queryKey: [queryKeys.subscribers] });
         await queryClient.invalidateQueries({ queryKey: [queryKeys.deviceGroups] });
+        await queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
         toggleModal();
       } catch (error) {
         console.error(error);
@@ -144,23 +143,15 @@ const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups}: Props
   );
 
   useEffect(() => {
-    if (!subscriber &&
-      selectedSlice &&
-      selectedSlice["site-device-group"] &&
-      selectedSlice["site-device-group"].length ===1
-    ) {
-      setDeviceGroup(selectedSlice["site-device-group"][0]);
+    if (!subscriber && selectedSlice && selectedSlice["site-device-group"]) {
+      if (selectedSlice["site-device-group"].length ===1) {
+        setDeviceGroup(selectedSlice["site-device-group"][0]);
+      }
+      else {
+        setDeviceGroup("");
+      }
     }
-    else if (!subscriber &&
-      selectedSlice &&
-      selectedSlice["site-device-group"] &&
-      selectedSlice["site-device-group"].length >0
-    ) {
-      setDeviceGroup("");
-    }
-
   }, [slices, selectedSlice]);
-
 
   const deviceGroupOptions =
     selectedSlice && selectedSlice["site-device-group"]
@@ -168,22 +159,15 @@ const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups}: Props
       : [];
 
   useEffect(() => {
-
-    if (subscriber && oldNetworkSliceName != selectedSlice?.SliceName &&
-      selectedSlice &&
-      selectedSlice["site-device-group"] &&
-      selectedSlice["site-device-group"].length >1
-    ) {
-      setDeviceGroup("");
-    }
-
-    else if (subscriber &&
-      selectedSlice &&
-      selectedSlice["site-device-group"] &&
-      selectedSlice["site-device-group"].length === 1
-    ) {
-
-      setDeviceGroup(selectedSlice["site-device-group"][0]);
+    if (subscriber && selectedSlice && selectedSlice["site-device-group"]) {
+      if (oldNetworkSliceName == selectedSlice?.SliceName) {
+        setDeviceGroup(oldDeviceGroupName);
+      }
+      else if (selectedSlice["site-device-group"].length === 1){
+        setDeviceGroup(selectedSlice["site-device-group"][0]);
+      }
+      else if (selectedSlice["site-device-group"].length > 1)
+        setDeviceGroup("");
     }
   }, [deviceGroupOptions]);
 
@@ -261,7 +245,6 @@ const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups}: Props
           label="Network Slice"
           stacked
           required
-          //{...formik.getFieldProps("selectedSlice")}
           value = {formik.values.selectedSlice}
           onChange={handleSliceChange}
           error={
@@ -284,7 +267,6 @@ const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups}: Props
           label="Device Group"
           stacked
           required
-          //{...formik.getFieldProps("deviceGroup")}
           value = {formik.values.deviceGroup}
           onChange={handleDeviceGroupChange}
           error={formik.touched.deviceGroup ? formik.errors.deviceGroup : null}

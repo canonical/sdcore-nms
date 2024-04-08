@@ -38,7 +38,7 @@ export const NetworkSliceGroups: React.FC<NetworkSliceTableProps> = ({
     }));
   };
   const { data: deviceGroupContent = [], isLoading } = useQuery({
-    queryKey: [queryKeys.allDeviceGroups, slice.SliceName, slice["site-device-group"]?.join(",")],
+    queryKey: [queryKeys.deviceGroups, slice.SliceName, slice["site-device-group"]?.join(",")],
     queryFn: () => getDeviceGroupsFromNetworkSlice(slice),
     enabled: isExpanded,
   });
@@ -53,7 +53,7 @@ export const NetworkSliceGroups: React.FC<NetworkSliceTableProps> = ({
 
   const handleDeviceGroupEdited = async () => {
     await queryClient.invalidateQueries({
-      queryKey: [queryKeys.allDeviceGroups],
+      queryKey: [queryKeys.deviceGroups],
     });
   };
 

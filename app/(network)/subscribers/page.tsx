@@ -29,7 +29,7 @@ const Subscribers = () => {
   const [isEditModalVisible, setEditModalVisible] = useState(false);
   const [subscriber, setSubscriber] = useState<any | undefined>(undefined);
 
-  const { data: subscribers = [], isLoading: loading } = useQuery({
+  const { data: subscribers = [], isLoading: isSubscribersLoading } = useQuery({
     queryKey: [queryKeys.subscribers],
     queryFn: getSubscribers,
   });
@@ -47,6 +47,7 @@ const Subscribers = () => {
   const handleRefresh = async () => {
     await queryClient.invalidateQueries({ queryKey: [queryKeys.subscribers] });
     await queryClient.invalidateQueries({ queryKey: [queryKeys.deviceGroups] });
+    await queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
   };
 
   const handleConfirmDelete = async (subscriber: string) => {
@@ -118,7 +119,7 @@ const Subscribers = () => {
     };
   });
 
-  if (loading) {
+  if (isSubscribersLoading || isDeviceGroupsLoading || isSlicesLoading) {
     return <Loader text="Loading..." />;
   }
 
@@ -150,7 +151,7 @@ const Subscribers = () => {
       </PageContent>
       {isCreateModalVisible && <SubscriberModal toggleModal={toggleCreateModal} slices={slices} deviceGroups={deviceGroups} />}
       {isEditModalVisible && 
-        <SubscriberModal toggleModal={toggleEditModal} subscriber={subscriber} slices={slices} deviceGroups={deviceGroups} />}
+        <SubscriberModal toggleModal={toggleEditModal} subscriber={subscriber} slices={slices} deviceGroups={deviceGroups}/>}
     </>
   );
 };
