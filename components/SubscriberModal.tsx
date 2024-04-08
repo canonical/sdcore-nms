@@ -154,7 +154,7 @@ const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups}: Props
     else if (selectedSlice && selectedSlice["site-device-group"]?.length === 1){
       setDeviceGroup(selectedSlice["site-device-group"][0]);
     }
-    else if (selectedSlice && selectedSlice["site-device-group"]?.length > 1){
+    else {
       setDeviceGroup("");
     }
   }, [deviceGroupOptions]);
