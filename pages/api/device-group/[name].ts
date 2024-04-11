@@ -14,7 +14,7 @@ export default async function handleDeviceGroup(req: NextApiRequest, res: NextAp
     case "DELETE":
       return handleDELETE(req, res);
     default:
-      res.setHeader("Allow", ["GET", "POST"]);
+      res.setHeader("Allow", ["GET", "POST", "DELETE"]);
       res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 }

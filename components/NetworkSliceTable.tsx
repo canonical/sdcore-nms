@@ -27,7 +27,7 @@ export const NetworkSliceTable: React.FC<NetworkSliceTableProps> = ({
       queryKey: [queryKeys.networkSlices],
     });
     await queryClient.invalidateQueries({
-      queryKey: [queryKeys.allDeviceGroups, slice.SliceName],
+      queryKey: [queryKeys.deviceGroups, slice.SliceName],
     });
   };
 

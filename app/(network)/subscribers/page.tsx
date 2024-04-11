@@ -6,8 +6,10 @@ import {
   MainTable,
   ConfirmationButton,
 } from "@canonical/react-components";
-import CreateSubscriberModal from "@/components/CreateSubscriberModal";
+import SubscriberModal from "@/components/SubscriberModal";
 import { getSubscribers } from "@/utils/getSubscribers";
+import { getDeviceGroups } from "@/utils/getDeviceGroup";
+import { getNetworkSlices } from "@/utils/getNetworkSlices";
 import SyncOutlinedIcon from "@mui/icons-material/SyncOutlined";
 import { deleteSubscriber } from "@/utils/deleteSubscriber";
 import Loader from "@/components/Loader";
@@ -23,26 +25,84 @@ export type Subscriber = {
 
 const Subscribers = () => {
   const queryClient = useQueryClient();
-  const [isModalVisible, setModalVisible] = useState(false);
+  const [isCreateModalVisible, setCreateModalVisible] = useState(false);
+  const [isEditModalVisible, setEditModalVisible] = useState(false);
+  const [subscriber, setSubscriber] = useState<any | undefined>(undefined);
 
-  const { data: subscribers = [], isLoading: loading } = useQuery({
+  const { data: subscribers = [], isLoading: isSubscribersLoading } = useQuery({
     queryKey: [queryKeys.subscribers],
     queryFn: getSubscribers,
   });
 
+  const { data: deviceGroups = [], isLoading: isDeviceGroupsLoading } = useQuery({
+    queryKey: [queryKeys.deviceGroups],
+    queryFn: getDeviceGroups,
+  });
+
+  const { data: slices = [], isLoading: isSlicesLoading } = useQuery({
+    queryKey: [queryKeys.networkSlices],
+    queryFn: getNetworkSlices,
+  });
+
   const handleRefresh = async () => {
-    void queryClient.invalidateQueries({ queryKey: [queryKeys.subscribers] });
+    await queryClient.invalidateQueries({ queryKey: [queryKeys.subscribers] });
+    await queryClient.invalidateQueries({ queryKey: [queryKeys.deviceGroups] });
+    await queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
   };
 
   const handleConfirmDelete = async (subscriber: string) => {
     await deleteSubscriber(subscriber);
-    void handleRefresh();
+    await handleRefresh();
   };
 
-  const toggleModal = () => setModalVisible((prev) => !prev);
+  const toggleCreateModal = () => setCreateModalVisible((prev) => !prev);
+  const toggleEditModal = () => setEditModalVisible((prev) => !prev);
 
-  const tableContent = subscribers.map(({ ueId }) => {
-    const rawIMSI = ueId.split("-")[1];
+  const handleEditButton = (subscriber: any) => {
+    setSubscriber(subscriber);
+    toggleEditModal();
+  }
+
+  const getEditButton = (subscriber: any) => 
+  {
+    return <Button
+              appearance=""
+              className="u-no-margin--bottom"
+              shiftClickEnabled
+              showShiftClickHint
+              onClick={() =>{handleEditButton(subscriber)}}
+            >
+              Edit
+            </Button>
+  } 
+
+  const getDeleteButton = (imsi: string) =>
+  {
+    return <ConfirmationButton
+              appearance="negative"
+              className="u-no-margin--bottom"
+              shiftClickEnabled
+              showShiftClickHint
+              confirmationModalProps={{
+                title: "Confirm Delete",
+                confirmButtonLabel: "Delete",
+                onConfirm: () => handleConfirmDelete(imsi),
+                children: (
+                  <p>
+                    This will permanently delete the subscriber{" "}
+                    <b>{imsi}</b>
+                    <br />
+                    This action cannot be undone.
+                  </p>
+                ),
+              }}
+            >
+              Delete
+            </ConfirmationButton>
+  }
+
+  const tableContent = subscribers.map((subscriber) => {
+    const rawIMSI = subscriber.ueId.split("-")[1];
     return {
       key: rawIMSI,
       columns: [
@@ -50,27 +110,8 @@ const Subscribers = () => {
         {
           content: (
             <div className="u-align--right">
-              <ConfirmationButton
-                appearance="negative"
-                className="u-no-margin--bottom"
-                shiftClickEnabled
-                showShiftClickHint
-                confirmationModalProps={{
-                  title: "Confirm Delete",
-                  confirmButtonLabel: "Delete",
-                  onConfirm: () => handleConfirmDelete(rawIMSI),
-                  children: (
-                    <p>
-                      This will permanently delete the subscriber{" "}
-                      <b>{rawIMSI}</b>
-                      <br />
-                      This action cannot be undone.
-                    </p>
-                  ),
-                }}
-              >
-                Delete
-              </ConfirmationButton>
+              {getEditButton(subscriber)}
+              {getDeleteButton(rawIMSI)}
             </div>
           ),
         },
@@ -78,7 +119,7 @@ const Subscribers = () => {
     };
   });
 
-  if (loading) {
+  if (isSubscribersLoading || isDeviceGroupsLoading || isSlicesLoading) {
     return <Loader text="Loading..." />;
   }
 
@@ -93,7 +134,7 @@ const Subscribers = () => {
         >
           <SyncOutlinedIcon style={{ color: "#666" }} />
         </Button>
-        <Button appearance="positive" onClick={toggleModal}>
+        <Button appearance="positive" onClick={toggleCreateModal}>
           Create
         </Button>
       </PageHeader>
@@ -108,7 +149,9 @@ const Subscribers = () => {
           rows={tableContent}
         />
       </PageContent>
-      {isModalVisible && <CreateSubscriberModal toggleModal={toggleModal} />}
+      {isCreateModalVisible && <SubscriberModal toggleModal={toggleCreateModal} slices={slices} deviceGroups={deviceGroups} />}
+      {isEditModalVisible && 
+        <SubscriberModal toggleModal={toggleEditModal} subscriber={subscriber} slices={slices} deviceGroups={deviceGroups}/>}
     </>
   );
 };
