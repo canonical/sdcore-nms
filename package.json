@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@canonical/react-components": "^0.51.6",
+    "@canonical/react-components": "^0.52.0",
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.5",
     "@mui/icons-material": "^5.15.15",
