@@ -23,15 +23,15 @@ export const editSubscriber = async ({
   };
 
   try {
-    updateSubscriber(subscriberData);
+    await updateSubscriber(subscriberData);
     if (oldDeviceGroupName != newDeviceGroupName) {
       var oldDeviceGroupData = await getDeviceGroupData(oldDeviceGroupName);
-      oldDeviceGroupData["imsis"].pop(imsi);
-      updateDeviceGroupData(oldDeviceGroupName, oldDeviceGroupData);
-
+      const index = oldDeviceGroupData["imsis"].indexOf(imsi);
+      oldDeviceGroupData["imsis"].splice(index, 1);
+      await updateDeviceGroupData(oldDeviceGroupName, oldDeviceGroupData);
       var newDeviceGroupData = await getDeviceGroupData(newDeviceGroupName);
       newDeviceGroupData["imsis"].push(imsi);
-      updateDeviceGroupData(newDeviceGroupName, newDeviceGroupData);
+      await updateDeviceGroupData(newDeviceGroupName, newDeviceGroupData);
     }
   } catch (error) {
     console.error(error);
@@ -89,7 +89,7 @@ const getDeviceGroupData = async (deviceGroupName: string) => {
       },
     });
 
-    const existingDeviceGroupData = await existingDeviceGroupResponse.json();
+    var existingDeviceGroupData = await existingDeviceGroupResponse.json();
 
     if (!existingDeviceGroupData["imsis"]) {
       existingDeviceGroupData["imsis"] = [];
