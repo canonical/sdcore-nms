@@ -118,7 +118,7 @@ const Navigation: FC = () => {
                   <li className="p-side-navigation__item">
                     <a
                       className="p-side-navigation__link"
-                      href="https://canonical-charmed-5g.readthedocs-hosted.com/en/latest/"
+                      href="https://canonical-charmed-aether-sd-core.readthedocs-hosted.com/en/latest/"
                       target="_blank"
                       rel="noreferrer"
                       title="Documentation"
@@ -133,7 +133,7 @@ const Navigation: FC = () => {
                   <li className="p-side-navigation__item">
                     <a
                       className="p-side-navigation__link"
-                      href="https://github.com/canonical/charmed-5g/issues/new/choose"
+                      href="https://github.com/canonical/charmed-aether-sd-core/issues/new/choose"
                       target="_blank"
                       rel="noreferrer"
                       title="Report a bug"
