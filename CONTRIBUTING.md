@@ -53,13 +53,13 @@ npm run build
 
 ## Container image
 
-Pack the ROCK
+Pack the rock
 
 ```bash
 rockcraft pack -v
 ```
 
-Move the ROCK to Docker's registry
+Move the rock to Docker's registry
 
 ```bash
 sudo skopeo --insecure-policy copy oci-archive:sdcore-nms_0.2.0_amd64.rock docker-daemon:sdcore-nms:0.2.0
