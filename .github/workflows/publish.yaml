@@ -19,7 +19,7 @@ jobs:
 
       - name: Install skopeo
         run: |
-          sudo snap install --devmode --channel edge skopeo
+          sudo apt install =y skopeo
       - name: Install yq
         run: |
           sudo snap install yq

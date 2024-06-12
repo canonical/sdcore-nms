@@ -15,7 +15,7 @@ jobs:
 
       - name: Install Skopeo
         run: |
-          sudo snap install skopeo --edge --devmode
+          sudo apt install -y skopeo
 
       - name: Import the image to Docker registry
         run: |
