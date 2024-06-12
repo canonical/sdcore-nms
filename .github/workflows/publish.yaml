@@ -17,9 +17,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install skopeo
-        run: |
-          sudo apt install =y skopeo
       - name: Install yq
         run: |
           sudo snap install yq
@@ -34,7 +31,7 @@ jobs:
           version="$(yq '.version' rockcraft.yaml)"
           echo "version=${version}" >> $GITHUB_ENV
           rock_file=$(ls *.rock | tail -n 1)
-          sudo skopeo \
+          sudo docker run quay.io/skopeo/stable:latest \
             --insecure-policy \
             copy \
             oci-archive:"${rock_file}" \
