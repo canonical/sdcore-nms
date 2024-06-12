@@ -26,12 +26,13 @@ jobs:
 
       - name: Import
         run: |
+          sudo snap install rockcraft --edge --classic
           image_name="$(yq '.name' rockcraft.yaml)"
           echo "image_name=${image_name}" >> $GITHUB_ENV
           version="$(yq '.version' rockcraft.yaml)"
           echo "version=${version}" >> $GITHUB_ENV
           rock_file=$(ls *.rock | tail -n 1)
-          sudo docker run quay.io/skopeo/stable:latest \
+          sudo rockcraft.skopeo \
             --insecure-policy \
             copy \
             oci-archive:"${rock_file}" \
