@@ -13,13 +13,9 @@ jobs:
       - uses: canonical/craft-actions/rockcraft-pack@main
         id: rockcraft
 
-      - name: Install Skopeo
-        run: |
-          sudo apt install -y skopeo
-
       - name: Import the image to Docker registry
         run: |
-          sudo skopeo --insecure-policy copy oci-archive:${{ steps.rockcraft.outputs.rock }} docker-daemon:sdcore-nms:0.1
+          sudo docker run quay.io/skopeo/stable:latest --insecure-policy copy oci-archive:${{ steps.rockcraft.outputs.rock }} docker-daemon:sdcore-nms:0.1
 
       - name: Run the image
         run: |
