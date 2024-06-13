@@ -56,13 +56,14 @@ npm run build
 Pack the rock
 
 ```bash
+sudo snap install rockcraft --edge --classic
 rockcraft pack -v
 ```
 
 Move the rock to Docker's registry
 
 ```bash
-sudo skopeo --insecure-policy copy oci-archive:sdcore-nms_0.2.0_amd64.rock docker-daemon:sdcore-nms:0.2.0
+sudo rockcraft.skopeo --insecure-policy copy oci-archive:sdcore-nms_0.2.0_amd64.rock docker-daemon:sdcore-nms:0.2.0
 ```
 
 Run the NMS
