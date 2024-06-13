@@ -12,14 +12,12 @@ jobs:
 
       - uses: canonical/craft-actions/rockcraft-pack@main
         id: rockcraft
-
-      - name: Install Skopeo
-        run: |
-          sudo snap install skopeo --edge --devmode
+        with:
+          rockcraft-channel: edge
 
       - name: Import the image to Docker registry
         run: |
-          sudo skopeo --insecure-policy copy oci-archive:${{ steps.rockcraft.outputs.rock }} docker-daemon:sdcore-nms:0.1
+          sudo rockcraft.skopeo --insecure-policy copy oci-archive:${{ steps.rockcraft.outputs.rock }} docker-daemon:sdcore-nms:0.1
 
       - name: Run the image
         run: |
