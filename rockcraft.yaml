@@ -30,7 +30,7 @@ parts:
       - node/20/stable
     override-build: |
       mkdir -p ${CRAFT_PART_INSTALL}/app
-      
+
       npm ci
       npm run build
 
@@ -38,3 +38,12 @@ parts:
       cp -r node_modules ${CRAFT_PART_INSTALL}/app/
       cp package.json ${CRAFT_PART_INSTALL}/app/
       cp -r pages ${CRAFT_PART_INSTALL}/app/
+  version:
+    plugin: nil
+    override-build: |
+      mkdir -p ${CRAFT_PART_INSTALL}/etc/
+      echo ${CRAFT_PROJECT_VERSION} > ${CRAFT_PART_INSTALL}/etc/workload-version
+    organize:
+      "*": etc/
+    stage:
+      - etc/
