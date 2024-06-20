@@ -1,5 +1,5 @@
-import { handleGetNetworkSlice, handlePostNetworkSlice } from "@/utils/handleNetworkSlice";
-import { handleGetDeviceGroup, handlePostDeviceGroup } from "@/utils/handleDeviceGroup";
+import { apiGetNetworkSlice, apiPostNetworkSlice } from "@/utils/networkSliceApiCalls";
+import { apiGetDeviceGroup, apiPostDeviceGroup } from "@/utils/deviceGroupApiCalls";
 
 interface DeviceGroupArgs {
   name: string;
@@ -44,29 +44,27 @@ export const createDeviceGroup = async ({
   };
 
   try {
-    const getDeviceGroupResponse = await handleGetDeviceGroup(name);
+    const getDeviceGroupResponse = await apiGetDeviceGroup(name);
     if (getDeviceGroupResponse.ok) {
       throw new Error("Device group already exists");
     }
 
-    const postDeviceGroupResponse = await handlePostDeviceGroup(name, deviceGroupData);
-    if (!postDeviceGroupResponse.ok) {
+    const updateDeviceGroupResponse = await apiPostDeviceGroup(name, deviceGroupData);
+    if (!updateDeviceGroupResponse.ok) {
       throw new Error(
-        `Error creating device group. Error code: ${postDeviceGroupResponse.status}`,
+        `Error creating device group. Error code: ${updateDeviceGroupResponse.status}`,
       );
     }
 
-    const existingSliceResponse = await handleGetNetworkSlice(networkSliceName);
+    const existingSliceResponse = await apiGetNetworkSlice(networkSliceName);
     var existingSliceData = await existingSliceResponse.json();
 
     if (!existingSliceData["site-device-group"]) {
       existingSliceData["site-device-group"] = [];
     }
-
     existingSliceData["site-device-group"].push(name);
 
-    const updateSliceResponse = await handlePostNetworkSlice(networkSliceName, existingSliceData);
-
+    const updateSliceResponse = await apiPostNetworkSlice(networkSliceName, existingSliceData);
     if (!updateSliceResponse.ok) {
       throw new Error(
         `Error updating network slice. Error code: ${updateSliceResponse.status}`,

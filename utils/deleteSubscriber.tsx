@@ -1,10 +1,10 @@
-import { handleGetNetworkSlice, handleGetNetworkSlices } from "@/utils/handleNetworkSlice";
-import { handleGetDeviceGroup, handlePostDeviceGroup } from "@/utils/handleDeviceGroup";
-import { handleDeleteSubscriber } from "@/utils/handleSubscriber";
+import { apiGetNetworkSlice, apiGetNetworkSlices } from "@/utils/networkSliceApiCalls";
+import { apiGetDeviceGroup, apiPostDeviceGroup } from "@/utils/deviceGroupApiCalls";
+import { apiDeleteSubscriber } from "@/utils/subscriberApiCalls";
 
 export const deleteSubscriber = async (imsi: string) => {
   try {
-    const networkSlicesResponse = await handleGetNetworkSlices();
+    const networkSlicesResponse = await apiGetNetworkSlices();
 
     if (!networkSlicesResponse.ok) {
       throw new Error(
@@ -15,7 +15,7 @@ export const deleteSubscriber = async (imsi: string) => {
     const sliceNames = await networkSlicesResponse.json();
 
     for (const sliceName of sliceNames) {
-      const networkSliceResponse = await handleGetNetworkSlice(sliceName);
+      const networkSliceResponse = await apiGetNetworkSlice(sliceName);
 
       if (!networkSliceResponse.ok) {
         throw new Error(
@@ -23,11 +23,10 @@ export const deleteSubscriber = async (imsi: string) => {
         );
       }
 
-      const slice = await networkSliceResponse.json();
-
-      const deviceGroupNames = slice["site-device-group"];
+      const sliceData = await networkSliceResponse.json();
+      const deviceGroupNames = sliceData["site-device-group"];
       for (const groupName of deviceGroupNames) {
-        const deviceGroupResponse = await handleGetDeviceGroup(groupName);
+        const deviceGroupResponse = await apiGetDeviceGroup(groupName);
 
         if (!deviceGroupResponse.ok) {
           throw new Error(
@@ -35,19 +34,18 @@ export const deleteSubscriber = async (imsi: string) => {
           );
         }
 
-        const deviceGroup = await deviceGroupResponse.json();
+        var deviceGroupData = await deviceGroupResponse.json();
 
-        if (deviceGroup.imsis?.includes(imsi)) {
-          deviceGroup.imsis = deviceGroup.imsis.filter(
+        if (deviceGroupData.imsis?.includes(imsi)) {
+          deviceGroupData.imsis = deviceGroupData.imsis.filter(
             (id: string) => id !== imsi,
           );
 
-          await handlePostDeviceGroup(groupName, deviceGroup);
+          await apiPostDeviceGroup(groupName, deviceGroupData);
         }
       }
     }
-    const deleteSubscriberResponse = await handleDeleteSubscriber(imsi);
-
+    const deleteSubscriberResponse = await apiDeleteSubscriber(imsi);
     if (!deleteSubscriberResponse.ok) {
       throw new Error("Failed to delete subscriber");
     }

@@ -1,4 +1,4 @@
-import { handleGetNetworkSlice, handlePostNetworkSlice } from "@/utils/handleNetworkSlice";
+import { apiGetNetworkSlice, apiPostNetworkSlice } from "@/utils/networkSliceApiCalls";
 
 interface GnbItem {
     name: string;
@@ -24,7 +24,7 @@ interface GnbItem {
   }: EditNetworkSliceArgs) => {
   
     try {
-      const getSliceResponse = await handleGetNetworkSlice(name);
+      const getSliceResponse = await apiGetNetworkSlice(name);
   
       if (!getSliceResponse.ok) {
         const result = await getSliceResponse.json();
@@ -41,20 +41,20 @@ interface GnbItem {
       sliceData["site-info"]["upf"]["upf-name"] = upfName
       sliceData["site-info"]["upf"]["upf-port"] = upfPort
   
-      const postSliceResponse = await handlePostNetworkSlice(name, sliceData);
+      const updateSliceResponse = await apiPostNetworkSlice(name, sliceData);
   
-      if (!postSliceResponse.ok) {
-        const result = await postSliceResponse.json();
+      if (!updateSliceResponse.ok) {
+        const result = await updateSliceResponse.json();
         if (result.error) {
           throw new Error(result.error);
         }
         debugger;
         throw new Error(
-          `Error editing network. Error code: ${postSliceResponse.status}`,
+          `Error editing network slice. Error code: ${updateSliceResponse.status}`,
         );
       }
   
-      return postSliceResponse.json();
+      return updateSliceResponse.json();
     } catch (error: unknown) {
       console.error(error);
       const details =

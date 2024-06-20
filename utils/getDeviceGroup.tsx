@@ -1,5 +1,5 @@
 import { NetworkSlice } from "@/components/types";
-import { handleGetDeviceGroup, handleGetDeviceGroups } from "@/utils/handleDeviceGroup";
+import { apiGetDeviceGroup, apiGetDeviceGroups } from "@/utils/deviceGroupApiCalls";
 
 export const getDeviceGroupsFromNetworkSlice = async (slice?: NetworkSlice) => {
   if (!slice || !slice["site-device-group"]) {
@@ -17,7 +17,7 @@ export const getDeviceGroupsFromNetworkSlice = async (slice?: NetworkSlice) => {
 
 export const getDeviceGroups = async () => {
   try {
-    const response = await handleGetDeviceGroups();
+    const response = await apiGetDeviceGroups();
     if (!response.ok)
       throw new Error(
         `Failed to fetch device group. Status: ${response.status}`,
@@ -37,9 +37,9 @@ export const getDeviceGroups = async () => {
   }
 };
 
-const getDeviceGroup = async (deviceGroupName: string) => {
+export const getDeviceGroup = async (deviceGroupName: string) => {
   try {
-    const response = await handleGetDeviceGroup(deviceGroupName);
+    const response = await apiGetDeviceGroup(deviceGroupName);
     if (!response.ok)
       throw new Error(
         `Failed to fetch device group. Status: ${response.status}`,
