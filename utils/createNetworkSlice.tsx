@@ -1,3 +1,6 @@
+import { handleGetNetworkSlice, handlePostNetworkSlice } from "@/utils/handleNetworkSlice";
+import { handlePostDeviceGroup } from "@/utils/handleDeviceGroup";
+
 interface GnbItem {
   name: string;
   tac: number;
@@ -65,54 +68,33 @@ export const createNetworkSlice = async ({
   };
 
   try {
-    const checkResponse = await fetch(`/api/network-slice/${name}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    const getNetworkSliceResponse = await handleGetNetworkSlice(name)
 
-    if (checkResponse.ok) {
+    if (getNetworkSliceResponse.ok) {
       throw new Error("Network slice already exists");
     }
 
-    const networksliceResponse = await fetch(`/api/network-slice/${name}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(sliceData),
-    });
+    const postNetworkSliceResponse = await handlePostNetworkSlice(name, sliceData);
 
-    if (!networksliceResponse.ok) {
-      const result = await networksliceResponse.json();
+    if (!postNetworkSliceResponse.ok) {
+      const result = await postNetworkSliceResponse.json();
       if (result.error) {
         throw new Error(result.error);
       }
       debugger;
       throw new Error(
-        `Error creating network. Error code: ${networksliceResponse.status}`,
+        `Error creating network. Error code: ${postNetworkSliceResponse.status}`,
       );
     }
 
-    const devicegroupResponse = await fetch(
-      `/api/device-group/${deviceGroupName}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(deviceGroupData),
-      },
-    );
-
+    const devicegroupResponse = await handlePostDeviceGroup(deviceGroupName, deviceGroupData);
     if (!devicegroupResponse.ok) {
       throw new Error(
         `Error creating device group. Error code: ${devicegroupResponse.status}`,
       );
     }
 
-    return networksliceResponse.json();
+    return postNetworkSliceResponse.json();
   } catch (error: unknown) {
     console.error(error);
     const details =

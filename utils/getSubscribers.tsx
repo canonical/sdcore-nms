@@ -1,10 +1,9 @@
 import { Subscriber } from "@/app/(network)/subscribers/page";
+import { handleGetSubscriber, handleGetSubscribers } from "@/utils/handleSubscriber";
 
 export const getSubscribers = async () => {
   try {
-    const response = await fetch(`/api/subscriber`, {
-      method: "GET",
-    });
+    const response = await handleGetSubscribers();
     if (!response.ok) {
       throw new Error(
         `Failed to fetch subscribers. Status: ${response.status}`,
@@ -28,9 +27,7 @@ export const getSubscribers = async () => {
 
 const getSubscriber = async (imsi: string) => {
   try {
-    const response = await fetch(`/api/subscriber/${imsi}`, {
-      method: "GET",
-    });
+    const response = await handleGetSubscriber(imsi);
     if (!response.ok)
       throw new Error(
         `Failed to fetch subscriber. Status: ${response.status}`,
