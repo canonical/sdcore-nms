@@ -1,5 +1,5 @@
-import { handleGetDeviceGroup, handlePostDeviceGroup } from "@/utils/handleDeviceGroup";
-import { handleGetSubscriber, handlePostSubscriber } from "@/utils/handleSubscriber";
+import { apiGetDeviceGroup, apiPostDeviceGroup } from "@/utils/deviceGroupApiCalls";
+import { apiGetSubscriber, apiPostSubscriber } from "@/utils/subscriberApiCalls";
 
 interface EditSubscriberArgs {
   imsi: string;
@@ -48,7 +48,7 @@ export const editSubscriber = async ({
 
 const updateSubscriber = async (subscriberData: any) => {
   try {
-    const getSubscriberResponse = await handleGetSubscriber(subscriberData.UeId);
+    const getSubscriberResponse = await apiGetSubscriber(subscriberData.UeId);
 
     // Workaround for https://github.com/omec-project/webconsole/issues/109
     var existingSubscriberData = await getSubscriberResponse.json();
@@ -60,7 +60,7 @@ const updateSubscriber = async (subscriberData: any) => {
     existingSubscriberData["AuthenticationSubscription"]["permanentKey"]["permanentKeyValue"] = subscriberData.key;
     existingSubscriberData["AuthenticationSubscription"]["sequenceNumber"] = subscriberData.sequenceNumber;
 
-    const updateSubscriberResponse = await handlePostSubscriber(subscriberData.UeId, subscriberData);
+    const updateSubscriberResponse = await apiPostSubscriber(subscriberData.UeId, subscriberData);
     if (!updateSubscriberResponse.ok) {
       throw new Error(
       `Error editing subscriber. Error code: ${updateSubscriberResponse.status}`,
@@ -73,7 +73,7 @@ const updateSubscriber = async (subscriberData: any) => {
 
 const getDeviceGroupData = async (deviceGroupName: string) => {
   try {
-    const existingDeviceGroupResponse = await handleGetDeviceGroup(deviceGroupName);
+    const existingDeviceGroupResponse = await apiGetDeviceGroup(deviceGroupName);
     var existingDeviceGroupData = await existingDeviceGroupResponse.json();
 
     if (!existingDeviceGroupData["imsis"]) {
@@ -87,7 +87,7 @@ const getDeviceGroupData = async (deviceGroupName: string) => {
 
 const updateDeviceGroupData = async (deviceGroupName:string, deviceGroupData: any) => {
   try {
-    const updateDeviceGroupResponse = await handlePostDeviceGroup(deviceGroupName, deviceGroupData);
+    const updateDeviceGroupResponse = await apiPostDeviceGroup(deviceGroupName, deviceGroupData);
     if (!updateDeviceGroupResponse.ok) {
       throw new Error(
       `Error updating device group. Error code: ${updateDeviceGroupResponse.status}`,

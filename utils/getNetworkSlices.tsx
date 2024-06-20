@@ -1,18 +1,18 @@
 import { NetworkSlice } from "@/components/types";
-import { handleGetNetworkSlice, handleGetNetworkSlices } from "@/utils/handleNetworkSlice";
+import { apiGetNetworkSlice, apiGetNetworkSlices } from "@/utils/networkSliceApiCalls";
 
 export const getNetworkSlices = async (): Promise<NetworkSlice[]> => {
   try {
-    const response = await handleGetNetworkSlices();
+    const response = await apiGetNetworkSlices();
     if (!response.ok) {
       throw new Error("Failed to fetch network slices");
     }
     const sliceNames = await response.json();
 
     const sliceDetailsPromises = sliceNames.map(async (sliceName: string) => {
-      const detailResponse = await handleGetNetworkSlice(sliceName);
+      const detailResponse = await apiGetNetworkSlice(sliceName);
       if (!detailResponse.ok) {
-        throw new Error(`Failed to fetch details for slice: ${sliceName}`);
+        throw new Error(`Failed to fetch details for network slice: ${sliceName}`);
       }
       return detailResponse.json();
     });

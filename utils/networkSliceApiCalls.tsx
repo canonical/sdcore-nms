@@ -1,0 +1,83 @@
+function isValidName(name: string): boolean {
+  return /^[a-zA-Z0-9-_]+$/.test(name);
+}
+
+export const apiGetNetworkSlice = async (name: string) => {
+  if (isValidName(name)){
+    throw new Error(
+      `Error getting network slice: Invalid name provided.`,
+    );
+  }
+  try {
+    const response = await fetch(`/config/v1/network-slice/${name}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    return response
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+export const apiGetNetworkSlices = async () => {
+  try {
+    const networkSlicesResponse = await fetch(`/config/v1/network-slice`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    return networkSlicesResponse
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+export const apiPostNetworkSlice = async (name: string, sliceData: any) => {
+  if (isValidName(name)){
+    throw new Error(
+      `Error updating network slice: Invalid name provided.`,
+    );
+  }
+  try {
+    const response = await fetch(`/config/v1/network-slice/${name}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(sliceData),
+    });
+
+    return response
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+export const apiDeleteNetworkSlice = async (name: string) => {
+  if (isValidName(name)){
+    throw new Error(
+      `Error deleting network slice: Invalid name provided.`,
+    );
+  }
+  try {
+    const response = await fetch(`/config/v1/network-slice/${name}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    return response
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
