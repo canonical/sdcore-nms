@@ -1,3 +1,6 @@
+import { handleGetNetworkSlice, handlePostNetworkSlice } from "@/utils/handleNetworkSlice";
+import { handleGetDeviceGroup, handlePostDeviceGroup } from "@/utils/handleDeviceGroup";
+
 interface DeviceGroupArgs {
   name: string;
   ueIpPool: string;
@@ -41,42 +44,20 @@ export const createDeviceGroup = async ({
   };
 
   try {
-    const checkResponse = await fetch(`/api/device-group/${name}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (checkResponse.ok) {
+    const getDeviceGroupResponse = await handleGetDeviceGroup(name);
+    if (getDeviceGroupResponse.ok) {
       throw new Error("Device group already exists");
     }
 
-    const response = await fetch(`/api/device-group/${name}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(deviceGroupData),
-    });
-
-    if (!response.ok) {
+    const postDeviceGroupResponse = await handlePostDeviceGroup(name, deviceGroupData);
+    if (!postDeviceGroupResponse.ok) {
       throw new Error(
-        `Error creating device group. Error code: ${response.status}`,
+        `Error creating device group. Error code: ${postDeviceGroupResponse.status}`,
       );
     }
 
-    const existingSliceResponse = await fetch(
-      `/api/network-slice/${networkSliceName}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      },
-    );
-
-    const existingSliceData = await existingSliceResponse.json();
+    const existingSliceResponse = await handleGetNetworkSlice(networkSliceName);
+    var existingSliceData = await existingSliceResponse.json();
 
     if (!existingSliceData["site-device-group"]) {
       existingSliceData["site-device-group"] = [];
@@ -84,16 +65,7 @@ export const createDeviceGroup = async ({
 
     existingSliceData["site-device-group"].push(name);
 
-    const updateSliceResponse = await fetch(
-      `/api/network-slice/${networkSliceName}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(existingSliceData),
-      },
-    );
+    const updateSliceResponse = await handlePostNetworkSlice(networkSliceName, existingSliceData);
 
     if (!updateSliceResponse.ok) {
       throw new Error(

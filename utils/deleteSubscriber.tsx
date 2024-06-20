@@ -1,11 +1,10 @@
+import { handleGetNetworkSlice, handleGetNetworkSlices } from "@/utils/handleNetworkSlice";
+import { handleGetDeviceGroup, handlePostDeviceGroup } from "@/utils/handleDeviceGroup";
+import { handleDeleteSubscriber } from "@/utils/handleSubscriber";
+
 export const deleteSubscriber = async (imsi: string) => {
   try {
-    const networkSlicesResponse = await fetch(`/api/network-slice`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    const networkSlicesResponse = await handleGetNetworkSlices();
 
     if (!networkSlicesResponse.ok) {
       throw new Error(
@@ -16,15 +15,7 @@ export const deleteSubscriber = async (imsi: string) => {
     const sliceNames = await networkSlicesResponse.json();
 
     for (const sliceName of sliceNames) {
-      const networkSliceResponse = await fetch(
-        `/api/network-slice/${sliceName}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        },
-      );
+      const networkSliceResponse = await handleGetNetworkSlice(sliceName);
 
       if (!networkSliceResponse.ok) {
         throw new Error(
@@ -36,15 +27,7 @@ export const deleteSubscriber = async (imsi: string) => {
 
       const deviceGroupNames = slice["site-device-group"];
       for (const groupName of deviceGroupNames) {
-        const deviceGroupResponse = await fetch(
-          `/api/device-group/${groupName}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          },
-        );
+        const deviceGroupResponse = await handleGetDeviceGroup(groupName);
 
         if (!deviceGroupResponse.ok) {
           throw new Error(
@@ -59,21 +42,13 @@ export const deleteSubscriber = async (imsi: string) => {
             (id: string) => id !== imsi,
           );
 
-          await fetch(`/api/device-group/${groupName}`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(deviceGroup),
-          });
+          await handlePostDeviceGroup(groupName, deviceGroup);
         }
       }
     }
-    const response = await fetch(`/api/subscriber/imsi-${imsi}`, {
-      method: "DELETE",
-    });
+    const deleteSubscriberResponse = await handleDeleteSubscriber(imsi);
 
-    if (!response.ok) {
+    if (!deleteSubscriberResponse.ok) {
       throw new Error("Failed to delete subscriber");
     }
 

@@ -1,8 +1,8 @@
+import { handleGetNetworkSlices } from "@/utils/handleNetworkSlice";
+
 export const checkBackendAvailable = async () => {
   try {
-    const response = await fetch(`/api/network-slice`, {
-      method: "GET",
-    });
+    const response = await handleGetNetworkSlices();
 
     return response.status === 200;
   } catch (error) {

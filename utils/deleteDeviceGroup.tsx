@@ -1,3 +1,6 @@
+import { handleGetNetworkSlice, handlePostNetworkSlice } from "@/utils/handleNetworkSlice";
+import { handleDeleteDeviceGroup } from "@/utils/handleDeviceGroup";
+
 interface DeleteDeviceGroupArgs {
   name: string;
   networkSliceName: string;
@@ -8,16 +11,7 @@ export const deleteDeviceGroup = async ({
   networkSliceName,
 }: DeleteDeviceGroupArgs) => {
   try {
-    const existingSliceResponse = await fetch(
-      `/api/network-slice/${networkSliceName}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      },
-    );
-
+    const existingSliceResponse = await handleGetNetworkSlice(networkSliceName);
     if (!existingSliceResponse.ok) {
       throw new Error(
         `Error fetching network slice. Error code: ${existingSliceResponse.status}`,
@@ -31,17 +25,7 @@ export const deleteDeviceGroup = async ({
       if (index > -1) {
         existingSliceData["site-device-group"].splice(index, 1);
 
-        const updateSliceResponse = await fetch(
-          `/api/network-slice/${networkSliceName}`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(existingSliceData),
-          },
-        );
-
+        const updateSliceResponse = await handlePostNetworkSlice(networkSliceName, existingSliceData);
         if (!updateSliceResponse.ok) {
           throw new Error(
             `Error updating network slice. Error code: ${updateSliceResponse.status}`,
@@ -50,12 +34,7 @@ export const deleteDeviceGroup = async ({
       }
     }
 
-    const deleteResponse = await fetch(`/api/device-group/${name}`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    const deleteResponse = await handleDeleteDeviceGroup(name);
 
     if (!deleteResponse.ok) {
       throw new Error(

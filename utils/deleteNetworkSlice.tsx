@@ -1,9 +1,8 @@
+import { handleDeleteNetworkSlice } from "@/utils/handleNetworkSlice";
+
 export const deleteNetworkSlice = async (sliceName: string) => {
   try {
-    const response = await fetch(`/api/network-slice/${sliceName}`, {
-      method: "DELETE",
-    });
-
+    const response = await handleDeleteNetworkSlice(sliceName);
     if (!response.ok) {
       throw new Error("Failed to delete network slice");
     }

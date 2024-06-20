@@ -1,3 +1,5 @@
+import { handleGetDeviceGroup, handlePostDeviceGroup } from "@/utils/handleDeviceGroup";
+
 interface DeviceGroupArgs {
   name: string;
   ueIpPool: string;
@@ -9,9 +11,7 @@ interface DeviceGroupArgs {
 
 const getDeviceGroup = async (deviceGroupName: string) => {
   try {
-    const response = await fetch(`/api/device-group/${deviceGroupName}`, {
-      method: "GET",
-    });
+    const response = await handleGetDeviceGroup(deviceGroupName);
     if (!response.ok)
       throw new Error(
         `Failed to fetch device group. Status: ${response.status}`,
@@ -59,13 +59,7 @@ export const editDeviceGroup = async ({
       },
     };
 
-    const response = await fetch(`/api/device-group/${name}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(deviceGroupData),
-    });
+    const response = await handlePostDeviceGroup(name, deviceGroupData);
 
     if (!response.ok) {
       throw new Error(
