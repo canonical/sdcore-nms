@@ -1,5 +1,5 @@
 import { NetworkSlice } from "@/components/types";
-import { apiGetNetworkSlice } from "@/utils/networkSliceApiCalls";
+import { apiGetNetworkSlice } from "@/utils/apiNetworkSliceCalls";
 
 export const getNetworkSlice = async (sliceName: string): Promise<NetworkSlice> => {
   try {

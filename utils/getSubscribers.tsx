@@ -1,5 +1,5 @@
 import { Subscriber } from "@/app/(network)/subscribers/page";
-import { apiGetSubscriber, apiGetSubscribers } from "@/utils/subscriberApiCalls";
+import { apiGetSubscriber, apiGetSubscribers } from "@/utils/apiSubscriberCalls";
 
 export const getSubscribers = async () => {
   try {

@@ -1,5 +1,5 @@
 import { NetworkSlice } from "@/components/types";
-import { apiGetDeviceGroup, apiGetDeviceGroups } from "@/utils/deviceGroupApiCalls";
+import { apiGetDeviceGroup, apiGetDeviceGroups } from "@/utils/apiDeviceGroupCalls";
 
 export const getDeviceGroupsFromNetworkSlice = async (slice?: NetworkSlice) => {
   if (!slice || !slice["site-device-group"]) {

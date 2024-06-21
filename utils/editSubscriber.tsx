@@ -1,5 +1,5 @@
-import { apiGetDeviceGroup, apiPostDeviceGroup } from "@/utils/deviceGroupApiCalls";
-import { apiGetSubscriber, apiPostSubscriber } from "@/utils/subscriberApiCalls";
+import { apiGetDeviceGroup, apiPostDeviceGroup } from "@/utils/apiDeviceGroupCalls";
+import { apiGetSubscriber, apiPostSubscriber } from "@/utils/apiSubscriberCalls";
 
 interface EditSubscriberArgs {
   imsi: string;

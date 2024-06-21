@@ -1,4 +1,4 @@
-import { apiGetNetworkSlices } from "@/utils/networkSliceApiCalls";
+import { apiGetNetworkSlices } from "@/utils/apiNetworkSliceCalls";
 
 export const checkBackendAvailable = async () => {
   try {
