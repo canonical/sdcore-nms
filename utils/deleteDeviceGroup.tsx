@@ -1,5 +1,5 @@
-import { apiGetNetworkSlice, apiPostNetworkSlice } from "@/utils/networkSliceApiCalls";
-import { apiDeleteDeviceGroup } from "@/utils/deviceGroupApiCalls";
+import { apiGetNetworkSlice, apiPostNetworkSlice } from "@/utils/apiNetworkSliceCalls";
+import { apiDeleteDeviceGroup } from "@/utils/apiDeviceGroupCalls";
 
 interface DeleteDeviceGroupArgs {
   name: string;

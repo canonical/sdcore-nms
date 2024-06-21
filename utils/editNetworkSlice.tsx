@@ -1,4 +1,4 @@
-import { apiGetNetworkSlice, apiPostNetworkSlice } from "@/utils/networkSliceApiCalls";
+import { apiGetNetworkSlice, apiPostNetworkSlice } from "@/utils/apiNetworkSliceCalls";
 
 interface GnbItem {
     name: string;

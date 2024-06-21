@@ -1,4 +1,4 @@
-import { apiPostDeviceGroup } from "@/utils/deviceGroupApiCalls";
+import { apiPostDeviceGroup } from "@/utils/apiDeviceGroupCalls";
 import { getDeviceGroup } from "@/utils/getDeviceGroup";
 
 interface DeviceGroupArgs {

@@ -1,6 +1,6 @@
-# SD-Core NMS
+# Aether SD-Core NMS
 
-A Network Management System for managing the SD-Core 5G core network.
+A Network Management System for managing the Aether SD-Core 5G core network.
 
 ![Screenshot](images/nms_screenshot.png)
 
