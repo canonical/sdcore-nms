@@ -1,12 +1,25 @@
-function isValidName(name: string): boolean {
+function isValidNetworkSliceName(name: string): boolean {
   return /^[a-zA-Z0-9-_]+$/.test(name);
 }
 
+export const apiGetAllNetworkSlices = async () => {
+  try {
+    const networkSlicesResponse = await fetch(`/config/v1/network-slice`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    return networkSlicesResponse
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
 export const apiGetNetworkSlice = async (name: string) => {
-  if (isValidName(name)){
-    throw new Error(
-      `Error getting network slice: Invalid name provided.`,
-    );
+  if (isValidNetworkSliceName(name)){
+    throw new Error(`Error getting network slice: Invalid name provided.`);
   }
   try {
     const response = await fetch(`/config/v1/network-slice/${name}`, {
@@ -15,7 +28,6 @@ export const apiGetNetworkSlice = async (name: string) => {
         "Content-Type": "application/json",
       },
     });
-
     return response
   } catch (error) {
     console.error(error);
@@ -23,27 +35,9 @@ export const apiGetNetworkSlice = async (name: string) => {
   }
 };
 
-export const apiGetNetworkSlices = async () => {
-  try {
-    const networkSlicesResponse = await fetch(`/config/v1/network-slice`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    return networkSlicesResponse
-  } catch (error) {
-    console.error(error);
-    throw error;
-  }
-};
-
 export const apiPostNetworkSlice = async (name: string, sliceData: any) => {
-  if (isValidName(name)){
-    throw new Error(
-      `Error updating network slice: Invalid name provided.`,
-    );
+  if (isValidNetworkSliceName(name)){
+    throw new Error(`Error updating network slice: Invalid name provided.`);
   }
   try {
     const response = await fetch(`/config/v1/network-slice/${name}`, {
@@ -53,7 +47,6 @@ export const apiPostNetworkSlice = async (name: string, sliceData: any) => {
       },
       body: JSON.stringify(sliceData),
     });
-
     return response
   } catch (error) {
     console.error(error);
@@ -62,10 +55,8 @@ export const apiPostNetworkSlice = async (name: string, sliceData: any) => {
 };
 
 export const apiDeleteNetworkSlice = async (name: string) => {
-  if (isValidName(name)){
-    throw new Error(
-      `Error deleting network slice: Invalid name provided.`,
-    );
+  if (isValidNetworkSliceName(name)){
+    throw new Error(`Error deleting network slice: Invalid name provided.`);
   }
   try {
     const response = await fetch(`/config/v1/network-slice/${name}`, {
@@ -74,7 +65,6 @@ export const apiDeleteNetworkSlice = async (name: string) => {
         "Content-Type": "application/json",
       },
     });
-
     return response
   } catch (error) {
     console.error(error);

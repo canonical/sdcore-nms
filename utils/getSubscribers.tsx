@@ -1,9 +1,9 @@
 import { Subscriber } from "@/app/(network)/subscribers/page";
-import { apiGetSubscriber, apiGetSubscribers } from "@/utils/apiSubscriberCalls";
+import { apiGetSubscriber, apiGetAllSubscribers } from "@/utils/callSubscriberApi";
 
 export const getSubscribers = async () => {
   try {
-    const response = await apiGetSubscribers();
+    const response = await apiGetAllSubscribers();
     if (!response.ok) {
       throw new Error(
         `Failed to fetch subscribers. Status: ${response.status}`,

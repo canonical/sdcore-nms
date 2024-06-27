@@ -37,7 +37,6 @@ parts:
       cp -r .next ${CRAFT_PART_INSTALL}/app/
       cp -r node_modules ${CRAFT_PART_INSTALL}/app/
       cp package.json ${CRAFT_PART_INSTALL}/app/
-      cp -r pages ${CRAFT_PART_INSTALL}/app/
   version:
     plugin: nil
     override-build: |
