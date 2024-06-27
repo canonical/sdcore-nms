@@ -1,12 +1,25 @@
-function isValidName(name: string): boolean {
+function isValidDeviceGroupName(name: string): boolean {
   return /^[a-zA-Z0-9-_]+$/.test(name);
 }
 
+export const apiGetAllDeviceGroups = async () => {
+  try {
+    const response = await fetch(`/config/v1/device-group/`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    return response
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
 export const apiGetDeviceGroup = async (name: string) => {
-  if (isValidName(name)){
-    throw new Error(
-      `Error getting device group: Invalid name provided.`,
-    );
+  if (isValidDeviceGroupName(name)){
+    throw new Error(`Error getting device group: Invalid name provided.`);
   }
   try {
     const response = await fetch(`/config/v1/device-group/${name}`, {
@@ -15,23 +28,6 @@ export const apiGetDeviceGroup = async (name: string) => {
         "Content-Type": "application/json",
       },
     });
-
-    return response
-  } catch (error) {
-    console.error(error);
-    throw error;
-  }
-};
-
-export const apiGetDeviceGroups = async () => {
-  try {
-    const response = await fetch(`/config/v1/device-group/`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
     return response
   } catch (error) {
     console.error(error);
@@ -40,10 +36,8 @@ export const apiGetDeviceGroups = async () => {
 };
 
 export const apiPostDeviceGroup = async (name: string, deviceGroupData: any) => {
-  if (isValidName(name)){
-    throw new Error(
-      `Error updating device group: Invalid name provided.`,
-    );
+  if (isValidDeviceGroupName(name)){
+    throw new Error(`Error updating device group: Invalid name provided.`);
   }
   try {
     const response = await fetch(`/config/v1/device-group/${name}`, {
@@ -53,7 +47,6 @@ export const apiPostDeviceGroup = async (name: string, deviceGroupData: any) => 
         },
         body: JSON.stringify(deviceGroupData),
       });
-
     return response
   } catch (error) {
     console.error(error);
@@ -62,10 +55,8 @@ export const apiPostDeviceGroup = async (name: string, deviceGroupData: any) => 
 };
 
 export const apiDeleteDeviceGroup = async (name: string) => {
-  if (isValidName(name)){
-    throw new Error(
-      `Error deleting device group: Invalid name provided.`,
-    );
+  if (isValidDeviceGroupName(name)){
+    throw new Error(`Error deleting device group: Invalid name provided.`);
   }
   try {
     const response = await fetch(`/config/v1/device-group/${name}`, {
@@ -74,7 +65,6 @@ export const apiDeleteDeviceGroup = async (name: string) => {
           "Content-Type": "application/json",
         },
     });
-
     return response
   } catch (error) {
     console.error(error);

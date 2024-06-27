@@ -1,4 +1,4 @@
-import { apiDeleteNetworkSlice } from "@/utils/apiNetworkSliceCalls";
+import { apiDeleteNetworkSlice } from "@/utils/callNetworkSliceApi";
 
 export const deleteNetworkSlice = async (sliceName: string) => {
   try {

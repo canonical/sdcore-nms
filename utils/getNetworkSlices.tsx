@@ -1,9 +1,9 @@
 import { NetworkSlice } from "@/components/types";
-import { apiGetNetworkSlice, apiGetNetworkSlices } from "@/utils/apiNetworkSliceCalls";
+import { apiGetNetworkSlice, apiGetAllNetworkSlices } from "@/utils/callNetworkSliceApi";
 
 export const getNetworkSlices = async (): Promise<NetworkSlice[]> => {
   try {
-    const response = await apiGetNetworkSlices();
+    const response = await apiGetAllNetworkSlices();
     if (!response.ok) {
       throw new Error("Failed to fetch network slices");
     }

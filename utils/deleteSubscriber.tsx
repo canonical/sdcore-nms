@@ -1,10 +1,10 @@
-import { apiGetNetworkSlice, apiGetNetworkSlices } from "@/utils/apiNetworkSliceCalls";
-import { apiGetDeviceGroup, apiPostDeviceGroup } from "@/utils/apiDeviceGroupCalls";
-import { apiDeleteSubscriber } from "@/utils/apiSubscriberCalls";
+import { apiGetNetworkSlice, apiGetAllNetworkSlices } from "@/utils/callNetworkSliceApi";
+import { apiGetDeviceGroup, apiPostDeviceGroup } from "@/utils/callDeviceGroupApi";
+import { apiDeleteSubscriber } from "@/utils/callSubscriberApi";
 
 export const deleteSubscriber = async (imsi: string) => {
   try {
-    const networkSlicesResponse = await apiGetNetworkSlices();
+    const networkSlicesResponse = await apiGetAllNetworkSlices();
 
     if (!networkSlicesResponse.ok) {
       throw new Error(
