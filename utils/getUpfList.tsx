@@ -5,7 +5,7 @@ export interface UpfItem {
 
 export const getUpfList = async (): Promise<UpfItem[]> => {
   try {
-    const response = await fetch("/config/upf", {
+    const response = await fetch("/config/parameter/upf", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

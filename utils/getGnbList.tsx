@@ -5,7 +5,7 @@ export interface GnbItem {
 
 export const getGnbList = async (): Promise<GnbItem[]> => {
   try {
-    const response = await fetch("/config/gnb", {
+    const response = await fetch("/config/parameter/gnb", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
