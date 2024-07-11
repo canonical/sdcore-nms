@@ -10,18 +10,22 @@ on:
     - cron: "0 0 * * 0"
 
 jobs:
-  lint-report:
-    uses: ./.github/workflows/lint-report.yaml
+  nms-lint-report:
+    uses: ./.github/workflows/nms-lint-report.yaml
 
-  build:
+  build-nms:
     needs: lint-report
-    uses: ./.github/workflows/build.yaml
+    uses: ./.github/workflows/build-nms.yaml
 
-  integration-tests:
-    needs: build
-    uses: ./.github/workflows/integration_tests.yaml
+  build-rock:
+    needs: build-nms
+    uses: canonical/sdcore-github-workflows/.github/workflows/build-rock.yaml@v1.0.0
 
-  publish:
+  scan-rock:
+    needs: build-rock
+    uses: canonical/sdcore-github-workflows/.github/workflows/scan-rock.yaml@v1.0.0
+
+  publish-rock:
     if: github.ref_name == 'main'
-    needs: integration-tests
-    uses: ./.github/workflows/publish.yaml
+    needs: scan-rock
+    uses: canonical/sdcore-github-workflows/.github/workflows/publish-rock.yaml@v1.0.0
