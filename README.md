@@ -7,12 +7,12 @@ A Network Management System for managing the Aether SD-Core 5G core network.
 ## Usage
 
 NMS needs to be configured with the following environment variables:
-- `SWAGGER_HOST`: The host of the webui. This is used to redirect the swagger operations to the webui.
+- `WEBUI_ENDPOINT`: The endpoint of the webui. This is used to redirect the swagger operations to the webui.
 - `UPF_CONFIG_PATH`: The path to the UPF configuration file. An example of this file can be seen in the `examples/` directory.
 - `GNB_CONFIG_PATH`: The path to the gNodeB configuration file. An example of this file can be seen in the `examples/` directory.
 
 ```console
-export SWAGGER_HOST=10.1.182.28
+export WEBUI_ENDPOINT=10.1.182.28:5000
 export UPF_CONFIG_PATH=/path/to/upf_config.json
 export GNB_CONFIG_PATH=/path/to/gnb_config.json
 
