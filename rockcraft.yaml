@@ -15,8 +15,6 @@ services:
     startup: enabled
     working-dir: app
     environment:
-      UPF_CONFIG_PATH: /etc/upf/upf.json
-      GNB_CONFIG_PATH: /etc/gnb/gnb.json
       WEBUI_ENDPOINT: http://10.1.182.9:5000
 
 parts:
