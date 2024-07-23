@@ -8,16 +8,6 @@ license: Apache-2.0
 platforms:
   amd64:
 
-services:
-  webui:
-    command: /bin/webconsole --webuicfg /etc/webui/webuicfg.conf
-    override: replace
-    startup: enabled
-    environment:
-      UPF_CONFIG_PATH: /etc/upf/upf.json
-      GNB_CONFIG_PATH: /etc/gnb/gnb.json
-      SWAGGER_HOST: 10.1.182.9
-
 parts:
   nms:
     plugin: nil
