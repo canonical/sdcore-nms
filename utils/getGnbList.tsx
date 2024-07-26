@@ -3,9 +3,11 @@ export interface GnbItem {
   tac: number;
 }
 
+const WEBUI_ENDPOINT = process.env.WEBUI_ENDPOINT || 'http://localhost:3000';
+
 export const getGnbList = async (): Promise<GnbItem[]> => {
   try {
-    const response = await fetch("/config/v1/inventory/gnb", {
+    const response = await fetch(`http://${WEBUI_ENDPOINT}/config/v1/inventory/gnb`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

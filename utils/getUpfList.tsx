@@ -3,9 +3,11 @@ export interface UpfItem {
   port: string;
 }
 
+const WEBUI_ENDPOINT = process.env.WEBUI_ENDPOINT || 'http://localhost:3000';
+
 export const getUpfList = async (): Promise<UpfItem[]> => {
   try {
-    const response = await fetch("/config/v1/inventory/upf", {
+    const response = await fetch(`http://${WEBUI_ENDPOINT}/config/v1/inventory/upf`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

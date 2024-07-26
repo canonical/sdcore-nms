@@ -68,6 +68,7 @@ export const createNetworkSlice = async ({
   };
 
   try {
+    console.error(`Getting NS ${name}`);
     const getNetworkSliceResponse = await apiGetNetworkSlice(name)
     if (getNetworkSliceResponse.ok) {
       throw new Error("Network slice already exists");
