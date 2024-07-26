@@ -18,8 +18,8 @@ export const apiGetAllSubscribers = async () => {
 };
 
 export const apiGetSubscriber = async (imsi: string) => {
-  if (isValidSubscriberName(imsi)){
-    throw new Error(`Error getting subscriber: Invalid name provided.`);
+  if (!isValidSubscriberName(imsi)){
+    throw new Error(`Error getting subscriber: Invalid name provided ${imsi}.`);
   }
   try {
     const response = await fetch(`/api/subscriber/imsi-${imsi}`, {
@@ -36,8 +36,8 @@ export const apiGetSubscriber = async (imsi: string) => {
 };
 
 export const apiPostSubscriber = async (imsi: string, subscriberData: any) => {
-  if (isValidSubscriberName(imsi)){
-    throw new Error(`Error updating subscriber: Invalid name provided.`);
+  if (!isValidSubscriberName(imsi)){
+    throw new Error(`Error updating subscriber: Invalid name provided ${imsi}.`);
   }
   try {
     const response = await fetch(`/api/subscriber/imsi-${imsi}`, {
@@ -55,8 +55,8 @@ export const apiPostSubscriber = async (imsi: string, subscriberData: any) => {
 };
 
 export const apiDeleteSubscriber = async (imsi: string) => {
-  if (isValidSubscriberName(imsi)){
-    throw new Error(`Error deleting subscriber: Invalid name provided.`);
+  if (!isValidSubscriberName(imsi)){
+    throw new Error(`Error deleting subscriber: Invalid name provided ${imsi}.`);
   }
   try {
     const response = await fetch(`/api/subscriber/imsi-${imsi}`, {
