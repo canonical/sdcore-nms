@@ -30,7 +30,8 @@ export const getSubscribers = async () => {
 
 const getSubscriber = async (imsi: string) => {
   try {
-    const response = await apiGetSubscriber(imsi);
+    const numericPart = imsi.split("-")[1];
+    const response = await apiGetSubscriber(numericPart);
     if (!response.ok)
       throw new Error(
         `Failed to fetch subscriber. Status: ${response.status}`,
