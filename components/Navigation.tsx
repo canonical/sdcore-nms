@@ -1,4 +1,4 @@
-import React, { FC, MouseEvent, useEffect, useState } from "react";
+import React, { FC, MouseEvent, useState } from "react";
 import { Button, Icon } from "@canonical/react-components";
 import classnames from "classnames";
 import Logo from "./Logo";
@@ -103,8 +103,7 @@ const Navigation: FC = () => {
                   <li className="p-side-navigation__item">
                     <a
                       className="p-side-navigation__link"
-                      href="/api"
-                      target="_blank"
+                      href="#"
                       rel="noreferrer"
                       title="API"
                     >
