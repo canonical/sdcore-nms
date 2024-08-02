@@ -226,6 +226,7 @@ const NetworkSliceModal = ({ networkSlice, toggleModal }: NetworkSliceModalProps
           placeholder="001"
           stacked
           required
+          disabled={networkSlice ? true : false} // Workaround for https://github.com/omec-project/webconsole/issues/200
           {...formik.getFieldProps("mcc")}
           error={formik.touched.mcc ? formik.errors.mcc : null}
         />
@@ -237,6 +238,7 @@ const NetworkSliceModal = ({ networkSlice, toggleModal }: NetworkSliceModalProps
           placeholder="01"
           stacked
           required
+          disabled={networkSlice ? true : false} // Workaround for https://github.com/omec-project/webconsole/issues/200
           {...formik.getFieldProps("mnc")}
           error={formik.touched.mnc ? formik.errors.mnc : null}
         />
