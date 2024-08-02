@@ -1,6 +1,6 @@
 name: sdcore-nms
 base: ubuntu@24.04
-version: "0.2.0"
+version: "1.0.0"
 summary: SD-Core NMS
 description: |
   A Network Management System for managing the SD-Core 5G core network.
@@ -15,8 +15,6 @@ services:
     startup: enabled
     working-dir: app
     environment:
-      UPF_CONFIG_PATH: /etc/upf/upf.json
-      GNB_CONFIG_PATH: /etc/gnb/gnb.json
       WEBUI_ENDPOINT: http://10.1.182.9:5000
 
 parts:
@@ -37,7 +35,6 @@ parts:
       cp -r .next ${CRAFT_PART_INSTALL}/app/
       cp -r node_modules ${CRAFT_PART_INSTALL}/app/
       cp package.json ${CRAFT_PART_INSTALL}/app/
-      cp -r pages ${CRAFT_PART_INSTALL}/app/
   version:
     plugin: nil
     override-build: |
