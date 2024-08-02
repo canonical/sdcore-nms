@@ -1,6 +1,6 @@
 name: sdcore-nms
 base: ubuntu@24.04
-version: "0.2.0"
+version: "1.0.0"
 summary: SD-Core NMS
 description: |
   A Network Management System for managing the SD-Core 5G core network.
