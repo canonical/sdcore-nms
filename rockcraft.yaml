@@ -11,9 +11,7 @@ platforms:
 parts:
   nms:
     plugin: nil
-    source: https://github.com/canonical/sdcore-nms.git
-    source-type: git
-    source-commit: 5dd01d6c484331d4134cd0d11c60358f4cb160f3
+    source: .
     stage-snaps:
       - node/20/stable
     build-snaps:
@@ -35,7 +33,7 @@ parts:
     plugin: go
     source: https://github.com/patriciareinoso/webconsole.git
     source-type: git
-    source-commit: 93f675baa7eb5f5df37e4013cf4cda0beeba5d84
+    source-tag: v1.4.2
     build-snaps:
       - go/1.21/stable
     go-buildtags:
