@@ -8,17 +8,7 @@ license: Apache-2.0
 platforms:
   amd64:
 
-services:
-  nms:
-    command: npm run start
-    override: replace
-    startup: enabled
-    working-dir: app
-    environment:
-      WEBUI_ENDPOINT: http://10.1.182.9:5000
-
 parts:
-
   nms:
     plugin: nil
     source: .
@@ -27,14 +17,36 @@ parts:
     build-snaps:
       - node/20/stable
     override-build: |
-      mkdir -p ${CRAFT_PART_INSTALL}/app
-
+      craftctl default
       npm ci
       npm run build
 
-      cp -r .next ${CRAFT_PART_INSTALL}/app/
-      cp -r node_modules ${CRAFT_PART_INSTALL}/app/
-      cp package.json ${CRAFT_PART_INSTALL}/app/
+      mkdir -p ${CRAFT_PART_INSTALL}/app
+      cp -r out/* ${CRAFT_PART_INSTALL}/app/
+    stage:
+      - app
+    prime:
+      - -app
+  webui:
+    after:
+      - nms
+    plugin: go
+    source: https://github.com/omec-project/webconsole.git
+    source-type: git
+    source-tag: v1.4.2
+    build-snaps:
+      - go/1.21/stable
+    go-buildtags:
+      - ui
+    stage-packages:
+      - libc6_libs
+      - base-files_lib
+    organize:
+      bin/cmd: bin/webui
+    override-build: |
+      rm -rf ${CRAFT_PART_BUILD}/ui/frontend_files/*
+      cp -r ${CRAFT_STAGE}/app/* ${CRAFT_PART_BUILD}/ui/frontend_files
+      craftctl default
   version:
     plugin: nil
     override-build: |
