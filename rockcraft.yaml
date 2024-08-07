@@ -31,7 +31,7 @@ parts:
     after:
       - nms
     plugin: go
-    source: https://github.com/patriciareinoso/webconsole.git
+    source: https://github.com/omec-project/webconsole.git
     source-type: git
     source-tag: v1.4.2
     build-snaps:
