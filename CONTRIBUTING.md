@@ -39,13 +39,7 @@ To make contributions to this project, make sure you have [`Nodejs 18`](https://
    make NMS_REPO_PATH=<path/to/the/NMS> WEBUI_REPO_PATH=<path/to/the/Webui>
    ```
 
-4. Run the development server:
-
-   ```bash
-   npm run dev
-   ```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to view the changes.
+Open [http://localhost:5000](http://localhost:5000) with your browser to view the changes.
 
 ## Testing
 
@@ -67,6 +61,8 @@ To build the project:
 npm run build
 ```
 
+This command will automatically create the `./out` directory with the NMS static files.
+
 ## Container image
 
 Pack the rock
@@ -79,13 +75,13 @@ rockcraft pack -v
 Move the rock to Docker's registry
 
 ```bash
-sudo rockcraft.skopeo --insecure-policy copy oci-archive:sdcore-nms_0.2.0_amd64.rock docker-daemon:sdcore-nms:0.2.0
+sudo rockcraft.skopeo --insecure-policy copy oci-archive:sdcore-nms_<version>_amd64.rock docker-daemon:sdcore-nms:<version>
 ```
 
 Run the NMS
 
 ```bash
-docker run -p 3000:3000 sdcore-nms:0.2.0
+docker run -p 3000:3000 sdcore-nms:<version>
 ```
 
 You will have the NMS available in `http://localhost:3000`.
