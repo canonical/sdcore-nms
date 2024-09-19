@@ -5,22 +5,38 @@
 
 To make contributions to this project, make sure you have [`Nodejs 18`](https://nodejs.org/) installed.
 
-1. Clone the repository:
+1. Clone the NSM and the Webui repositories:
 
    ```shell
    git clone git@github.com:canonical/sdcore-nms.git
    ```
 
-2. Navigate to the project directory:
+   ```shell
+   git clone git@github.com:omec-project/webconsole.git
+   ```
+
+2. Navigate to the NMS project directory:
 
    ```shell
    cd sdcore-nms
    ```
 
-3. Install the dependencies:
+3. Update the config file on `./example/webuicfg.yaml` with the DB information:
 
    ```shell
-   npm install
+  mongodb:
+    name: <common_db_name>
+    url: <common_db_url>
+    authKeysDbName: <auth_db_name>
+    authUrl: <auth_db_name>
+    webuiDbName: <webui_db_name>
+    webuiDbUrl: <webui_db_name>
+   ```
+
+4. Run the project
+
+   ```shell
+   make NMS_REPO_PATH=<path/to/the/NMS> WEBUI_REPO_PATH=<path/to/the/Webui>
    ```
 
 4. Run the development server:
