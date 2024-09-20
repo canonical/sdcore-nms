@@ -2,8 +2,6 @@
 
 A Network Management System for managing the Aether SD-Core 5G core network.
 
-The NMS is a component that provides a user interface (UI) for configuring the 5G core network in Aether SD-Core.
-
 ![Screenshot](images/nms_screenshot.png)
 
 ## Usage

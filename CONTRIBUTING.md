@@ -24,19 +24,32 @@ Ensure you have [`Nodejs 18`](https://nodejs.org/), Go installed, and access to 
 
 ## Development Setup
 
-Create a webui configuration file. You can use `./example/webuicfg.yaml` as an example (DB information needs to be updated):
+Create a webui configuration file. You can use `./example/webuicfg.yaml` as an example:
 
    ```yaml
-   mongodb:
-      name: <common_db_name>
-      url: <mongodb://localhost:27017/common_db_name>
-      authKeysDbName: <auth_db_name>
-      authUrl: <mongodb://localhost:27017/auth_db_name>
+   configuration:
+      managedByConfigPod:
+         enabled: true
+         syncUrl: ""
+      mongodb:
+         name: <common_db_name>
+         url: <common_db_url>
+         authKeysDbName: <auth_db_name>
+         authUrl: <auth_db_name>
+      spec-compliant-sdf: false
+   info:
+      description: WebUI initial local configuration
+      version: 1.0.0
+   ```
+
+Install NMS dependecies:
+   ```shell
+   npm ci
    ```
 
 ## Running the Project
 
-Run the project:
+To run the project, execute the following command:
 
    ```shell
    make WEBUI_REPO_PATH=<path/to/the/Webui> CONFIG_FILE_PATH=<path/to/config/file>
@@ -76,7 +89,7 @@ This command will automatically create an `./out` directory with the NMS static 
 
 ## Container image
 
-Pack the rock
+Pack the rock:
 
 ```bash
 sudo snap install rockcraft --edge --classic
