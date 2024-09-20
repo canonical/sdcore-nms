@@ -1,11 +1,12 @@
 # Contributing
 
+The NMS consists of both a backend and a frontend component. You need to set up and run both to contribute effectively to the project.
 
-## Development
+## Getting Started
 
-To make contributions to this project, make sure you have [`Nodejs 18`](https://nodejs.org/) installed.
+Ensure you have [`Nodejs 18`](https://nodejs.org/), Go installed, and access to a MongoDB instance.
 
-1. Clone the NSM and the Webui repositories:
+1. Clone the NMS and the Webui repositories:
 
    ```shell
    git clone git@github.com:canonical/sdcore-nms.git
@@ -21,25 +22,35 @@ To make contributions to this project, make sure you have [`Nodejs 18`](https://
    cd sdcore-nms
    ```
 
-3. Update the config file on `./example/webuicfg.yaml` with the DB information:
+## Development Setup
 
-   ```shell
-  mongodb:
-    name: <common_db_name>
-    url: <common_db_url>
-    authKeysDbName: <auth_db_name>
-    authUrl: <auth_db_name>
-    webuiDbName: <webui_db_name>
-    webuiDbUrl: <webui_db_name>
+Create a webui configuration file. You can use `./example/webuicfg.yaml` as an example (DB information needs to be updated):
+
+   ```yaml
+   mongodb:
+      name: <common_db_name>
+      url: <mongodb://localhost:27017/common_db_name>
+      authKeysDbName: <auth_db_name>
+      authUrl: <mongodb://localhost:27017/auth_db_name>
    ```
 
-4. Run the project
+## Running the Project
+
+Run the project:
 
    ```shell
-   make NMS_REPO_PATH=<path/to/the/NMS> WEBUI_REPO_PATH=<path/to/the/Webui>
+   make WEBUI_REPO_PATH=<path/to/the/Webui> CONFIG_FILE_PATH=<path/to/config/file>
    ```
 
-Open [http://localhost:5000](http://localhost:5000) with your browser to view the changes.
+Both `WEBUI_REPO_PATH` and `CONFIG_FILE_PATH` are optional parameters:
+- `WEBUI_REPO_PATH`: Absolute path to the Webui repository. If not provided, the default value` ./../webconsole` will be used.
+- `CONFIG_FILE_PATH`: Absolute path to the Webui configuration file. If not provided, the default value `./example/webuicfg.yaml` will be used.
+
+You can omit these variables if the default paths are correct for your environment.
+
+Once the project is running, open [http://localhost:5000](http://localhost:5000) in your browser to view the changes.
+
+You will need to run this command after every modification to the NMS code. Changes will not be automatically reflected in your web browser.
 
 ## Testing
 
@@ -58,10 +69,10 @@ npm run lint
 To build the project:
 
 ```shell
-npm run build
+make build-nms
 ```
 
-This command will automatically create the `./out` directory with the NMS static files.
+This command will automatically create an `./out` directory with the NMS static files.
 
 ## Container image
 

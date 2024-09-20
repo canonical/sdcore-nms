@@ -7,10 +7,7 @@ configuration:
     url: <common_db_url>
     authKeysDbName: <auth_db_name>
     authUrl: <auth_db_name>
-    webuiDbName: <webui_db_name>
-    webuiDbUrl: <webui_db_name>
   spec-compliant-sdf: false
-  enableAuthentication: true
 info:
   description: WebUI initial local configuration
   version: 1.0.0
