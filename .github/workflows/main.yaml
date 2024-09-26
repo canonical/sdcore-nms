@@ -1,9 +1,9 @@
-name: Main branch CI
+name: v1.4 branch CI
 
 on:
   pull_request:
     branches:
-      - main
+      - v1.4
 
   push:
   schedule:
@@ -22,6 +22,6 @@ jobs:
     uses: ./.github/workflows/integration_tests.yaml
 
   publish:
-    if: github.ref_name == 'main'
+    if: ${{ github.ref_name == 'v1.4' }}
     needs: integration-tests
     uses: ./.github/workflows/publish.yaml
