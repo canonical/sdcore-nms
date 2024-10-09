@@ -15,6 +15,7 @@
 
 # production
 /build
+/webconsole-src
 /artifacts
 
 # misc
@@ -38,5 +39,9 @@ upf_config.json
 *.tsbuildinfo
 next-env.d.ts
 
+# ide
 *.idea
 *.rock
+
+# binaries
+webconsole

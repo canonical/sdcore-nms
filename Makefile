@@ -1,66 +1,47 @@
-WEBCONSOLE_PROJECT_DIR := build
+BUILD_FOLDER := build
+ARTIFACT_FOLDER := artifacts
+
+WEBCONSOLE_PROJECT_DIR := build/webconsole-src
+WEBCONSOLE_FILES := $(filter-out $(WEBCONSOLE_PROJECT_DIR)/ui/frontend_files  $(WEBCONSOLE_PROJECT_DIR)/ui/frontend_files/*, $(wildcard $(WEBCONSOLE_PROJECT_DIR)/**/* $(WEBCONSOLE_PROJECT_DIR)/*))
 WEBCONSOLE_REPO_URL := https://github.com/omec-project/webconsole.git
+WEBCONSOLE_ARTIFACT_NAME := webconsole
 
-.PHONY: clean build-npm build-go clone-npm-project
-clone-webconsole:
-	@if [ ! -d "build" ]; then                   \
-		echo "make: cloning webconsole";         \
-		git clone $(WEBCONSOLE_REPO_URL) build;  \
-	else                                         \
-		echo "make: already cloned webconsole."; \
-	fi
+NMS_FILES := $(wildcard app/**/* components/**/* images/**/* utils/**/* package.json package-lock.json)
+NMS_ARTIFACT_NAME := nms-static
 
-nms: clone-webconsole
-	echo "make: building nms"
-	npm install && npm run build
+ROCK_ARTIFACT_NAME := sdcore-nms.rock
 
-webconsole: nms clone-webconsole
-	echo "make: building webconsole"
-	rm -rf $(WEBCONSOLE_PROJECT_DIR)/ui/frontend_files/*
-	cp -R out/* $(WEBCONSOLE_PROJECT_DIR)/ui/frontend_files
-	cd $(WEBCONSOLE_PROJECT_DIR) && go build --tags ui -o $(WEBCONSOLE_PROJECT_DIR)/$@ ./server.go
-	mkdir -p artifacts
-	cp -R $(WEBCONSOLE_PROJECT_DIR)/build/* artifacts/
+$(shell   mkdir -p $(BUILD_FOLDER))
+$(shell   mkdir -p $(ARTIFACT_FOLDER))
 
-run:
-	echo "make: running webconsole locally"
-	cd examples && ../artifacts/webconsole
+webconsole-ui: $(ARTIFACT_FOLDER)/$(WEBCONSOLE_ARTIFACT_NAME)
+	@echo "Built Webconsole with frontend"
 
-rock: webconsole
-	echo "make: building oci image with a local version of webconsole"
-	mv rockcraft.yaml rockcraft_default.yaml
-	sed "s/source-type.*//; s/source-tag.*//; s/source: https.*/source: .\/build/" rockcraft_default.yaml > rockcraft.yaml
-	rockcraft pack
-	mv rockcraft_default.yaml rockcraft.yaml
+deploy: $(ARTIFACT_FOLDER)/$(ROCK_ARTIFACT_NAME)
+ifeq ($(shell lxc list | grep nms > /dev/null; echo $$?), 1)
+	echo "creating new NMS VM instance in LXD"
+	lxc launch ubuntu:24.04 --vm nms
+	sleep 10
+endif
 
-deploy: 
-	echo "make: deploying nms image to lxd"
-	@if [ -z "$$(lxc list | grep nms)" ]; then     		\
-		lxc launch ubuntu:24.04 --vm nms; 		        \
-	else 												\
-		echo "make: using already available instance."; \
-	fi
-	# sleep 5
 	lxc exec nms -- snap install docker --classic
 	lxc exec nms -- snap install rockcraft --classic
-	lxc exec nms -- docker pull mongo:noble 
-	
-	@if [ -z "$$(lxc exec nms -- docker ps | grep mongodb)" ]; then 	\
-		lxc exec nms -- docker run --name mongodb -d --network host mongo:noble \
-	else 											\
-		echo "make: mongodb already running."; \
-	fi
-	
-	lxc file push sdcore-nms_1.0.0_amd64.rock nms/root/sdcore.rock
+	lxc exec nms -- docker pull mongo:noble 	
+ifeq ($(shell lxc exec nms -- docker ps | grep mongodb > /dev/null; echo $$?), 1)
+	echo "creating and running mongodb in Docker"
+	lxc exec nms -- docker run --name mongodb -d --network host mongo:noble
+endif
+
+	lxc file push $(ARTIFACT_FOLDER)/$(ROCK_ARTIFACT_NAME) nms/root/$(ROCK_ARTIFACT_NAME)
 	lxc file push examples/config/webuicfg.yaml nms/root/
-	
-	@if [ -n "$$(lxc exec nms -- docker ps | grep nms)" ]; then 	\
-		lxc exec nms -- docker stop nms;   			\
-		lxc exec nms -- docker rm nms;			\
-	else 											\
-		echo "make: nms not running."; \
-	fi
-	lxc exec nms -- rockcraft.skopeo --insecure-policy copy oci-archive:sdcore.rock docker-daemon:nms:latest
+ifeq ($(shell lxc exec nms -- docker ps | grep nms > /dev/null; echo $$?), 0)
+	echo "removing old nms container"
+	lxc exec nms -- docker stop nms
+	lxc exec nms -- docker rm nms
+	sleep 2
+endif
+
+	lxc exec nms -- rockcraft.skopeo --insecure-policy copy oci-archive:sdcore-nms.rock docker-daemon:nms:latest
 	lxc exec nms -- docker run -d \
 		--name nms \
 		-e WEBUI_ENDPOINT=localhost:5000 \
@@ -68,19 +49,46 @@ deploy:
 		--network host \
 		nms:latest
 
-hotswap: webconsole
+hotswap: artifacts/webconsole
 	echo "make: replacing nms binary with new binary"
 	lxc file push artifacts/webconsole nms/root/
 	lxc exec nms -- docker cp ./webconsole nms:/bin/webconsole
 	lxc exec nms -- docker exec nms pebble restart nms
 
-watch: 
-	echo "make: watching for changes in nms and hotswapping when a change is detected"
+watch:
+	while [[ 1=1 ]]	\
+	do;				\
+  		watch --chgexit -n 1 "ls --all -l --recursive --full-time . | sha256sum" && echo hello; \
+  		sleep 1;	\
+	done
 
 clean:
-	rm -rf out
-	rm -rf artifacts
-	rm -rf $(WEBCONSOLE_PROJECT_DIR)
-	lxc stop nms
-	lxc delete nms
+	rm -rf $(BUILD_FOLDER)
+	rm -rf $(ARTIFACT_FOLDER)
+	-lxc stop nms
+	-lxc delete nms
+
+
+$(BUILD_FOLDER)/fetch-repo:
+	-git clone $(WEBCONSOLE_REPO_URL) $(WEBCONSOLE_PROJECT_DIR)
+	touch $(BUILD_FOLDER)/fetch-repo
+
+$(BUILD_FOLDER)/$(NMS_ARTIFACT_NAME): $(NMS_FILES)
+	@npm install && npm run build
+	mv out $@
+
+$(ARTIFACT_FOLDER)/$(WEBCONSOLE_ARTIFACT_NAME): build/fetch-repo $(WEBCONSOLE_FILES) build/$(NMS_ARTIFACT_NAME)
+	rm -rf $(WEBCONSOLE_PROJECT_DIR)/ui/frontend_files/*
+	cp -R $(BUILD_FOLDER)/$(NMS_ARTIFACT_NAME)/* $(WEBCONSOLE_PROJECT_DIR)/ui/frontend_files
+	cd $(WEBCONSOLE_PROJECT_DIR) && go build --tags ui -o $(WEBCONSOLE_ARTIFACT_NAME) ./server.go
+
+	mv $(WEBCONSOLE_PROJECT_DIR)/$(WEBCONSOLE_ARTIFACT_NAME) $@
+
+$(ARTIFACT_FOLDER)/$(ROCK_ARTIFACT_NAME): $(ARTIFACT_FOLDER)/$(WEBCONSOLE_ARTIFACT_NAME) rockcraft.yaml
+	@echo "make: building oci image with a local version of webconsole"
+	mv rockcraft.yaml rockcraft_default.yaml
+	sed "s~source-type.*~~; s~source-tag.*~~; s~source: https.*~source: .\/$(WEBCONSOLE_PROJECT_DIR)~" rockcraft_default.yaml > rockcraft.yaml
+	rockcraft pack
+	mv rockcraft_default.yaml rockcraft.yaml
+	mv $$(ls | grep *.rock) $@
 
