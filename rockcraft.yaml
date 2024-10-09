@@ -8,6 +8,12 @@ license: Apache-2.0
 platforms:
   amd64:
 
+services:
+  nms:
+    command: webconsole
+    override: replace
+    startup: enabled
+
 parts:
   nms:
     plugin: nil

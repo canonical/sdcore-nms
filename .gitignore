@@ -15,6 +15,7 @@
 
 # production
 /build
+/artifacts
 
 # misc
 .DS_Store
@@ -38,3 +39,4 @@ upf_config.json
 next-env.d.ts
 
 *.idea
+*.rock
