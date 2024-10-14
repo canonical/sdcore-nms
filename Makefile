@@ -19,7 +19,7 @@ webconsole-ui: $(ARTIFACT_FOLDER)/$(WEBCONSOLE_ARTIFACT_NAME)
 
 deploy: $(ARTIFACT_FOLDER)/$(ROCK_ARTIFACT_NAME)
 ifeq ($(shell lxc list | grep nms > /dev/null; echo $$?), 1)
-	echo "creating new NMS VM instance in LXD"
+	@echo "creating new NMS VM instance in LXD"
 	lxc launch ubuntu:24.04 --vm nms
 	sleep 10
 endif
@@ -28,14 +28,14 @@ endif
 	lxc exec nms -- snap install rockcraft --classic
 	lxc exec nms -- docker pull mongo:noble 	
 ifeq ($(shell lxc exec nms -- docker ps | grep mongodb > /dev/null; echo $$?), 1)
-	echo "creating and running mongodb in Docker"
+	@echo "creating and running mongodb in Docker"
 	lxc exec nms -- docker run --name mongodb -d --network host mongo:noble
 endif
 
 	lxc file push $(ARTIFACT_FOLDER)/$(ROCK_ARTIFACT_NAME) nms/root/$(ROCK_ARTIFACT_NAME)
 	lxc file push examples/config/webuicfg.yaml nms/root/
 ifeq ($(shell lxc exec nms -- docker ps | grep nms > /dev/null; echo $$?), 0)
-	echo "removing old nms container"
+	@echo "removing old nms container"
 	lxc exec nms -- docker stop nms
 	lxc exec nms -- docker rm nms
 	sleep 2
@@ -50,17 +50,10 @@ endif
 		nms:latest
 
 hotswap: artifacts/webconsole
-	echo "make: replacing nms binary with new binary"
+	@echo "make: replacing nms binary with new binary"
 	lxc file push artifacts/webconsole nms/root/
 	lxc exec nms -- docker cp ./webconsole nms:/bin/webconsole
 	lxc exec nms -- docker exec nms pebble restart nms
-
-watch:
-	while [[ 1=1 ]]	\
-	do;				\
-  		watch --chgexit -n 1 "ls --all -l --recursive --full-time . | sha256sum" && echo hello; \
-  		sleep 1;	\
-	done
 
 clean:
 	rm -rf $(BUILD_FOLDER)
