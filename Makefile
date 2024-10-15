@@ -17,7 +17,7 @@ $(shell   mkdir -p $(ARTIFACT_FOLDER))
 webconsole-ui: $(ARTIFACT_FOLDER)/$(WEBCONSOLE_ARTIFACT_NAME)
 	@echo "Built Webconsole with frontend"
 
-deploy: $(ARTIFACT_FOLDER)/$(ROCK_ARTIFACT_NAME)
+deploy: rockcraft.yaml
 ifeq ($(shell lxc list | grep nms > /dev/null; echo $$?), 1)
 	@echo "creating new NMS VM instance in LXD"
 	lxc launch ubuntu:24.04 --vm nms

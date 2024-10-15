@@ -1,4 +1,4 @@
-import { Subscriber } from "@/app/(network)/subscribers/page";
+import { Subscriber } from "@/app/(nms)/subscribers/page";
 import { apiGetSubscriber, apiGetAllSubscribers } from "@/utils/callSubscriberApi";
 
 export const getSubscribers = async () => {

@@ -63,42 +63,40 @@ const Subscribers = () => {
     toggleEditModal();
   }
 
-  const getEditButton = (subscriber: any) => 
-  {
+  const getEditButton = (subscriber: any) => {
     return <Button
-              appearance=""
-              className="u-no-margin--bottom"
-              shiftClickEnabled
-              showShiftClickHint
-              onClick={() =>{handleEditButton(subscriber)}}
-            >
-              Edit
-            </Button>
-  } 
+      appearance=""
+      className="u-no-margin--bottom"
+      shiftClickEnabled
+      showShiftClickHint
+      onClick={() => { handleEditButton(subscriber) }}
+    >
+      Edit
+    </Button>
+  }
 
-  const getDeleteButton = (imsi: string) =>
-  {
+  const getDeleteButton = (imsi: string) => {
     return <ConfirmationButton
-              appearance="negative"
-              className="u-no-margin--bottom"
-              shiftClickEnabled
-              showShiftClickHint
-              confirmationModalProps={{
-                title: "Confirm Delete",
-                confirmButtonLabel: "Delete",
-                onConfirm: () => handleConfirmDelete(imsi),
-                children: (
-                  <p>
-                    This will permanently delete the subscriber{" "}
-                    <b>{imsi}</b>
-                    <br />
-                    This action cannot be undone.
-                  </p>
-                ),
-              }}
-            >
-              Delete
-            </ConfirmationButton>
+      appearance="negative"
+      className="u-no-margin--bottom"
+      shiftClickEnabled
+      showShiftClickHint
+      confirmationModalProps={{
+        title: "Confirm Delete",
+        confirmButtonLabel: "Delete",
+        onConfirm: () => handleConfirmDelete(imsi),
+        children: (
+          <p>
+            This will permanently delete the subscriber{" "}
+            <b>{imsi}</b>
+            <br />
+            This action cannot be undone.
+          </p>
+        ),
+      }}
+    >
+      Delete
+    </ConfirmationButton>
   }
 
   const tableContent = subscribers.map((subscriber) => {
@@ -150,8 +148,8 @@ const Subscribers = () => {
         />
       </PageContent>
       {isCreateModalVisible && <SubscriberModal toggleModal={toggleCreateModal} slices={slices} deviceGroups={deviceGroups} />}
-      {isEditModalVisible && 
-        <SubscriberModal toggleModal={toggleEditModal} subscriber={subscriber} slices={slices} deviceGroups={deviceGroups}/>}
+      {isEditModalVisible &&
+        <SubscriberModal toggleModal={toggleEditModal} subscriber={subscriber} slices={slices} deviceGroups={deviceGroups} />}
     </>
   );
 };
