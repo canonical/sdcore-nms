@@ -1,8 +1,37 @@
 import { UserEntry } from "@/components/types";
 
-export async function ListUsers(params: { authToken: string }): Promise<UserEntry[]> {
+export async function listUsers(params: { authToken: string }): Promise<UserEntry[]> {
     const response = await fetch("/config/v1/account", {
         headers: { "Authorization": "Bearer " + params.authToken }
+    })
+    const respData = await response.json();
+    if (!response.ok) {
+        throw new Error(`${response.status}: ${HTTPStatus(response.status)}. ${respData.error}`)
+    }
+    return respData.result
+}
+
+export async function deleteUser(params: { authToken: string, id: string }) {
+    const response = await fetch("/config/v1/account/" + params.id, {
+        method: 'delete',
+        headers: {
+            'Authorization': "Bearer " + params.authToken
+        }
+    })
+    const respData = await response.json();
+    if (!response.ok) {
+        throw new Error(`${response.status}: ${HTTPStatus(response.status)}. ${respData.error}`)
+    }
+    return respData.result
+}
+
+export async function changePassword(changePasswordForm: { authToken: string, id: string, password: string }) {
+    const response = await fetch("/api/v1/accounts/" + changePasswordForm.id + "/change_password", {
+        method: "POST",
+        headers: {
+            'Authorization': 'Bearer ' + changePasswordForm.authToken
+        },
+        body: JSON.stringify({ "password": changePasswordForm.password })
     })
     const respData = await response.json();
     if (!response.ok) {
