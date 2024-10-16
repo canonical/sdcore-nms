@@ -2,9 +2,9 @@ import { apiGetNetworkSlice, apiGetAllNetworkSlices } from "@/utils/callNetworkS
 import { apiGetDeviceGroup, apiPostDeviceGroup } from "@/utils/callDeviceGroupApi";
 import { apiDeleteSubscriber } from "@/utils/callSubscriberApi";
 
-export const deleteSubscriber = async (imsi: string) => {
+export const deleteSubscriber = async (imsi: string, token: string) => {
   try {
-    const networkSlicesResponse = await apiGetAllNetworkSlices();
+    const networkSlicesResponse = await apiGetAllNetworkSlices(token);
 
     if (!networkSlicesResponse.ok) {
       throw new Error(
@@ -15,7 +15,7 @@ export const deleteSubscriber = async (imsi: string) => {
     const sliceNames = await networkSlicesResponse.json();
 
     for (const sliceName of sliceNames) {
-      const networkSliceResponse = await apiGetNetworkSlice(sliceName);
+      const networkSliceResponse = await apiGetNetworkSlice(sliceName, token);
 
       if (!networkSliceResponse.ok) {
         throw new Error(
@@ -26,7 +26,7 @@ export const deleteSubscriber = async (imsi: string) => {
       const sliceData = await networkSliceResponse.json();
       const deviceGroupNames = sliceData["site-device-group"];
       for (const groupName of deviceGroupNames) {
-        const deviceGroupResponse = await apiGetDeviceGroup(groupName);
+        const deviceGroupResponse = await apiGetDeviceGroup(groupName, token);
 
         if (!deviceGroupResponse.ok) {
           throw new Error(
@@ -41,11 +41,11 @@ export const deleteSubscriber = async (imsi: string) => {
             (id: string) => id !== imsi,
           );
 
-          await apiPostDeviceGroup(groupName, deviceGroupData);
+          await apiPostDeviceGroup(groupName, deviceGroupData, token);
         }
       }
     }
-    const deleteSubscriberResponse = await apiDeleteSubscriber(imsi);
+    const deleteSubscriberResponse = await apiDeleteSubscriber(imsi, token);
     if (!deleteSubscriberResponse.ok) {
       throw new Error("Failed to delete subscriber");
     }

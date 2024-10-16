@@ -25,12 +25,12 @@ export default function LoginPage() {
         mutationFn: login,
         onSuccess: (result) => {
             setErrorText("")
-            setCookie('user_token', result?.token, {
+            setCookie('user_token', result, {
                 sameSite: true,
                 secure: true,
                 expires: new Date(new Date().getTime() + 60 * 60 * 1000),
             })
-            router.push('/certificate_requests')
+            router.push('/')
         },
         onError: (e: Error) => {
             setErrorText(e.message)

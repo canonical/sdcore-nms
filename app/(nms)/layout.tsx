@@ -2,14 +2,12 @@
 import "../globals.scss";
 import { Inter } from "next/font/google";
 import React, { useState, useEffect } from "react";
-import { checkBackendAvailable } from "@/utils/checkBackendAvailable";
 import { List, Notification, Row } from "@canonical/react-components";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Navigation from "@/components/Navigation";
 import PageContent from "@/components/PageContent";
 import Loader from "@/components/Loader";
-import { AuthProvider } from "@/utils/auth";
-import { useRouter } from "next/navigation";
+import { AuthProvider, useAuth } from "@/utils/auth";
 
 const inter = Inter({ subsets: ["latin"] });
 const queryClient = new QueryClient();
@@ -20,18 +18,7 @@ export default function RootLayout({
   children: React.ReactNode;
   noLayout?: boolean;
 }) {
-  const [backendAvailable, setBackendAvailable] = useState<null | boolean>(
-    null,
-  );
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const isBackendAvailable = await checkBackendAvailable();
-      setBackendAvailable(isBackendAvailable);
-    };
-
-    fetchData();
-  }, []);
+  const auth = useAuth()
 
   return (
     <html lang="en">
@@ -50,19 +37,7 @@ export default function RootLayout({
               <Navigation />
               <main className="l-main">
                 <div className="p-panel">
-                  {backendAvailable === null && <Loader text="Loading..." />}
-                  {backendAvailable === false && (
-                    <PageContent>
-                      <Notification severity="negative" title="Error">
-                        {"Backend not available"}
-                      </Notification>
-                    </PageContent>
-                  )}
-                  {backendAvailable === true && (
-                    <>
-                      {children}
-                    </>
-                  )}
+                  {children}
                 </div>
                 <footer className="l-footer--sticky p-strip--light">
                   <Row>

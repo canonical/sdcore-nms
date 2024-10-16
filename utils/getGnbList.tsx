@@ -3,11 +3,12 @@ export interface GnbItem {
   tac: number;
 }
 
-export const getGnbList = async (): Promise<GnbItem[]> => {
+export const getGnbList = async (token: string): Promise<GnbItem[]> => {
   try {
     const response = await fetch("/config/v1/inventory/gnb", {
       method: "GET",
       headers: {
+        "Authorization": "Bearer " + token,
         "Content-Type": "application/json",
       },
     });

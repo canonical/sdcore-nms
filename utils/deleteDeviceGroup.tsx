@@ -4,14 +4,16 @@ import { apiDeleteDeviceGroup } from "@/utils/callDeviceGroupApi";
 interface DeleteDeviceGroupArgs {
   name: string;
   networkSliceName: string;
+  token: string;
 }
 
 export const deleteDeviceGroup = async ({
   name,
   networkSliceName,
+  token
 }: DeleteDeviceGroupArgs) => {
   try {
-    const existingSliceResponse = await apiGetNetworkSlice(networkSliceName);
+    const existingSliceResponse = await apiGetNetworkSlice(networkSliceName, token);
     if (!existingSliceResponse.ok) {
       throw new Error(
         `Error fetching network slice. Error code: ${existingSliceResponse.status}`,
@@ -25,7 +27,7 @@ export const deleteDeviceGroup = async ({
       if (index > -1) {
         existingSliceData["site-device-group"].splice(index, 1);
 
-        const updateSliceResponse = await apiPostNetworkSlice(networkSliceName, existingSliceData);
+        const updateSliceResponse = await apiPostNetworkSlice(networkSliceName, existingSliceData, token);
         if (!updateSliceResponse.ok) {
           throw new Error(
             `Error updating network slice. Error code: ${updateSliceResponse.status}`,
@@ -34,7 +36,7 @@ export const deleteDeviceGroup = async ({
       }
     }
 
-    const deleteResponse = await apiDeleteDeviceGroup(name);
+    const deleteResponse = await apiDeleteDeviceGroup(name, token);
     if (!deleteResponse.ok) {
       throw new Error(
         `Error deleting device group. Error code: ${deleteResponse.status}`,

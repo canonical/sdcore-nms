@@ -52,14 +52,13 @@ export async function getStatus() {
 export async function login(userForm: { username: string, password: string }) {
     const response = await fetch("/login", {
         method: "POST",
-
         body: JSON.stringify({ "username": userForm.username, "password": userForm.password })
     })
     const respData = await response.json();
     if (!response.ok) {
         throw new Error(`${response.status}: ${HTTPStatus(response.status)}. ${respData.error}`)
     }
-    return respData.result
+    return respData.token
 }
 
 export async function postFirstUser(userForm: { username: string, password: string }) {

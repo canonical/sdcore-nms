@@ -3,11 +3,12 @@ export interface UpfItem {
   port: string;
 }
 
-export const getUpfList = async (): Promise<UpfItem[]> => {
+export const getUpfList = async (token: string): Promise<UpfItem[]> => {
   try {
     const response = await fetch("/config/v1/inventory/upf", {
       method: "GET",
       headers: {
+        "Authorization": "Bearer " + token,
         "Content-Type": "application/json",
       },
     });

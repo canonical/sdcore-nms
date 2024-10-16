@@ -6,7 +6,7 @@ WEBCONSOLE_FILES := $(filter-out $(WEBCONSOLE_PROJECT_DIR)/ui/frontend_files  $(
 WEBCONSOLE_REPO_URL := https://github.com/omec-project/webconsole.git
 WEBCONSOLE_ARTIFACT_NAME := webconsole
 
-NMS_FILES := $(wildcard app/**/* components/**/* images/**/* utils/**/* package.json package-lock.json)
+NMS_FILES := $(wildcard app/**/* components/**/* images/**/* utils/* package.json package-lock.json)
 NMS_ARTIFACT_NAME := nms-static
 
 ROCK_ARTIFACT_NAME := sdcore-nms.rock
@@ -29,7 +29,10 @@ endif
 	lxc exec nms -- docker pull mongo:noble 	
 ifeq ($(shell lxc exec nms -- docker ps | grep mongodb > /dev/null; echo $$?), 1)
 	@echo "creating and running mongodb in Docker"
-	lxc exec nms -- docker run --name mongodb -d --network host mongo:noble
+	lxc exec nms -- docker run -d \
+		--name mongodb \
+		--network host \
+		mongo:noble
 endif
 
 	lxc file push $(ARTIFACT_FOLDER)/$(ROCK_ARTIFACT_NAME) nms/root/$(ROCK_ARTIFACT_NAME)
@@ -47,11 +50,12 @@ endif
 		-e WEBUI_ENDPOINT=localhost:5000 \
 		-v /root/webuicfg.yaml:/config/webuicfg.yaml \
 		--network host \
-		nms:latest
+		nms:latest --verbose
 
 hotswap: artifacts/webconsole
 	@echo "make: replacing nms binary with new binary"
 	lxc file push artifacts/webconsole nms/root/
+	lxc file push examples/config/webuicfg.yaml nms/root/
 	lxc exec nms -- docker cp ./webconsole nms:/bin/webconsole
 	lxc exec nms -- docker exec nms pebble restart nms
 
@@ -62,7 +66,7 @@ clean:
 	-lxc delete nms
 
 logs:
-	lxc exec nms -- docker logs nms
+	lxc exec nms -- docker logs nms --tail 20
 
 
 $(BUILD_FOLDER)/fetch-repo:

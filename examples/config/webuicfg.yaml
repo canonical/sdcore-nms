@@ -4,10 +4,13 @@ configuration:
     syncUrl: ""
   mongodb:
     name: free5gc
-    url: mongodb://root:example@localhost:27017
+    url: mongodb://localhost:27017
     authKeysDbName: authentication
-    authUrl: mongodb://root:example@localhost:27017
+    authUrl: mongodb://localhost:27017
+    webuiDbName: mydatabase
+    webuiDbUrl: mongodb://localhost:27017
   spec-compliant-sdf: false
+  enableAuthentication: true
 info:
   description: WebUI initial local configuration
   version: 1.0.0

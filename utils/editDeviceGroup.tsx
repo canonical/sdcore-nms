@@ -8,6 +8,7 @@ interface DeviceGroupArgs {
   mtu: number;
   MBRUpstreamBps: number;
   MBRDownstreamBps: number;
+  token: string;
 }
 
 export const editDeviceGroup = async ({
@@ -17,9 +18,10 @@ export const editDeviceGroup = async ({
   mtu,
   MBRUpstreamBps,
   MBRDownstreamBps,
+  token
 }: DeviceGroupArgs) => {
   try {
-    const currentConfig = await getDeviceGroup(name)
+    const currentConfig = await getDeviceGroup(name, token)
     var imsis = currentConfig["imsis"]
 
     const deviceGroupData = {
@@ -46,7 +48,7 @@ export const editDeviceGroup = async ({
       },
     };
 
-    const response = await apiPostDeviceGroup(name, deviceGroupData);
+    const response = await apiPostDeviceGroup(name, deviceGroupData, token);
     if (!response.ok) {
       throw new Error(
         `Error updating device group. Error code: ${response.status}`,
