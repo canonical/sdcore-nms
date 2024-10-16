@@ -35,3 +35,7 @@ export type UserEntry = {
   id: number
   username: string
 }
+
+export type statusResponse = {
+  initialized: boolean
+}

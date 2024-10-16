@@ -40,6 +40,28 @@ export async function changePassword(changePasswordForm: { authToken: string, id
     return respData.result
 }
 
+export async function getStatus() {
+    const response = await fetch("/status")
+    const respData = await response.json();
+    if (!response.ok) {
+        throw new Error(`${response.status}: ${HTTPStatus(response.status)}. ${respData.error}`)
+    }
+    return respData.result
+}
+
+export async function login(userForm: { username: string, password: string }) {
+    const response = await fetch("/login", {
+        method: "POST",
+
+        body: JSON.stringify({ "username": userForm.username, "password": userForm.password })
+    })
+    const respData = await response.json();
+    if (!response.ok) {
+        throw new Error(`${response.status}: ${HTTPStatus(response.status)}. ${respData.error}`)
+    }
+    return respData.result
+}
+
 export const HTTPStatus = (code: number): string => {
     const map: { [key: number]: string } = {
         400: "Bad Request",

@@ -68,6 +68,7 @@ $(BUILD_FOLDER)/fetch-repo:
 
 $(BUILD_FOLDER)/$(NMS_ARTIFACT_NAME): $(NMS_FILES)
 	@npm install && npm run build
+	rm -rf $@
 	mv out $@
 
 $(ARTIFACT_FOLDER)/$(WEBCONSOLE_ARTIFACT_NAME): build/fetch-repo $(WEBCONSOLE_FILES) build/$(NMS_ARTIFACT_NAME)

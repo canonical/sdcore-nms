@@ -8,6 +8,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Navigation from "@/components/Navigation";
 import PageContent from "@/components/PageContent";
 import Loader from "@/components/Loader";
+import { useAuth } from "@/utils/auth";
+import { useRouter } from "next/navigation";
 
 const inter = Inter({ subsets: ["latin"] });
 const queryClient = new QueryClient();
@@ -21,6 +23,8 @@ export default function RootLayout({
   const [backendAvailable, setBackendAvailable] = useState<null | boolean>(
     null,
   );
+  const router = useRouter()
+  const auth = useAuth()
 
   useEffect(() => {
     const fetchData = async () => {

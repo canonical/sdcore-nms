@@ -16,7 +16,6 @@ const AuthContext = createContext<AuthContextType>({ user: null, logout: () => {
 export const AuthProvider = ({ children }: Readonly<{ children: React.ReactNode }>) => {
     const [cookies, setCookie, removeCookie] = useCookies(['user_token']);
     const [user, setUser] = useState<User | null>(null);
-    const [firstUserCreated, setFirstUserCreated] = useState<boolean>(false)
     const router = useRouter();
 
     useEffect(() => {
@@ -25,7 +24,6 @@ export const AuthProvider = ({ children }: Readonly<{ children: React.ReactNode 
             let userObject = jwtDecode(cookies.user_token) as User
             userObject.authToken = cookies.user_token
             setUser(userObject);
-            setFirstUserCreated(true)
         } else {
             setUser(null)
             router.push('/login');

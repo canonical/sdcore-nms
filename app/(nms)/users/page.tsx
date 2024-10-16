@@ -87,7 +87,7 @@ export default function Users() {
           defaultSort='"abcd"'
           defaultSortDirection="ascending"
           headers={[
-            { content: "IMSI" },
+            { content: "Username" },
             { content: "Actions", className: "u-align--right" },
           ]}
           rows={tableContent}

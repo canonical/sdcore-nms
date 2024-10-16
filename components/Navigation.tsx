@@ -98,6 +98,22 @@ const Navigation: FC = () => {
                       Subscribers
                     </a>
                   </li>
+                  <li className="p-side-navigation__item">
+                    <a
+                      className="p-side-navigation__link"
+                      href={`/users`}
+                      title={`Users`}
+                      aria-current={
+                        pathname === "/users" ? "page" : undefined
+                      }
+                    >
+                      <Icon
+                        className="is-light p-side-navigation__icon"
+                        name="profile"
+                      />{" "}
+                      Subscribers
+                    </a>
+                  </li>
                 </ul>
                 <ul className="p-side-navigation__list sidenav-bottom-ul">
                   <li className="p-side-navigation__item">
@@ -151,9 +167,8 @@ const Navigation: FC = () => {
             <div className="sidenav-toggle-wrapper">
               <Button
                 appearance="base"
-                aria-label={`${
-                  isCollapsed ? "expand" : "collapse"
-                } main navigation`}
+                aria-label={`${isCollapsed ? "expand" : "collapse"
+                  } main navigation`}
                 hasIcon
                 dense
                 className="sidenav-toggle is-dark u-no-margin l-navigation-collapse-toggle u-hide--small"
