@@ -26,7 +26,7 @@ export async function deleteUser(params: { authToken: string, id: string }) {
 }
 
 export async function changePassword(changePasswordForm: { authToken: string, id: string, password: string }) {
-    const response = await fetch("/api/v1/accounts/" + changePasswordForm.id + "/change_password", {
+    const response = await fetch("/config/v1/account/" + changePasswordForm.id + "/change_password", {
         method: "POST",
         headers: {
             'Authorization': 'Bearer ' + changePasswordForm.authToken
@@ -53,6 +53,18 @@ export async function login(userForm: { username: string, password: string }) {
     const response = await fetch("/login", {
         method: "POST",
 
+        body: JSON.stringify({ "username": userForm.username, "password": userForm.password })
+    })
+    const respData = await response.json();
+    if (!response.ok) {
+        throw new Error(`${response.status}: ${HTTPStatus(response.status)}. ${respData.error}`)
+    }
+    return respData.result
+}
+
+export async function postFirstUser(userForm: { username: string, password: string }) {
+    const response = await fetch("/config/v1/account", {
+        method: "POST",
         body: JSON.stringify({ "username": userForm.username, "password": userForm.password })
     })
     const respData = await response.json();

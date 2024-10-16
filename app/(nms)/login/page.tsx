@@ -47,7 +47,7 @@ export default function LoginPage() {
             <LoginPageLayout
                 logo={{
                     src: 'https://assets.ubuntu.com/v1/82818827-CoF_white.svg',
-                    title: 'Notary',
+                    title: 'Network Management Service',
                     url: '#'
                 }}
                 title="Log in"

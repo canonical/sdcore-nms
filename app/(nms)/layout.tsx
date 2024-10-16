@@ -8,7 +8,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Navigation from "@/components/Navigation";
 import PageContent from "@/components/PageContent";
 import Loader from "@/components/Loader";
-import { useAuth } from "@/utils/auth";
+import { AuthProvider } from "@/utils/auth";
 import { useRouter } from "next/navigation";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -23,8 +23,6 @@ export default function RootLayout({
   const [backendAvailable, setBackendAvailable] = useState<null | boolean>(
     null,
   );
-  const router = useRouter()
-  const auth = useAuth()
 
   useEffect(() => {
     const fetchData = async () => {
@@ -47,43 +45,45 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         <QueryClientProvider client={queryClient}>
-          <div className="l-application" role="presentation">
-            <Navigation />
-            <main className="l-main">
-              <div className="p-panel">
-                {backendAvailable === null && <Loader text="Loading..." />}
-                {backendAvailable === false && (
-                  <PageContent>
-                    <Notification severity="negative" title="Error">
-                      {"Backend not available"}
-                    </Notification>
-                  </PageContent>
-                )}
-                {backendAvailable === true && (
-                  <>
-                    {children}
-                  </>
-                )}
-              </div>
-              <footer className="l-footer--sticky p-strip--light">
-                <Row>
-                  <p>
-                    © 2023 Canonical Ltd. <a href="#">Ubuntu</a> and{" "}
-                    <a href="#">Canonical</a> are registered trademarks of
-                    Canonical Ltd.
-                  </p>
-                  <List
-                    items={[
-                      <a key="Legal information" href="https://ubuntu.com/legal">
-                        Legal information
-                      </a>,
-                    ]}
-                    middot
-                  />
-                </Row>
-              </footer>
-            </main>
-          </div>
+          <AuthProvider>
+            <div className="l-application" role="presentation">
+              <Navigation />
+              <main className="l-main">
+                <div className="p-panel">
+                  {backendAvailable === null && <Loader text="Loading..." />}
+                  {backendAvailable === false && (
+                    <PageContent>
+                      <Notification severity="negative" title="Error">
+                        {"Backend not available"}
+                      </Notification>
+                    </PageContent>
+                  )}
+                  {backendAvailable === true && (
+                    <>
+                      {children}
+                    </>
+                  )}
+                </div>
+                <footer className="l-footer--sticky p-strip--light">
+                  <Row>
+                    <p>
+                      © 2023 Canonical Ltd. <a href="#">Ubuntu</a> and{" "}
+                      <a href="#">Canonical</a> are registered trademarks of
+                      Canonical Ltd.
+                    </p>
+                    <List
+                      items={[
+                        <a key="Legal information" href="https://ubuntu.com/legal">
+                          Legal information
+                        </a>,
+                      ]}
+                      middot
+                    />
+                  </Row>
+                </footer>
+              </main>
+            </div>
+          </AuthProvider>
         </QueryClientProvider>
       </body >
     </html >

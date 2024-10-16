@@ -61,6 +61,9 @@ clean:
 	-lxc stop nms
 	-lxc delete nms
 
+logs:
+	lxc exec nms -- docker logs nms
+
 
 $(BUILD_FOLDER)/fetch-repo:
 	-git clone $(WEBCONSOLE_REPO_URL) $(WEBCONSOLE_PROJECT_DIR)

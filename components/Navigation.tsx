@@ -3,11 +3,13 @@ import { Button, Icon } from "@canonical/react-components";
 import classnames from "classnames";
 import Logo from "./Logo";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/utils/auth";
 
 const Navigation: FC = () => {
   const pathname = usePathname();
   const [isCollapsed, setCollapsed] = useState(false);
 
+  const auth = useAuth()
   const softToggleMenu = () => {
     if (window.innerWidth < 620) {
       setCollapsed((prev) => !prev);
@@ -109,9 +111,9 @@ const Navigation: FC = () => {
                     >
                       <Icon
                         className="is-light p-side-navigation__icon"
-                        name="profile"
+                        name="user-group"
                       />{" "}
-                      Subscribers
+                      Users
                     </a>
                   </li>
                 </ul>
