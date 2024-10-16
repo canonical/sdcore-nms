@@ -1,35 +1,69 @@
 # Contributing
 
+The NMS consists of both a backend and a frontend component. You need to set up and run both to contribute effectively to the project.
 
-## Development
+## Getting Started
 
-To make contributions to this project, make sure you have [`Nodejs 18`](https://nodejs.org/) installed.
+Ensure you have [`Nodejs 18`](https://nodejs.org/), Go installed, and access to a MongoDB instance.
 
-1. Clone the repository:
+1. Clone the NMS and the Webui repositories:
 
    ```shell
    git clone git@github.com:canonical/sdcore-nms.git
    ```
 
-2. Navigate to the project directory:
+   ```shell
+   git clone git@github.com:omec-project/webconsole.git
+   ```
+
+2. Navigate to the NMS project directory:
 
    ```shell
    cd sdcore-nms
    ```
 
-3. Install the dependencies:
+## Development Setup
+
+Create a webui configuration file. You can use `./example/webuicfg.yaml` as an example:
+
+   ```yaml
+   configuration:
+      managedByConfigPod:
+         enabled: true
+         syncUrl: ""
+      mongodb:
+         name: <common_db_name>
+         url: <common_db_url>
+         authKeysDbName: <auth_db_name>
+         authUrl: <auth_db_name>
+      spec-compliant-sdf: false
+   info:
+      description: WebUI initial local configuration
+      version: 1.0.0
+   ```
+
+Install NMS dependecies:
+   ```shell
+   npm ci
+   ```
+
+## Running the Project
+
+To run the project, execute the following command:
 
    ```shell
-   npm install
+   make WEBUI_REPO_PATH=<path/to/the/Webui> CONFIG_FILE_PATH=<path/to/config/file>
    ```
 
-4. Run the development server:
+Both `WEBUI_REPO_PATH` and `CONFIG_FILE_PATH` are optional parameters:
+- `WEBUI_REPO_PATH`: Absolute path to the Webui repository. If not provided, the default value` ./../webconsole` will be used.
+- `CONFIG_FILE_PATH`: Absolute path to the Webui configuration file. If not provided, the default value `./example/webuicfg.yaml` will be used.
 
-   ```bash
-   npm run dev
-   ```
+You can omit these variables if the default paths are correct for your environment.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to view the changes.
+Once the project is running, open [http://localhost:5000](http://localhost:5000) in your browser to view the changes.
+
+You will need to run this command after every modification to the NMS code. Changes will not be automatically reflected in your web browser.
 
 ## Testing
 
@@ -48,12 +82,14 @@ npm run lint
 To build the project:
 
 ```shell
-npm run build
+make build-nms
 ```
+
+This command will automatically create an `./out` directory with the NMS static files.
 
 ## Container image
 
-Pack the rock
+Pack the rock:
 
 ```bash
 sudo snap install rockcraft --edge --classic
@@ -63,13 +99,13 @@ rockcraft pack -v
 Move the rock to Docker's registry
 
 ```bash
-sudo rockcraft.skopeo --insecure-policy copy oci-archive:sdcore-nms_0.2.0_amd64.rock docker-daemon:sdcore-nms:0.2.0
+sudo rockcraft.skopeo --insecure-policy copy oci-archive:sdcore-nms_<version>_amd64.rock docker-daemon:sdcore-nms:<version>
 ```
 
 Run the NMS
 
 ```bash
-docker run -p 3000:3000 sdcore-nms:0.2.0
+docker run -p 3000:3000 sdcore-nms:<version>
 ```
 
 You will have the NMS available in `http://localhost:3000`.
