@@ -1,9 +1,9 @@
-import { Subscriber } from "@/app/(network)/subscribers/page";
+import { Subscriber } from "@/app/(nms)/subscribers/page";
 import { apiGetSubscriber, apiGetAllSubscribers } from "@/utils/callSubscriberApi";
 
-export const getSubscribers = async () => {
+export const getSubscribers = async (token: string) => {
   try {
-    const response = await apiGetAllSubscribers();
+    const response = await apiGetAllSubscribers(token);
     if (!response.ok) {
       throw new Error(
         `Failed to fetch subscribers. Status: ${response.status}`,
@@ -17,7 +17,7 @@ export const getSubscribers = async () => {
 
     const allSubscribers = await Promise.all(
       subscriberNames.map(async (subscriber: Subscriber) =>
-        await getSubscriber(subscriber.ueId),
+        await getSubscriber(subscriber.ueId, token),
       ),
     );
 
@@ -28,10 +28,10 @@ export const getSubscribers = async () => {
   }
 };
 
-const getSubscriber = async (imsi: string) => {
+const getSubscriber = async (imsi: string, token: string) => {
   try {
     const numericPart = imsi.split("-")[1];
-    const response = await apiGetSubscriber(numericPart);
+    const response = await apiGetSubscriber(numericPart, token);
     if (!response.ok)
       throw new Error(
         `Failed to fetch subscriber. Status: ${response.status}`,
