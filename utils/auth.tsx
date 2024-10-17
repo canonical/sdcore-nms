@@ -18,17 +18,17 @@ export const AuthProvider = ({ children }: Readonly<{ children: React.ReactNode 
     const [user, setUser] = useState<User | null>(null);
     const router = useRouter();
 
+    const token = cookies.user_token;
     useEffect(() => {
-        const token = cookies.user_token;
         if (token) {
-            let userObject = jwtDecode(cookies.user_token) as User
-            userObject.authToken = cookies.user_token
+            let userObject = jwtDecode(token) as User
+            userObject.authToken = token
             setUser(userObject);
         } else {
             setUser(null)
             router.push('/login');
         }
-    }, [cookies.user_token, router]);
+    }, [token]);
 
     const logout = () => {
         removeCookie('user_token')

@@ -31,10 +31,16 @@ const Subscribers = () => {
   const [subscriber, setSubscriber] = useState<any | undefined>(undefined);
   const auth = useAuth()
 
-  const { data: subscribers = [], isLoading: isSubscribersLoading } = useQuery({
+  const { data: subscribers = [], isLoading: isSubscribersLoading, status: subscribersQueryStatus, error: subscribersQueryError } = useQuery({
     queryKey: [queryKeys.subscribers, auth.user?.authToken],
     queryFn: () => getSubscribers(auth.user ? auth.user.authToken : ""),
     enabled: auth.user ? true : false,
+    retry: (failureCount, error): boolean => {
+      if (error.message.includes("401")) {
+        return false
+      }
+      return true
+    }
   });
 
   const { data: deviceGroups = [], isLoading: isDeviceGroupsLoading } = useQuery({
@@ -48,6 +54,13 @@ const Subscribers = () => {
     queryFn: () => getNetworkSlices(auth.user ? auth.user.authToken : ""),
     enabled: auth.user ? true : false,
   });
+
+  if (subscribersQueryStatus == "error") {
+    if (subscribersQueryError.message.includes("401")) {
+      auth.logout()
+    }
+    return <p>{subscribersQueryError.message}</p>
+  }
 
   const handleRefresh = async () => {
     await queryClient.invalidateQueries({ queryKey: [queryKeys.subscribers] });

@@ -25,11 +25,23 @@ const NetworkConfiguration = () => {
   const [networkSlice, setNetworkSlice] = useState<NetworkSlice | undefined>(undefined);
   const auth = useAuth()
 
-  const { data: networkSlices = [], isLoading: loading } = useQuery({
+  const { data: networkSlices = [], isLoading: loading, status: networkSlicesQueryStatus, error: networkSlicesQueryError } = useQuery({
     queryKey: [queryKeys.networkSlices, auth.user?.authToken],
     queryFn: () => getNetworkSlices(auth.user ? auth.user.authToken : ""),
     enabled: auth.user ? true : false,
+    retry: (failureCount, error): boolean => {
+      if (error.message.includes("401")) {
+        return false
+      }
+      return true
+    }
   });
+  if (networkSlicesQueryStatus == "error") {
+    if (networkSlicesQueryError.message.includes("401")) {
+      auth.logout()
+    }
+    return <p>{networkSlicesQueryError.message}</p>
+  }
 
   const toggleCreateNetworkSliceModal = () =>
     setCreateModalVisible((prev) => !prev);
