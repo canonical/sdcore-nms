@@ -6,7 +6,7 @@ WEBCONSOLE_FILES := $(filter-out $(WEBCONSOLE_PROJECT_DIR)/ui/frontend_files  $(
 WEBCONSOLE_REPO_URL := https://github.com/omec-project/webconsole.git
 WEBCONSOLE_ARTIFACT_NAME := webconsole
 
-NMS_FILES := $(wildcard app/**/* components/**/* images/**/* utils/* package.json package-lock.json)
+NMS_FILES := $(wildcard app/**/* app/**/**/* components/**/* images/**/* utils/* package.json package-lock.json)
 NMS_ARTIFACT_NAME := nms-static
 
 ROCK_ARTIFACT_NAME := sdcore-nms.rock

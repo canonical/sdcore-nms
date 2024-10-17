@@ -17,6 +17,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/utils/queryKeys";
 import PageHeader from "@/components/PageHeader";
 import PageContent from "@/components/PageContent";
+import { useAuth } from "@/utils/auth";
 
 export type Subscriber = {
   plmnID: string;
@@ -28,20 +29,24 @@ const Subscribers = () => {
   const [isCreateModalVisible, setCreateModalVisible] = useState(false);
   const [isEditModalVisible, setEditModalVisible] = useState(false);
   const [subscriber, setSubscriber] = useState<any | undefined>(undefined);
+  const auth = useAuth()
 
   const { data: subscribers = [], isLoading: isSubscribersLoading } = useQuery({
-    queryKey: [queryKeys.subscribers],
-    queryFn: getSubscribers,
+    queryKey: [queryKeys.subscribers, auth.user?.authToken],
+    queryFn: () => getSubscribers(auth.user ? auth.user.authToken : ""),
+    enabled: auth.user ? true : false,
   });
 
   const { data: deviceGroups = [], isLoading: isDeviceGroupsLoading } = useQuery({
-    queryKey: [queryKeys.deviceGroups],
-    queryFn: getDeviceGroups,
+    queryKey: [queryKeys.deviceGroups, auth.user?.authToken],
+    queryFn: () => getDeviceGroups(auth.user ? auth.user.authToken : ""),
+    enabled: auth.user ? true : false,
   });
 
   const { data: slices = [], isLoading: isSlicesLoading } = useQuery({
-    queryKey: [queryKeys.networkSlices],
-    queryFn: getNetworkSlices,
+    queryKey: [queryKeys.networkSlices, auth.user?.authToken],
+    queryFn: () => getNetworkSlices(auth.user ? auth.user.authToken : ""),
+    enabled: auth.user ? true : false,
   });
 
   const handleRefresh = async () => {
@@ -51,7 +56,7 @@ const Subscribers = () => {
   };
 
   const handleConfirmDelete = async (subscriber: string) => {
-    await deleteSubscriber(subscriber);
+    await deleteSubscriber(subscriber, auth.user ? auth.user.authToken : "");
     await handleRefresh();
   };
 

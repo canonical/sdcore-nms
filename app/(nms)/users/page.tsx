@@ -19,11 +19,11 @@ type modalData = {
 
 export default function Users() {
   const [modalData, setModalData] = useState<modalData | null>(null);
-
   const auth = useAuth()
   const query = useQuery<UserEntry[], Error>({
-    queryKey: ['users'],
+    queryKey: ['users', auth.user?.authToken],
     queryFn: () => listUsers({ authToken: auth.user ? auth.user.authToken : "" }),
+    enabled: auth.user ? true : false,
     retry: (failureCount, error): boolean => {
       if (error.message.includes("401")) {
         return false

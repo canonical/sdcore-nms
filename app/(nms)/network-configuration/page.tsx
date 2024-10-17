@@ -16,16 +16,19 @@ import { queryKeys } from "@/utils/queryKeys";
 import PageHeader from "@/components/PageHeader";
 import PageContent from "@/components/PageContent";
 import { NetworkSlice } from "@/components/types";
+import { useAuth } from "@/utils/auth";
 
 const NetworkConfiguration = () => {
   const queryClient = useQueryClient();
   const [isCreateModalVisible, setCreateModalVisible] = useState(false);
   const [isEditModalVisible, setEditModalVisible] = useState(false);
   const [networkSlice, setNetworkSlice] = useState<NetworkSlice | undefined>(undefined);
+  const auth = useAuth()
 
   const { data: networkSlices = [], isLoading: loading } = useQuery({
-    queryKey: [queryKeys.networkSlices],
-    queryFn: getNetworkSlices,
+    queryKey: [queryKeys.networkSlices, auth.user?.authToken],
+    queryFn: () => getNetworkSlices(auth.user ? auth.user.authToken : ""),
+    enabled: auth.user ? true : false,
   });
 
   const toggleCreateNetworkSliceModal = () =>
@@ -35,7 +38,7 @@ const NetworkConfiguration = () => {
     setEditModalVisible((prev) => !prev);
 
   const handleConfirmDelete = async (sliceName: string) => {
-    await deleteNetworkSlice(sliceName);
+    await deleteNetworkSlice(sliceName, auth.user ? auth.user.authToken : "");
     void queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
   };
 
@@ -44,59 +47,56 @@ const NetworkConfiguration = () => {
     toggleEditNetworkSliceModal();
   }
 
-  const getEditButton = (networkSlice: NetworkSlice) =>
-  {
+  const getEditButton = (networkSlice: NetworkSlice) => {
     return <Button
-              appearance=""
-              onClick={() =>{handleEditButton(networkSlice)}}
-              className="u-no-margin--bottom">
-              Edit
-            </Button>
+      appearance=""
+      onClick={() => { handleEditButton(networkSlice) }}
+      className="u-no-margin--bottom">
+      Edit
+    </Button>
   }
 
-  const getDeleteButton = (sliceName: string, deviceGroups: string[] | undefined) =>
-  {
+  const getDeleteButton = (sliceName: string, deviceGroups: string[] | undefined) => {
     if (deviceGroups &&
-        deviceGroups.length > 0)
-    {
+      deviceGroups.length > 0) {
       return <ConfirmationButton
-                appearance="negative"
-                className="u-no-margin--bottom"
-                confirmationModalProps={{
-                  title: "Warning",
-                  confirmButtonLabel: "Delete",
-                  buttonRow:(null),
-                  onConfirm: () => {},
-                  children: (
-                    <p>
-                      Network slice <b>{sliceName}</b> cannot be deleted.<br/>
-                      Please remove the following device groups first:
-                      <br />
-                        {deviceGroups.join(", ")}.
-                    </p>
-                  ),
-              }} >
-                Delete
-              </ConfirmationButton>
+        appearance="negative"
+        className="u-no-margin--bottom"
+        confirmationModalProps={{
+          title: "Warning",
+          confirmButtonLabel: "Delete",
+          buttonRow: (null),
+          onConfirm: () => { },
+          children: (
+            <p>
+              Network slice <b>{sliceName}</b> cannot be deleted.<br />
+              Please remove the following device groups first:
+              <br />
+              {deviceGroups.join(", ")}.
+            </p>
+          ),
+        }} >
+        Delete
+      </ConfirmationButton>
     }
     return <ConfirmationButton
-              appearance="negative"
-              className="u-no-margin--bottom"
-              shiftClickEnabled
-              showShiftClickHint
-              confirmationModalProps={{
-                title: "Confirm Delete",
-                confirmButtonLabel: "Delete",
-                onConfirm: () => handleConfirmDelete(sliceName),
-                children: (
-                  <p>
-                    This will permanently delete the network slice <b>{sliceName}</b><br/>
-                    This action cannot be undone.
-                  </p>
-                ),
-            }} >
-              Delete
-            </ConfirmationButton>
+      appearance="negative"
+      className="u-no-margin--bottom"
+      shiftClickEnabled
+      showShiftClickHint
+      confirmationModalProps={{
+        title: "Confirm Delete",
+        confirmButtonLabel: "Delete",
+        onConfirm: () => handleConfirmDelete(sliceName),
+        children: (
+          <p>
+            This will permanently delete the network slice <b>{sliceName}</b><br />
+            This action cannot be undone.
+          </p>
+        ),
+      }} >
+      Delete
+    </ConfirmationButton>
   }
 
   if (loading) {
@@ -107,28 +107,28 @@ const NetworkConfiguration = () => {
     <>
       {networkSlices.length > 0 && (
         <PageHeader title={`Network slices (${networkSlices.length})`}>
-            <Button appearance="positive" onClick={toggleCreateNetworkSliceModal}>
-              Create
-            </Button>
+          <Button appearance="positive" onClick={toggleCreateNetworkSliceModal}>
+            Create
+          </Button>
         </PageHeader>
       )}
       <PageContent>
         {networkSlices.length === 0 && <NetworkSliceEmptyState />}
         {networkSlices.length > 0 && (
           <>
-              {networkSlices.map((slice) => (
-                <Card key={slice.SliceName}>
-                  <h2 className="p-heading--5">{slice.SliceName}</h2>
-                  <NetworkSliceTable slice={slice} />
-                  <hr />
-                  <div className="u-align--right">
-                    {getEditButton(slice)}
-                    {getDeleteButton(slice.SliceName, slice["site-device-group"])}
-                  </div>
-                </Card>
-              ))}
-            </>
-          )}
+            {networkSlices.map((slice) => (
+              <Card key={slice.SliceName}>
+                <h2 className="p-heading--5">{slice.SliceName}</h2>
+                <NetworkSliceTable slice={slice} />
+                <hr />
+                <div className="u-align--right">
+                  {getEditButton(slice)}
+                  {getDeleteButton(slice.SliceName, slice["site-device-group"])}
+                </div>
+              </Card>
+            ))}
+          </>
+        )}
       </PageContent>
       {isCreateModalVisible && (
         <NetworkSliceModal

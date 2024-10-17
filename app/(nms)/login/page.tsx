@@ -5,14 +5,12 @@ import { useMutation, useQuery } from "@tanstack/react-query"
 import { useState, ChangeEvent } from "react"
 import { useCookies } from "react-cookie"
 import { useRouter } from "next/navigation"
-import { useAuth } from "@/utils/auth"
 import { statusResponse } from "@/components/types"
 import { Input, PasswordToggle, Button, Form, Notification, LoginPageLayout } from "@canonical/react-components";
 
 
 export default function LoginPage() {
     const router = useRouter()
-    const auth = useAuth()
     const [cookies, setCookie, removeCookie] = useCookies(['user_token']);
     const statusQuery = useQuery<statusResponse, Error>({
         queryKey: ['status'],
