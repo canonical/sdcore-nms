@@ -26,12 +26,12 @@ export default function Initialize() {
         mutationFn: login,
         onSuccess: (result) => {
             setErrorText("")
-            setCookie('user_token', result?.token, {
+            setCookie('user_token', result, {
                 sameSite: true,
                 secure: true,
                 expires: new Date(new Date().getTime() + 60 * 60 * 1000),
             })
-            router.push('/certificate_requests')
+            router.push('/network-configuration')
         },
         onError: (e: Error) => {
             setErrorText(e.message)
@@ -63,10 +63,10 @@ export default function Initialize() {
             <LoginPageLayout
                 logo={{
                     src: 'https://assets.ubuntu.com/v1/82818827-CoF_white.svg',
-                    title: 'Notary',
+                    title: 'NMS',
                     url: '#'
                 }}
-                title="Initialize Notary"
+                title="Initialize Network Management Service"
             >
                 <Form>
                     <h4>Create the initial admin user</h4>

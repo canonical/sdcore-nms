@@ -21,6 +21,10 @@ const Navigation: FC = () => {
     e.stopPropagation();
   };
 
+  if (pathname == '/login' || pathname == '/initialize') {
+    return <></>
+  }
+
   return (
     <>
       <header className="l-navigation-bar">
@@ -116,6 +120,20 @@ const Navigation: FC = () => {
                       Users
                     </a>
                   </li>}
+                </ul>
+                <ul className="p-side-navigation__list">
+                  <li>
+                    <a
+                      className="p-side-navigation__link"
+                      onClick={auth.logout}
+                    >
+                      <Icon
+                        className="is-light p-side-navigation__icon"
+                        name=""
+                      />
+                      Log out
+                    </a>
+                  </li>
                 </ul>
                 <ul className="p-side-navigation__list sidenav-bottom-ul">
                   <li className="p-side-navigation__item">
