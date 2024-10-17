@@ -100,7 +100,7 @@ const Navigation: FC = () => {
                       Subscribers
                     </a>
                   </li>
-                  <li className="p-side-navigation__item">
+                  {auth.user?.role == 1 && <li className="p-side-navigation__item">
                     <a
                       className="p-side-navigation__link"
                       href={`/users`}
@@ -115,7 +115,7 @@ const Navigation: FC = () => {
                       />{" "}
                       Users
                     </a>
-                  </li>
+                  </li>}
                 </ul>
                 <ul className="p-side-navigation__list sidenav-bottom-ul">
                   <li className="p-side-navigation__item">

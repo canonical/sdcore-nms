@@ -25,14 +25,13 @@ export type NetworkSlice = {
 
 export type User = {
   exp: number
-  id: number
-  permissions: number
+  role: number
   username: string
   authToken: string
 }
 
 export type UserEntry = {
-  id: number
+  role: number
   username: string
 }
 

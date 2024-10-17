@@ -3,7 +3,7 @@ import { useAuth } from "@/utils/auth"
 import { changePassword, deleteUser } from "@/utils/queries"
 import { passwordIsValid } from "@/utils/utils"
 import { Button, Form, Input, Modal, PasswordToggle } from "@canonical/react-components"
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { ChangeEvent, useState } from "react"
 
 
@@ -14,9 +14,11 @@ type accountDeleteActionModalData = {
 
 export function DeleteModal({ user, closeFn }: accountDeleteActionModalData) {
     const auth = useAuth()
+    const queryClient = useQueryClient()
     const deleteMutation = useMutation({
         mutationFn: deleteUser,
         onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['users'] })
             closeFn()
         }
     })
@@ -25,7 +27,7 @@ export function DeleteModal({ user, closeFn }: accountDeleteActionModalData) {
             title="Confirm delete"
             buttonRow={
                 <>
-                    <Button onClick={() => deleteMutation.mutate({ authToken: auth.user ? auth.user.authToken : "", id: user.id.toString() })}>Confirm</Button>
+                    <Button onClick={() => deleteMutation.mutate({ authToken: auth.user ? auth.user.authToken : "", username: user.username })}>Confirm</Button>
                     <Button onClick={closeFn}>Cancel</Button>
                 </>
             }>
@@ -42,9 +44,11 @@ type accountChangePasswordActionModalData = {
 
 export function ChangePasswordModal({ user, closeFn }: accountChangePasswordActionModalData) {
     const auth = useAuth()
+    const queryClient = useQueryClient()
     const changePWMutation = useMutation({
         mutationFn: changePassword,
         onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['users'] })
             closeFn()
         }
     })
@@ -86,7 +90,7 @@ export function ChangePasswordModal({ user, closeFn }: accountChangePasswordActi
                     <Button
                         appearance="positive"
                         disabled={!passwordsMatch || !passwordIsValid(password1)}
-                        onClick={(event) => { changePWMutation.mutate({ authToken: (auth.user ? auth.user.authToken : ""), id: user.id.toString(), password: password1 }) }}
+                        onClick={(event) => { changePWMutation.mutate({ authToken: (auth.user ? auth.user.authToken : ""), username: user.username, password: password1 }) }}
                     >
                         Submit
                     </Button>

@@ -8,12 +8,12 @@ export async function listUsers(params: { authToken: string }): Promise<UserEntr
     if (!response.ok) {
         throw new Error(`${response.status}: ${HTTPStatus(response.status)}. ${respData.error}`)
     }
-    return respData.result
+    return respData
 }
 
-export async function deleteUser(params: { authToken: string, id: string }) {
-    const response = await fetch("/config/v1/account/" + params.id, {
-        method: 'delete',
+export async function deleteUser(params: { authToken: string, username: string }) {
+    const response = await fetch("/config/v1/account/" + params.username, {
+        method: 'DELETE',
         headers: {
             'Authorization': "Bearer " + params.authToken
         }
@@ -22,11 +22,11 @@ export async function deleteUser(params: { authToken: string, id: string }) {
     if (!response.ok) {
         throw new Error(`${response.status}: ${HTTPStatus(response.status)}. ${respData.error}`)
     }
-    return respData.result
+    return respData
 }
 
-export async function changePassword(changePasswordForm: { authToken: string, id: string, password: string }) {
-    const response = await fetch("/config/v1/account/" + changePasswordForm.id + "/change_password", {
+export async function changePassword(changePasswordForm: { authToken: string, username: string, password: string }) {
+    const response = await fetch("/config/v1/account/" + changePasswordForm.username + "/change_password", {
         method: "POST",
         headers: {
             'Authorization': 'Bearer ' + changePasswordForm.authToken
@@ -37,7 +37,7 @@ export async function changePassword(changePasswordForm: { authToken: string, id
     if (!response.ok) {
         throw new Error(`${response.status}: ${HTTPStatus(response.status)}. ${respData.error}`)
     }
-    return respData.result
+    return respData
 }
 
 export async function getStatus() {
@@ -46,7 +46,7 @@ export async function getStatus() {
     if (!response.ok) {
         throw new Error(`${response.status}: ${HTTPStatus(response.status)}. ${respData.error}`)
     }
-    return respData.result
+    return respData
 }
 
 export async function login(userForm: { username: string, password: string }) {
@@ -70,7 +70,7 @@ export async function postFirstUser(userForm: { username: string, password: stri
     if (!response.ok) {
         throw new Error(`${response.status}: ${HTTPStatus(response.status)}. ${respData.error}`)
     }
-    return respData.result
+    return respData
 }
 
 export const HTTPStatus = (code: number): string => {

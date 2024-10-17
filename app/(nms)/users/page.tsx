@@ -42,7 +42,7 @@ export default function Users() {
   const users = Array.from(query.data ? query.data : [])
   const tableContent = users.map((user) => {
     return {
-      key: user.id,
+      key: user.username,
       columns: [
         { content: user.username },
         {
@@ -51,7 +51,7 @@ export default function Users() {
               links={[
                 {
                   children: "Delete account",
-                  disabled: user.id == 1,
+                  disabled: user.role == 1,
                   onClick: () => setModalData({ user: user, type: "delete" })
                 }, {
                   children: "Change password",
