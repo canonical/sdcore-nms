@@ -10,11 +10,11 @@ import { Button, ContextualMenu, MainTable, Modal } from "@canonical/react-compo
 import PageContent from "@/components/PageContent"
 import { useState } from "react"
 import SyncOutlinedIcon from "@mui/icons-material/SyncOutlined";
-import { ChangePasswordModal, DeleteModal } from "./modals"
+import { ChangePasswordModal, CreateUserModal, DeleteModal } from "./modals"
 
 type modalData = {
   user: UserEntry
-  type: "delete" | "change password"
+  type: "delete" | "change password" | "create user"
 }
 
 export default function Users() {
@@ -38,7 +38,6 @@ export default function Users() {
     }
     return <p>{query.error.message}</p>
   }
-
   const users = Array.from(query.data ? query.data : [])
   const tableContent = users.map((user) => {
     return {
@@ -78,7 +77,7 @@ export default function Users() {
         >
           <SyncOutlinedIcon style={{ color: "#666" }} />
         </Button>
-        <Button appearance="positive" >
+        <Button appearance="positive" onClick={() => setModalData({ user: {} as UserEntry, type: "create user" })}>
           Create
         </Button>
       </PageHeader>
@@ -95,6 +94,7 @@ export default function Users() {
       </PageContent>
       {modalData?.type == "delete" && <DeleteModal user={modalData.user} closeFn={() => setModalData(null)} />}
       {modalData?.type == "change password" && <ChangePasswordModal user={modalData.user} closeFn={() => setModalData(null)} />}
+      {modalData?.type == "create user" && <CreateUserModal closeFn={() => setModalData(null)} />}
     </>
   )
 }

@@ -73,6 +73,23 @@ export async function postFirstUser(userForm: { username: string, password: stri
     return respData
 }
 
+export async function postUser(userForm: { authToken: string, username: string, password: string }) {
+    const response = await fetch("/config/v1/account", {
+        method: "POST",
+        body: JSON.stringify({
+            "username": userForm.username, "password": userForm.password
+        }),
+        headers: {
+            'Authorization': "Bearer " + userForm.authToken
+        }
+    })
+    const respData = await response.json();
+    if (!response.ok) {
+        throw new Error(`${response.status}: ${HTTPStatus(response.status)}. ${respData.error}`)
+    }
+    return respData
+}
+
 export const HTTPStatus = (code: number): string => {
     const map: { [key: number]: string } = {
         400: "Bad Request",
