@@ -10,6 +10,7 @@ import { createDeviceGroup } from "@/utils/createDeviceGroup";
 import { editDeviceGroup } from "@/utils/editDeviceGroup";
 import * as Yup from "yup";
 import { useFormik } from "formik";
+import { useAuth } from "@/utils/auth";
 
 const regexIp =
   /^(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)$/;
@@ -54,6 +55,7 @@ const DeviceGroupModal = ({
   networkSliceName,
   deviceGroup,
 }: DeviceGroupModalProps) => {
+  const auth = useAuth()
   const [apiError, setApiError] = useState<string | null>(null);
   const modalTitle = ModalTitle(networkSliceName, deviceGroup?.["group-name"])
   const modalButtonText = ModalButtonText(deviceGroup?.["group-name"])
@@ -105,6 +107,7 @@ const DeviceGroupModal = ({
             mtu: values.mtu,
             MBRUpstreamBps: MBRUpstreamBps,
             MBRDownstreamBps: MBRDownstreamBps,
+            token: auth.user ? auth.user.authToken : ""
           });
         } else if (networkSliceName) {
           await createDeviceGroup({
@@ -115,6 +118,7 @@ const DeviceGroupModal = ({
             MBRUpstreamBps: MBRUpstreamBps,
             MBRDownstreamBps: MBRDownstreamBps,
             networkSliceName: networkSliceName,
+            token: auth.user ? auth.user.authToken : ""
           });
         }
         onDeviceGroupAction();

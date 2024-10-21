@@ -1,5 +1,6 @@
 import { apiGetDeviceGroup, apiPostDeviceGroup } from "@/utils/callDeviceGroupApi";
 import { apiGetSubscriber, apiPostSubscriber } from "@/utils/callSubscriberApi";
+import { StepIconClassKey } from "@mui/material";
 
 interface EditSubscriberArgs {
   imsi: string;
@@ -8,6 +9,7 @@ interface EditSubscriberArgs {
   sequenceNumber: string;
   oldDeviceGroupName: string;
   newDeviceGroupName: string;
+  token: string
 }
 
 export const editSubscriber = async ({
@@ -17,6 +19,7 @@ export const editSubscriber = async ({
   sequenceNumber,
   oldDeviceGroupName,
   newDeviceGroupName,
+  token
 }: EditSubscriberArgs) => {
   const subscriberData = {
     UeId: imsi,
@@ -26,29 +29,29 @@ export const editSubscriber = async ({
   };
 
   try {
-    await updateSubscriber(subscriberData);
+    await updateSubscriber(subscriberData, token);
     if (oldDeviceGroupName != newDeviceGroupName) {
-      var oldDeviceGroupData = await getDeviceGroupData(oldDeviceGroupName);
+      var oldDeviceGroupData = await getDeviceGroupData(oldDeviceGroupName, token);
       const index = oldDeviceGroupData["imsis"].indexOf(imsi);
       oldDeviceGroupData["imsis"].splice(index, 1);
-      await updateDeviceGroupData(oldDeviceGroupName, oldDeviceGroupData);
-      var newDeviceGroupData = await getDeviceGroupData(newDeviceGroupName);
+      await updateDeviceGroupData(oldDeviceGroupName, oldDeviceGroupData, token);
+      var newDeviceGroupData = await getDeviceGroupData(newDeviceGroupName, token);
       newDeviceGroupData["imsis"].push(imsi);
-      await updateDeviceGroupData(newDeviceGroupName, newDeviceGroupData);
+      await updateDeviceGroupData(newDeviceGroupName, newDeviceGroupData, token);
     }
   } catch (error) {
     console.error(error);
     const details =
       error instanceof Error
-      ? error.message
-      : `Failed to edit subscriber .`;
-  throw new Error(details);
+        ? error.message
+        : `Failed to edit subscriber .`;
+    throw new Error(details);
   }
 };
 
-const updateSubscriber = async (subscriberData: any) => {
+const updateSubscriber = async (subscriberData: any, token: string) => {
   try {
-    const getSubscriberResponse = await apiGetSubscriber(subscriberData.UeId);
+    const getSubscriberResponse = await apiGetSubscriber(subscriberData.UeId, token);
 
     // Workaround for https://github.com/omec-project/webconsole/issues/109
     var existingSubscriberData = await getSubscriberResponse.json();
@@ -60,10 +63,10 @@ const updateSubscriber = async (subscriberData: any) => {
     existingSubscriberData["AuthenticationSubscription"]["permanentKey"]["permanentKeyValue"] = subscriberData.key;
     existingSubscriberData["AuthenticationSubscription"]["sequenceNumber"] = subscriberData.sequenceNumber;
 
-    const updateSubscriberResponse = await apiPostSubscriber(subscriberData.UeId, subscriberData);
+    const updateSubscriberResponse = await apiPostSubscriber(subscriberData.UeId, subscriberData, token);
     if (!updateSubscriberResponse.ok) {
       throw new Error(
-      `Error editing subscriber. Error code: ${updateSubscriberResponse.status}`,
+        `Error editing subscriber. Error code: ${updateSubscriberResponse.status}`,
       );
     }
   } catch (error) {
@@ -71,9 +74,9 @@ const updateSubscriber = async (subscriberData: any) => {
   }
 }
 
-const getDeviceGroupData = async (deviceGroupName: string) => {
+const getDeviceGroupData = async (deviceGroupName: string, token: string) => {
   try {
-    const existingDeviceGroupResponse = await apiGetDeviceGroup(deviceGroupName);
+    const existingDeviceGroupResponse = await apiGetDeviceGroup(deviceGroupName, token);
     var existingDeviceGroupData = await existingDeviceGroupResponse.json();
 
     if (!existingDeviceGroupData["imsis"]) {
@@ -85,12 +88,12 @@ const getDeviceGroupData = async (deviceGroupName: string) => {
   }
 }
 
-const updateDeviceGroupData = async (deviceGroupName:string, deviceGroupData: any) => {
+const updateDeviceGroupData = async (deviceGroupName: string, deviceGroupData: any, token: string) => {
   try {
-    const updateDeviceGroupResponse = await apiPostDeviceGroup(deviceGroupName, deviceGroupData);
+    const updateDeviceGroupResponse = await apiPostDeviceGroup(deviceGroupName, deviceGroupData, token);
     if (!updateDeviceGroupResponse.ok) {
       throw new Error(
-      `Error updating device group. Error code: ${updateDeviceGroupResponse.status}`,
+        `Error updating device group. Error code: ${updateDeviceGroupResponse.status}`,
       );
     }
   } catch (error) {
