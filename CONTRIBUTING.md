@@ -63,7 +63,7 @@ npm run lint
 There are 2 targets for building: the `webconsole` binary and the `sdcore-nms.rock` OCI image. The artifacts
 for them are stored in the `/artifacts` folder. Any files used in the build process is stored in the `/build` folder.
 
-### Webconsole
+### Webconsole binary
 
 `go` and `nodejs` is required to build webconsole.
 
