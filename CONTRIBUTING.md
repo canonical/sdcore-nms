@@ -31,7 +31,7 @@ This target will create an LXC VM called `nms`, install docker, deploy the `NMS`
 
 ### `make hotswap`
 
-This target will take the webconsole binary, place it in the `nms` container inside the LXC VM, and restart the pebble service.
+This target will take the webconsole binary, place it in the `nms` container inside the LXC VM, and restart the pebble service. This is useful for quickly updating the locally deployed NMS program.
 
 `make deploy` must have successfully completed to use this option.
 
@@ -67,14 +67,15 @@ for them are stored in the `/artifacts` folder. Any files used in the build proc
 
 `go` and `nodejs` is required to build webconsole.
 
-The `make webconsole` target is responsible for producing the binary that serves the NMS frontend. For this process:
+The `make webconsole` target is responsible for producing the binary that serves the NMS frontend. Once run, it will:
 
-1. clone the `omec-project/webconsole` repository into `build/webconsole-src`
-2. install the frontend dependencies by running `npm install`
-3. generate the static frontend files by running `npm run build`
-4. move the frontend files into `build/webconsole-src/ui/frontend_files`
-5. build the webconsole binary by running `go build --tags ui -o webconsole ./server.go`
+1. Clone the `omec-project/webconsole` repository into `build/webconsole-src`
+2. Install the frontend dependencies by running `npm install`
+3. Generate the static frontend files by running `npm run build`
+4. Move the frontend files into `build/webconsole-src/ui/frontend_files`
+5. Build the webconsole binary by running `go build --tags ui -o webconsole ./server.go`
 
+The binary will need to be run with a config file. An example is available in the `examples/config` folder.
 
 ### OCI image
 
