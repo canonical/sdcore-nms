@@ -19,7 +19,7 @@ This target will produce the webconsole binary with the static export of NMS emb
 
 ### `make rock`
 
-This target will produce a sd-core.rock OCI image file, which will have the webconsole binary as a service.
+This target will produce a  `sdcore-nms.rock` OCI image file, which will have the webconsole binary as a service.
 
 `rockcraft` must be installed to use this option.
 
