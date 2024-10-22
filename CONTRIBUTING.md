@@ -83,7 +83,7 @@ The binary will need to be run with a config file. An example is available in th
 
 The rock can be built with `rockcraft pack`. This process will use the local NMS and a predefined tag of webconsole repo to create an OCI image. The webconsole branch/tag is defined in the `rockcraft.yaml` file.
 
-The `make rock` target can modify this build process by directly using the `build/webconsole-src` directory. This allows you to use a local version of webconsole in the OCI image instead of having to pull from the specified tag in `rockcraft.yaml`. This is useful if you want to test changes to the backend rather than the frontend. The process is:
+The `make rock` target modifies this build process by directly using the `build/webconsole-src` directory. This allows you to use a local version of webconsole in the OCI image instead of having to pull from the specified tag in `rockcraft.yaml`. This is useful if you want to test changes to the backend rather than the frontend. The process is:
 
 1. Modify the `rockcraft.yaml` to use `build/webconsole-src`
 2. Run `rockcraft pack`
