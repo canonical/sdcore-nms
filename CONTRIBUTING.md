@@ -9,7 +9,7 @@ Since we only rely on the static export, this means that running the common `npm
 
 ## Development
 
-We use a makefile to build and deploy the project. It has targets that will help with development. You can read more about what the makefile does in the `Build` section below.
+We use a makefile to build and deploy the project. It has targets that will help with development. You can read more about what the makefile does in the [`Build`](#build) section below.
 
 ### `make webconsole`
 
