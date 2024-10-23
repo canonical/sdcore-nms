@@ -88,7 +88,7 @@ const DeviceGroupModal = ({
       name: deviceGroup?.["group-name"] || "",
       ueIpPool: deviceGroup?.["ip-domain-expanded"]?.["ue-ip-pool"] || "",
       dns: deviceGroup?.["ip-domain-expanded"]?.["dns-primary"] || "8.8.8.8",
-      mtu: deviceGroup?.["ip-domain-expanded"]?.["mtu"] || 1460,
+      mtu: deviceGroup?.["ip-domain-expanded"]?.["mtu"] || 1456,
       MBRDownstreamMbps: deviceGroup?.["ip-domain-expanded"]?.["ue-dnn-qos"]?.["dnn-mbr-downlink"] / 1_000_000 || null,
       MBRUpstreamMbps: deviceGroup?.["ip-domain-expanded"]?.["ue-dnn-qos"]?.["dnn-mbr-uplink"] / 1_000_000 || null,
     },
@@ -195,7 +195,7 @@ const DeviceGroupModal = ({
           type="number"
           id="mtu"
           label="MTU"
-          defaultValue={1460}
+          defaultValue={1456}
           stacked
           required
           {...formik.getFieldProps("mtu")}
