@@ -26,6 +26,7 @@ This target will produce a  `sdcore-nms.rock` OCI image file, which will have th
 ### `make deploy`
 
 This target will create an LXC VM called `nms`, install docker, deploy the `NMS` and `MongoDB` OCI image, create a valid config file for `NMS`, and start the program.
+After the process is done, from your host machine you can run `lxc list`, and use the IP address to connect to both mongodb and NMS. The port for NMS is `:5000` and the port for mongodb is `:27017`.
 
 `make rock` must have successfully completed and `lxd` must be installed to use this option.
 
@@ -100,5 +101,3 @@ The binary requires a config file and an available mongodb deployment to operate
 3. Load the `sdcore-nms.rock` OCI image and pull the `mongodb:noble` image into the local registry.
 4. Run both images in docker
 5. Load the example config located in `examples/config/webuicfg.yaml` into the `nms` docker image, and restart the program.
-
-After the process is done, from your host machine you can run `lxc list`, and use the IP address to connect to both mongodb and NMS. The port for NMS is `:5000` and the port for mongodb is `:27017`.
