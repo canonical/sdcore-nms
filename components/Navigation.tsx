@@ -3,11 +3,13 @@ import { Button, Icon } from "@canonical/react-components";
 import classnames from "classnames";
 import Logo from "./Logo";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/utils/auth";
 
 const Navigation: FC = () => {
   const pathname = usePathname();
   const [isCollapsed, setCollapsed] = useState(false);
 
+  const auth = useAuth()
   const softToggleMenu = () => {
     if (window.innerWidth < 620) {
       setCollapsed((prev) => !prev);
@@ -18,6 +20,10 @@ const Navigation: FC = () => {
     setCollapsed((prev) => !prev);
     e.stopPropagation();
   };
+
+  if (pathname == '/login' || pathname == '/initialize') {
+    return <></>
+  }
 
   return (
     <>
@@ -98,6 +104,36 @@ const Navigation: FC = () => {
                       Subscribers
                     </a>
                   </li>
+                  {auth.user?.role == 1 && <li className="p-side-navigation__item">
+                    <a
+                      className="p-side-navigation__link"
+                      href={`/users`}
+                      title={`Users`}
+                      aria-current={
+                        pathname === "/users" ? "page" : undefined
+                      }
+                    >
+                      <Icon
+                        className="is-light p-side-navigation__icon"
+                        name="user-group"
+                      />{" "}
+                      Users
+                    </a>
+                  </li>}
+                </ul>
+                <ul className="p-side-navigation__list">
+                  <li>
+                    <a
+                      className="p-side-navigation__link"
+                      onClick={auth.logout}
+                    >
+                      <Icon
+                        className="is-light p-side-navigation__icon"
+                        name=""
+                      />
+                      Log out
+                    </a>
+                  </li>
                 </ul>
                 <ul className="p-side-navigation__list sidenav-bottom-ul">
                   <li className="p-side-navigation__item">
@@ -151,9 +187,8 @@ const Navigation: FC = () => {
             <div className="sidenav-toggle-wrapper">
               <Button
                 appearance="base"
-                aria-label={`${
-                  isCollapsed ? "expand" : "collapse"
-                } main navigation`}
+                aria-label={`${isCollapsed ? "expand" : "collapse"
+                  } main navigation`}
                 hasIcon
                 dense
                 className="sidenav-toggle is-dark u-no-margin l-navigation-collapse-toggle u-hide--small"
