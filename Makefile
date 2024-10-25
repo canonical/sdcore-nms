@@ -48,17 +48,14 @@ deploy: rockcraft.yaml
 		lxc exec nms -- docker rm nms; \
 	fi
 	
-	# get ip
-
 	lxc exec nms -- rockcraft.skopeo --insecure-policy copy oci-archive:sdcore-nms.rock docker-daemon:nms:latest
-	NMS_IP=$$(lxc info nms | grep enp5s0 -A 15 | grep inet: | grep -oE '([0-9]{1,3}\.){3}[0-9]{1,3}'); \
 	lxc exec nms -- docker run -d \
 		--name nms \
-		-e WEBUI_ENDPOINT=$$(NMS_IP):5000 \
+		-e WEBUI_ENDPOINT=$$(lxc info nms | grep enp5s0 -A 15 | grep inet: | grep -oE '([0-9]{1,3}\.){3}[0-9]{1,3}'):5000 \
 		-v /root/webuicfg.yaml:/config/webuicfg.yaml \
 		--network host \
 		nms:latest --verbose
-	lxc config device set nms 
+	@echo "You can access NMS at $$(lxc info nms | grep enp5s0 -A 15 | grep inet: | grep -oE '([0-9]{1,3}\.){3}[0-9]{1,3}'):5000"
 
 hotswap: artifacts/webconsole examples/config/webuicfg.yaml
 	@echo "make: replacing nms binary with new binary"
