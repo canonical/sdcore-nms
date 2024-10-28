@@ -1,35 +1,51 @@
 # Contributing
 
+NMS is the frontend code for SD-Core's [`Webconsole`](https://github.com/omec-project/webconsole/).
+It is based on the [`Next.js`](https://nextjs.org/) React framework.  In order to produce the final
+binary that will be used to serve the frontend for SD-Core, we statically export the project in this repository, embed it in the `Webconsole` application, and build the project together. The final webserver
+binary is the output of `Webconsole`'s build command.
+
+Since we only rely on the static export, this means that running the common `npm run dev` script may produce unusual behaviour that doesn't exist in a deployed build. It also means that the project does not use any of Nextjs's server based features which can be found [here](https://nextjs.org/docs/app/building-your-application/deploying/static-exports#unsupported-features).
 
 ## Development
 
-To make contributions to this project, make sure you have [`Nodejs 18`](https://nodejs.org/) installed.
+We use a makefile to build and deploy the project. It has targets that will help with development. You can read more about what the makefile does in the [`Build`](#build) section below.
 
-1. Clone the repository:
+### `make webconsole`
 
-   ```shell
-   git clone git@github.com:canonical/sdcore-nms.git
-   ```
+This target will produce the webconsole binary with the static export of NMS embedded as its frontend.
 
-2. Navigate to the project directory:
+`go` and `nodejs` must be installed to use this option.
 
-   ```shell
-   cd sdcore-nms
-   ```
+### `make rock`
 
-3. Install the dependencies:
+This target will produce a  `sdcore-nms.rock` OCI image file, which will have the webconsole binary as a service.
 
-   ```shell
-   npm install
-   ```
+`rockcraft` must be installed to use this option.
 
-4. Run the development server:
+### `make deploy`
 
-   ```bash
-   npm run dev
-   ```
+This target will create an LXC VM called `nms`, install docker, deploy the `NMS` and `MongoDB` OCI image, create a valid config file for `NMS`, and start the program.
+After the process is done, from your host machine you can run `lxc list`, and use the IP address to connect to both mongodb and NMS. The port for NMS is `:5000` and the port for mongodb is `:27017`.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to view the changes.
+`make rock` must have successfully completed and `lxd` must be installed to use this option.
+
+### `make hotswap`
+
+This target will take the webconsole binary, place it in the `nms` container inside the LXC VM, and restart the pebble service. This is useful for quickly updating the locally deployed NMS program.
+
+`make deploy` must have successfully completed to use this option.
+
+### `make logs`
+
+This target will print the last 20 log entries that was produced by the rock, which is the combination of
+pebble and webconsole logs.
+
+`make deploy` must have successfully completed to use this option.
+
+### `make clean`
+
+This target will delete the rock, the binary, and destroy the VM.
 
 ## Testing
 
@@ -45,31 +61,43 @@ npm run lint
 
 ## Build
 
-To build the project:
+There are 2 targets for building: the `webconsole` binary and the `sdcore-nms.rock` OCI image. The artifacts
+for them are stored in the `/artifacts` folder. Any files used in the build process are stored in the `/build` folder.
 
-```shell
-npm run build
-```
+### Webconsole binary
 
-## Container image
+`go` and `nodejs` is required to build webconsole.
 
-Pack the rock
+The `make webconsole` target is responsible for producing the binary that serves the NMS frontend. Once run, it will:
 
-```bash
-sudo snap install rockcraft --edge --classic
-rockcraft pack -v
-```
+1. Clone the `omec-project/webconsole` repository into `build/webconsole-src`
+2. Install the frontend dependencies by running `npm install`
+3. Generate the static frontend files by running `npm run build`
+4. Move the frontend files into `build/webconsole-src/ui/frontend_files`
+5. Build the webconsole binary by running `go build --tags ui -o webconsole ./server.go`
 
-Move the rock to Docker's registry
+The binary will need to be run with a config file. An example is available in the `examples/config` folder.
 
-```bash
-sudo rockcraft.skopeo --insecure-policy copy oci-archive:sdcore-nms_0.2.0_amd64.rock docker-daemon:sdcore-nms:0.2.0
-```
+### OCI image
 
-Run the NMS
+`rockcraft` is required to create the OCI image.
 
-```bash
-docker run -p 3000:3000 sdcore-nms:0.2.0
-```
+The rock can be built with `rockcraft pack`. This process will use the local NMS and a predefined tag of webconsole repo to create an OCI image. The webconsole branch/tag is defined in the `rockcraft.yaml` file.
 
-You will have the NMS available in `http://localhost:3000`.
+The `make rock` target modifies this build process by directly using the `build/webconsole-src` directory. This allows you to use a local version of webconsole in the OCI image instead of having to pull from the specified tag in `rockcraft.yaml`. This is useful if you want to test changes to the backend rather than the frontend. The process is:
+
+1. Modify the `rockcraft.yaml` to use `build/webconsole-src`
+2. Run `rockcraft pack`
+3. Restore the original `rockcraft.yaml`
+
+## Deploy
+
+The binary requires a config file and an available mongodb deployment to operate. By default, the path for the config file is `./config/webuicfg.yaml` from the directory of the binary. The OCI image does not come with a config file preconfigured, but the repo contains an example at `examples/config/webuicfg.yaml`.
+
+`make deploy` takes care of quickly getting a running program. It will:
+
+1. Create a VM in LXD called `nms`
+2. Install docker and skopeo in the VM
+3. Load the `sdcore-nms.rock` OCI image and pull the `mongodb:noble` image into the local registry.
+4. Run both images in docker
+5. Load the example config located in `examples/config/webuicfg.yaml` into the `nms` docker image, and restart the program.
