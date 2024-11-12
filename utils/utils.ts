@@ -21,8 +21,5 @@ export const passwordIsValid = (pw: string) => {
         result.hasSymbol = true;
     }
 
-    if (result.hasCapital && result.hasLowercase && (result.hasSymbol || result.hasNumber)) {
-        return true
-    }
-    return false
+    return (result.hasCapital && result.hasLowercase && (result.hasSymbol || result.hasNumber))
 }

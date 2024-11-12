@@ -1,6 +1,6 @@
 import { UserEntry } from "@/components/types"
 import { useAuth } from "@/utils/auth"
-import { changePassword, deleteUser, postUser } from "@/utils/queries"
+import { changePassword, deleteUser, postUser } from "@/utils/accountQueries"
 import { passwordIsValid } from "@/utils/utils"
 import { Button, Form, Input, Modal, PasswordToggle } from "@canonical/react-components"
 import { useMutation, useQueryClient } from "@tanstack/react-query"

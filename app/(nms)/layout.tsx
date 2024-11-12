@@ -18,7 +18,7 @@ export default function RootLayout({
   children: React.ReactNode;
   noLayout?: boolean;
 }) {
-  const auth = useAuth()
+  useAuth()
 
   return (
     <html lang="en">

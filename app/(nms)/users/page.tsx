@@ -1,7 +1,7 @@
 "use client"
 
 import { useQuery } from "@tanstack/react-query"
-import { listUsers } from "@/utils/queries"
+import { listUsers } from "@/utils/accountQueries"
 import { UserEntry } from "@/components/types"
 import Loader from "@/components/Loader"
 import { useAuth } from "@/utils/auth"

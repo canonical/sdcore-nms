@@ -1,6 +1,6 @@
 "use client"
 
-import { getStatus, login } from "@/utils/queries"
+import { getStatus, login } from "@/utils/accountQueries"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { useState, ChangeEvent } from "react"
 import { useCookies } from "react-cookie"

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, ChangeEvent } from "react"
-import { getStatus, login, postFirstUser } from "@/utils/queries"
+import { getStatus, login, postFirstUser } from "@/utils/accountQueries"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { useRouter } from "next/navigation"
 import { passwordIsValid } from "@/utils/utils"
