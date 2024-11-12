@@ -13,6 +13,7 @@ interface CreateNetworkSliceArgs {
   upfName: string;
   upfPort: string;
   gnbList: GnbItem[];
+  token: string;
 }
 
 export const createNetworkSlice = async ({
@@ -22,6 +23,7 @@ export const createNetworkSlice = async ({
   upfName,
   upfPort,
   gnbList,
+  token
 }: CreateNetworkSliceArgs) => {
   const deviceGroupName = `${name}-default`;
   const sliceData = {
@@ -68,12 +70,12 @@ export const createNetworkSlice = async ({
   };
 
   try {
-    const getNetworkSliceResponse = await apiGetNetworkSlice(name)
+    const getNetworkSliceResponse = await apiGetNetworkSlice(name, token)
     if (getNetworkSliceResponse.ok) {
       throw new Error("Network slice already exists");
     }
 
-    const updateNetworkSliceResponse = await apiPostNetworkSlice(name, sliceData);
+    const updateNetworkSliceResponse = await apiPostNetworkSlice(name, sliceData, token);
     if (!updateNetworkSliceResponse.ok) {
       const networkSliceData = await updateNetworkSliceResponse.json();
       if (networkSliceData.error) {
@@ -85,7 +87,7 @@ export const createNetworkSlice = async ({
       );
     }
 
-    const devicegroupResponse = await apiPostDeviceGroup(deviceGroupName, deviceGroupData);
+    const devicegroupResponse = await apiPostDeviceGroup(deviceGroupName, deviceGroupData, token);
     if (!devicegroupResponse.ok) {
       throw new Error(
         `Error creating device group. Error code: ${devicegroupResponse.status}`,

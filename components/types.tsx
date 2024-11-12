@@ -22,3 +22,19 @@ export type NetworkSlice = {
     };
   };
 };
+
+export type User = {
+  exp: number
+  role: number
+  username: string
+  authToken: string
+}
+
+export type UserEntry = {
+  role: number
+  username: string
+}
+
+export type statusResponse = {
+  initialized: boolean
+}

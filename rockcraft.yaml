@@ -10,7 +10,7 @@ platforms:
 
 services:
   nms:
-    command: webconsole
+    command: webconsole [ -cfg /config/webuicfg.yaml ]
     override: replace
     startup: enabled
 

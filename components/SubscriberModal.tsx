@@ -15,6 +15,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/utils/queryKeys";
 import * as Yup from "yup";
 import { useFormik } from "formik";
+import { useAuth } from "@/utils/auth";
 
 interface SubscriberValues {
   imsi: string;
@@ -28,24 +29,25 @@ interface SubscriberValues {
 type Props = {
   toggleModal: () => void;
   subscriber?: any;
-  slices : NetworkSlice[];
-  deviceGroups : any[]
+  slices: NetworkSlice[];
+  deviceGroups: any[]
 };
 
-const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups}: Props) => {
+const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups }: Props) => {
   const queryClient = useQueryClient();
+  const auth = useAuth()
   const [apiError, setApiError] = useState<string | null>(null);
   const rawIMSI = subscriber?.ueId.split("-")[1];
-  
+
   const oldDeviceGroup = deviceGroups.find(
     (deviceGroup) => deviceGroup["imsis"]?.includes(rawIMSI)
   );
-  const oldDeviceGroupName : string = oldDeviceGroup ? oldDeviceGroup["group-name"]: "";
+  const oldDeviceGroupName: string = oldDeviceGroup ? oldDeviceGroup["group-name"] : "";
 
   const oldNetworkSlice = slices.find(
     (slice) => slice["site-device-group"]?.includes(oldDeviceGroupName)
   );
-  const oldNetworkSliceName : string = oldNetworkSlice ? oldNetworkSlice["slice-name"] : "";
+  const oldNetworkSliceName: string = oldNetworkSlice ? oldNetworkSlice["slice-name"] : "";
 
   const SubscriberSchema = Yup.object().shape({
     imsi: Yup.string()
@@ -80,7 +82,7 @@ const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups}: Props
   const formik = useFormik<SubscriberValues>({
     initialValues: {
       imsi: rawIMSI || "",
-      opc: subscriber?.["AuthenticationSubscription"]["opc"]["opcValue"] ||"",
+      opc: subscriber?.["AuthenticationSubscription"]["opc"]["opcValue"] || "",
       key: subscriber?.["AuthenticationSubscription"]["permanentKey"]["permanentKeyValue"] || "",
       sequenceNumber: subscriber?.["AuthenticationSubscription"]["sequenceNumber"] || "",
       selectedSlice: oldNetworkSliceName,
@@ -88,9 +90,8 @@ const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups}: Props
     },
     validationSchema: SubscriberSchema,
     onSubmit: async (values) => {
-      try{
-        if (subscriber)
-        {
+      try {
+        if (subscriber) {
           await editSubscriber({
             imsi: values.imsi,
             opc: values.opc,
@@ -98,6 +99,7 @@ const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups}: Props
             sequenceNumber: values.sequenceNumber,
             oldDeviceGroupName: oldDeviceGroupName,
             newDeviceGroupName: values.deviceGroup,
+            token: auth.user ? auth.user.authToken : ""
           });
         } else {
           await createSubscriber({
@@ -106,6 +108,7 @@ const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups}: Props
             key: values.key,
             sequenceNumber: values.sequenceNumber,
             deviceGroupName: values.deviceGroup,
+            token: auth.user ? auth.user.authToken : ""
           });
         }
         await queryClient.invalidateQueries({ queryKey: [queryKeys.subscribers] });
@@ -151,7 +154,7 @@ const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups}: Props
     if (subscriber && selectedSlice && oldNetworkSliceName == selectedSlice["slice-name"]) {
       setDeviceGroup(oldDeviceGroupName);
     }
-    else if (selectedSlice && selectedSlice["site-device-group"]?.length === 1){
+    else if (selectedSlice && selectedSlice["site-device-group"]?.length === 1) {
       setDeviceGroup(selectedSlice["site-device-group"][0]);
     }
     else {
@@ -233,7 +236,7 @@ const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups}: Props
           label="Network Slice"
           stacked
           required
-          value = {formik.values.selectedSlice}
+          value={formik.values.selectedSlice}
           onChange={handleSliceChange}
           error={
             formik.touched.selectedSlice ? formik.errors.selectedSlice : null
@@ -255,7 +258,7 @@ const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups}: Props
           label="Device Group"
           stacked
           required
-          value = {formik.values.deviceGroup}
+          value={formik.values.deviceGroup}
           onChange={handleDeviceGroupChange}
           error={formik.touched.deviceGroup ? formik.errors.deviceGroup : null}
           options={[

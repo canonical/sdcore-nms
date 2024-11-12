@@ -16,6 +16,7 @@ import { getUpfList, UpfItem } from "@/utils/getUpfList";
 import { getGnbList, GnbItem } from "@/utils/getGnbList";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import { useAuth } from "@/utils/auth";
 
 interface NetworkSliceValues {
   mcc: string;
@@ -31,6 +32,7 @@ interface NetworkSliceModalProps {
 }
 
 const NetworkSliceModal = ({ networkSlice, toggleModal }: NetworkSliceModalProps) => {
+  const auth = useAuth()
   const queryClient = useQueryClient();
   const [apiError, setApiError] = useState<string | null>(null);
   const [upfApiError, setUpfApiError] = useState<string | null>(null);
@@ -71,7 +73,7 @@ const NetworkSliceModal = ({ networkSlice, toggleModal }: NetworkSliceModalProps
 
   const getUpfFromNetworkSlice = () => {
     if (networkSlice) {
-      return {hostname: networkSlice["site-info"]["upf"]["upf-name"], port: networkSlice["site-info"]["upf"]["upf-port"]};
+      return { hostname: networkSlice["site-info"]["upf"]["upf-name"], port: networkSlice["site-info"]["upf"]["upf-port"] };
     } else {
       return {} as UpfItem;
     }
@@ -88,7 +90,7 @@ const NetworkSliceModal = ({ networkSlice, toggleModal }: NetworkSliceModalProps
     validationSchema: NetworkSliceSchema,
     onSubmit: async (values) => {
       try {
-        if (networkSlice){
+        if (networkSlice) {
           await editNetworkSlice({
             name: values.name,
             mcc: values.mcc.toString(),
@@ -96,6 +98,7 @@ const NetworkSliceModal = ({ networkSlice, toggleModal }: NetworkSliceModalProps
             upfName: values.upf.hostname,
             upfPort: values.upf.port,
             gnbList: values.gnbList,
+            token: auth.user ? auth.user.authToken : ""
           });
         } else {
           await createNetworkSlice({
@@ -105,6 +108,7 @@ const NetworkSliceModal = ({ networkSlice, toggleModal }: NetworkSliceModalProps
             upfName: values.upf.hostname,
             upfPort: values.upf.port,
             gnbList: values.gnbList,
+            token: auth.user ? auth.user.authToken : ""
           });
         }
         await queryClient.invalidateQueries({
@@ -121,8 +125,9 @@ const NetworkSliceModal = ({ networkSlice, toggleModal }: NetworkSliceModalProps
   });
 
   const { data: upfList = [], isLoading: isUpfLoading } = useQuery({
-    queryKey: [queryKeys.upfList],
-    queryFn: getUpfList,
+    queryKey: [queryKeys.upfList, auth.user?.authToken],
+    queryFn: () => getUpfList(auth.user ? auth.user.authToken : ""),
+    enabled: auth.user ? true : false,
   });
 
   useEffect(() => {
@@ -135,8 +140,9 @@ const NetworkSliceModal = ({ networkSlice, toggleModal }: NetworkSliceModalProps
   }, [isUpfLoading, upfList]);
 
   const { data: gnbList = [], isLoading: isGnbLoading } = useQuery({
-    queryKey: [queryKeys.gnbList],
-    queryFn: getGnbList,
+    queryKey: [queryKeys.gnbList, auth.user?.authToken],
+    queryFn: () => getGnbList(auth.user ? auth.user.authToken : ""),
+    enabled: auth.user ? true : false,
   });
 
   useEffect(() => {
@@ -166,7 +172,7 @@ const NetworkSliceModal = ({ networkSlice, toggleModal }: NetworkSliceModalProps
   };
 
   const getGnbListValueAsString = () => {
-    return (formik.values.gnbList.map((item) =>{
+    return (formik.values.gnbList.map((item) => {
       return `${item.name}:${item.tac}`
     }));
   };
@@ -247,7 +253,7 @@ const NetworkSliceModal = ({ networkSlice, toggleModal }: NetworkSliceModalProps
           label="UPF"
           stacked
           required
-          value = {getUpfValueAsString()}
+          value={getUpfValueAsString()}
           onChange={handleUpfChange}
           options={[
             {
@@ -265,7 +271,7 @@ const NetworkSliceModal = ({ networkSlice, toggleModal }: NetworkSliceModalProps
           id="gnb"
           stacked
           required
-          value = {getGnbListValueAsString()}
+          value={getGnbListValueAsString()}
           options={[
             {
               value: "",

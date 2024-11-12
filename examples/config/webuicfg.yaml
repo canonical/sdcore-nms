@@ -5,7 +5,12 @@ configuration:
   mongodb:
     name: free5gc
     url: mongodb://localhost:27017
+    authKeysDbName: authentication
+    authUrl: mongodb://localhost:27017
+    webuiDbName: mydatabase
+    webuiDbUrl: mongodb://localhost:27017
   spec-compliant-sdf: false
+  enableAuthentication: true
 info:
   description: WebUI initial local configuration
   version: 1.0.0
