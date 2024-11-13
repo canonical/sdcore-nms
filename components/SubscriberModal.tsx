@@ -28,24 +28,24 @@ interface SubscriberValues {
 type Props = {
   toggleModal: () => void;
   subscriber?: any;
-  slices : NetworkSlice[];
-  deviceGroups : any[]
+  slices: NetworkSlice[];
+  deviceGroups: any[]
 };
 
-const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups}: Props) => {
+const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups }: Props) => {
   const queryClient = useQueryClient();
   const [apiError, setApiError] = useState<string | null>(null);
   const rawIMSI = subscriber?.ueId.split("-")[1];
-  
+
   const oldDeviceGroup = deviceGroups.find(
     (deviceGroup) => deviceGroup["imsis"]?.includes(rawIMSI)
   );
-  const oldDeviceGroupName : string = oldDeviceGroup ? oldDeviceGroup["group-name"]: "";
+  const oldDeviceGroupName: string = oldDeviceGroup ? oldDeviceGroup["group-name"] : "";
 
   const oldNetworkSlice = slices.find(
     (slice) => slice["site-device-group"]?.includes(oldDeviceGroupName)
   );
-  const oldNetworkSliceName : string = oldNetworkSlice ? oldNetworkSlice["slice-name"] : "";
+  const oldNetworkSliceName: string = oldNetworkSlice ? oldNetworkSlice["slice-name"] : "";
 
   const SubscriberSchema = Yup.object().shape({
     imsi: Yup.string()
@@ -80,7 +80,7 @@ const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups}: Props
   const formik = useFormik<SubscriberValues>({
     initialValues: {
       imsi: rawIMSI || "",
-      opc: subscriber?.["AuthenticationSubscription"]["opc"]["opcValue"] ||"",
+      opc: subscriber?.["AuthenticationSubscription"]["opc"]["opcValue"] || "",
       key: subscriber?.["AuthenticationSubscription"]["permanentKey"]["permanentKeyValue"] || "",
       sequenceNumber: subscriber?.["AuthenticationSubscription"]["sequenceNumber"] || "",
       selectedSlice: oldNetworkSliceName,
@@ -88,9 +88,8 @@ const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups}: Props
     },
     validationSchema: SubscriberSchema,
     onSubmit: async (values) => {
-      try{
-        if (subscriber)
-        {
+      try {
+        if (subscriber) {
           await editSubscriber({
             imsi: values.imsi,
             opc: values.opc,
@@ -142,22 +141,21 @@ const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups}: Props
     [formik],
   );
 
-  const deviceGroupOptions =
-    selectedSlice && selectedSlice["site-device-group"]
+  const deviceGroupOptions = React.useMemo(() => {
+    return selectedSlice && selectedSlice["site-device-group"]
       ? selectedSlice["site-device-group"]
       : [];
+  }, [selectedSlice]);
 
   useEffect(() => {
-    if (subscriber && selectedSlice && oldNetworkSliceName == selectedSlice["slice-name"]) {
+    if (subscriber && selectedSlice && oldNetworkSliceName === selectedSlice["slice-name"]) {
       setDeviceGroup(oldDeviceGroupName);
-    }
-    else if (selectedSlice && selectedSlice["site-device-group"]?.length === 1){
+    } else if (selectedSlice && selectedSlice["site-device-group"]?.length === 1) {
       setDeviceGroup(selectedSlice["site-device-group"][0]);
-    }
-    else {
+    } else {
       setDeviceGroup("");
     }
-  }, [deviceGroupOptions]);
+  }, [subscriber, selectedSlice, oldNetworkSliceName, oldDeviceGroupName, setDeviceGroup, deviceGroupOptions]);
 
   return (
     <Modal
@@ -233,7 +231,7 @@ const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups}: Props
           label="Network Slice"
           stacked
           required
-          value = {formik.values.selectedSlice}
+          value={formik.values.selectedSlice}
           onChange={handleSliceChange}
           error={
             formik.touched.selectedSlice ? formik.errors.selectedSlice : null
@@ -255,7 +253,7 @@ const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups}: Props
           label="Device Group"
           stacked
           required
-          value = {formik.values.deviceGroup}
+          value={formik.values.deviceGroup}
           onChange={handleDeviceGroupChange}
           error={formik.touched.deviceGroup ? formik.errors.deviceGroup : null}
           options={[
