@@ -11,6 +11,7 @@ import PageContent from "@/components/PageContent"
 import { useState } from "react"
 import SyncOutlinedIcon from "@mui/icons-material/SyncOutlined";
 import { ChangePasswordModal, CreateUserModal, DeleteModal } from "./modals"
+import { MainTableRow } from "@canonical/react-components/dist/components/MainTable/MainTable"
 
 type modalData = {
   user: UserEntry
@@ -39,30 +40,25 @@ export default function Users() {
     return <p>{query.error.message}</p>
   }
   const users = Array.from(query.data ? query.data : [])
-  const tableContent = users.map((user) => {
+  const tableContent: MainTableRow[] = users.map((user) => {
     return {
       key: user.username,
       columns: [
         { content: user.username },
         {
-          content: (
-            <ContextualMenu
-              links={[
-                {
-                  children: "Delete account",
-                  disabled: user.role == 1,
-                  onClick: () => setModalData({ user: user, type: "delete" })
-                }, {
-                  children: "Change password",
-                  onClick: () => setModalData({ user: user, type: "change password" })
-                }
-              ]}
-              hasToggleIcon
-              position={"right"}
-            />
-          ),
-        },
-      ],
+          content: <ContextualMenu
+            links={[
+              {
+                children: "Delete account",
+                disabled: user.role == 1,
+                onClick: () => setModalData({ user: user, type: "delete" })
+              }, {
+                children: "Change password",
+                onClick: () => setModalData({ user: user, type: "change password" })
+              }
+            ]} hasToggleIcon />,
+          className: "u-align--right"
+        }],
     };
   });
 
