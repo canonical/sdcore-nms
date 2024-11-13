@@ -68,7 +68,7 @@ export default function Users() {
 
   return (
     <>
-      <PageHeader title={`NMS Accounts (${users.length})`}>
+      <PageHeader title={`NMS Users (${users.length})`}>
         <Button
           hasIcon
           appearance="base"

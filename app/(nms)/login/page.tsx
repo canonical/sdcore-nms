@@ -25,7 +25,6 @@ export default function LoginPage() {
             setErrorText("")
             setCookie('user_token', result, {
                 sameSite: true,
-                secure: true,
                 expires: new Date(new Date().getTime() + 60 * 60 * 1000),
             })
             router.push('/')
