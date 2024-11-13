@@ -2,7 +2,7 @@ import { UserEntry } from "@/components/types"
 import { useAuth } from "@/utils/auth"
 import { changePassword, deleteUser, postUser } from "@/utils/accountQueries"
 import { passwordIsValid } from "@/utils/utils"
-import { Button, Form, Input, Modal, PasswordToggle } from "@canonical/react-components"
+import { Button, Form, Input, Modal, Notification, PasswordToggle } from "@canonical/react-components"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { ChangeEvent, useState } from "react"
 
@@ -46,8 +46,12 @@ export function ChangePasswordModal({ user, closeFn }: accountChangePasswordActi
   const changePWMutation = useMutation({
     mutationFn: changePassword,
     onSuccess: () => {
+      setErrorText("")
       queryClient.invalidateQueries({ queryKey: ['users'] })
       closeFn()
+    },
+    onError: (e) => {
+      setErrorText(e.message)
     }
   })
   const [password1, setPassword1] = useState<string>("")
@@ -101,6 +105,14 @@ export function ChangePasswordModal({ user, closeFn }: accountChangePasswordActi
           />
         </div>
       </Form>
+      {errorText &&
+        <Notification
+          severity="negative"
+          title="Error"
+        >
+          {errorText.split("error: ")}
+        </Notification>
+      }
     </Modal>
   )
 }
@@ -135,7 +147,7 @@ export function CreateUserModal({ closeFn }: createNewAccountModalProps) {
   const handlePassword2Change = (event: ChangeEvent<HTMLInputElement>) => { setPassword2(event.target.value) }
   return (
     <Modal
-      title="create new user"
+      title="Create New User"
       buttonRow={
         <>
           <Button
@@ -172,9 +184,16 @@ export function CreateUserModal({ closeFn }: createNewAccountModalProps) {
             required={true}
             error={password2Error}
           />
-
         </div>
       </Form>
+      {errorText &&
+        <Notification
+          severity="negative"
+          title="Error"
+        >
+          {errorText.split("error: ")}
+        </Notification>
+      }
     </Modal>
   )
 }
