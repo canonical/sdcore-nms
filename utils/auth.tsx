@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useState, useEffect, Dispatch, SetStateAction } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import { User } from '@/components/types';
 import { useCookies } from 'react-cookie';
 import { jwtDecode } from 'jwt-decode';
@@ -28,7 +28,7 @@ export const AuthProvider = ({ children }: Readonly<{ children: React.ReactNode 
             setUser(null)
             router.push('/login');
         }
-    }, [token]);
+    }, [token, router]);
 
     const logout = () => {
         removeCookie('user_token')
