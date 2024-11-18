@@ -12,6 +12,7 @@ import { useState } from "react"
 import SyncOutlinedIcon from "@mui/icons-material/SyncOutlined";
 import { ChangePasswordModal, CreateUserModal, DeleteModal } from "./modals"
 import { MainTableRow } from "@canonical/react-components/dist/components/MainTable/MainTable"
+import { useRouter } from "next/navigation"
 
 type modalData = {
   user: UserEntry
@@ -21,12 +22,13 @@ type modalData = {
 export default function Users() {
   const [modalData, setModalData] = useState<modalData | null>(null);
   const auth = useAuth()
+  const router = useRouter()
   const query = useQuery<UserEntry[], Error>({
     queryKey: ['users', auth.user?.authToken],
     queryFn: () => listUsers({ authToken: auth.user ? auth.user.authToken : "" }),
     enabled: auth.user ? true : false,
     retry: (failureCount, error): boolean => {
-      if (error.message.includes("401")) {
+      if (error.message.includes("401") || error.message.includes("403")) {
         return false
       }
       return true
@@ -36,6 +38,9 @@ export default function Users() {
   if (query.status == "error") {
     if (query.error.message.includes("401")) {
       auth.logout()
+    }
+    if (query.error.message.includes("403")) {
+      router.push("/")
     }
     return <p>{query.error.message}</p>
   }
