@@ -19,7 +19,8 @@ This target will produce the webconsole binary with the static export of NMS emb
 
 ### `make rock`
 
-This target will produce a  `sdcore-nms.rock` OCI image file, which will have the webconsole binary as a service.
+This target will produce a  `sdcore-nms.rock` OCI image file, which will have the webconsole binary as a service. It will use the master branch of webconsole by default.
+If you want to use a specific tag for the webconsole repo, you must switch to the branch/tag in ./biuld/webconsole-src
 
 `rockcraft` must be installed to use this option.
 

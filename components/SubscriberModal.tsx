@@ -15,6 +15,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/utils/queryKeys";
 import * as Yup from "yup";
 import { useFormik } from "formik";
+import { useAuth } from "@/utils/auth";
 
 interface SubscriberValues {
   imsi: string;
@@ -34,6 +35,7 @@ type Props = {
 
 const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups }: Props) => {
   const queryClient = useQueryClient();
+  const auth = useAuth()
   const [apiError, setApiError] = useState<string | null>(null);
   const rawIMSI = subscriber?.ueId.split("-")[1];
 
@@ -97,6 +99,7 @@ const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups }: Prop
             sequenceNumber: values.sequenceNumber,
             oldDeviceGroupName: oldDeviceGroupName,
             newDeviceGroupName: values.deviceGroup,
+            token: auth.user ? auth.user.authToken : ""
           });
         } else {
           await createSubscriber({
@@ -105,6 +108,7 @@ const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups }: Prop
             key: values.key,
             sequenceNumber: values.sequenceNumber,
             deviceGroupName: values.deviceGroup,
+            token: auth.user ? auth.user.authToken : ""
           });
         }
         await queryClient.invalidateQueries({ queryKey: [queryKeys.subscribers] });
@@ -150,7 +154,8 @@ const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups }: Prop
   useEffect(() => {
     if (subscriber && selectedSlice && oldNetworkSliceName === selectedSlice["slice-name"]) {
       setDeviceGroup(oldDeviceGroupName);
-    } else if (selectedSlice && selectedSlice["site-device-group"]?.length === 1) {
+    }
+    else if (selectedSlice && selectedSlice["site-device-group"]?.length === 1) {
       setDeviceGroup(selectedSlice["site-device-group"][0]);
     } else {
       setDeviceGroup("");
