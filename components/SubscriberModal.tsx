@@ -145,22 +145,22 @@ const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups }: Prop
     [formik],
   );
 
-  const deviceGroupOptions =
-    selectedSlice && selectedSlice["site-device-group"]
+  const deviceGroupOptions = React.useMemo(() => {
+    return selectedSlice && selectedSlice["site-device-group"]
       ? selectedSlice["site-device-group"]
       : [];
+  }, [selectedSlice]);
 
   useEffect(() => {
-    if (subscriber && selectedSlice && oldNetworkSliceName == selectedSlice["slice-name"]) {
+    if (subscriber && selectedSlice && oldNetworkSliceName === selectedSlice["slice-name"]) {
       setDeviceGroup(oldDeviceGroupName);
     }
     else if (selectedSlice && selectedSlice["site-device-group"]?.length === 1) {
       setDeviceGroup(selectedSlice["site-device-group"][0]);
-    }
-    else {
+    } else {
       setDeviceGroup("");
     }
-  }, [deviceGroupOptions]);
+  }, [subscriber, selectedSlice, oldNetworkSliceName, oldDeviceGroupName, setDeviceGroup, deviceGroupOptions]);
 
   return (
     <Modal
