@@ -59,6 +59,7 @@ export default function Users() {
                 onClick: () => setModalData({ user: user, type: "delete" })
               }, {
                 children: "Change password",
+                disabled: user.role == 1,
                 onClick: () => setModalData({ user: user, type: "change password" })
               }
             ]} hasToggleIcon />,
