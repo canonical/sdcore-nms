@@ -1,20 +1,22 @@
-name: Main branch CI
+name: Release v1.0.0 CI
 
 on:
   pull_request:
     branches:
-      - main
-
+      - v1.0.0
   push:
-  schedule:
-    - cron: "0 0 * * 0"
 
 jobs:
   nms-lint-report:
     uses: ./.github/workflows/nms-lint-report.yaml
 
+  codeql:
+    uses: ./.github/workflows/codeql-analysis.yaml
+
   build-nms:
-    needs: nms-lint-report
+    needs:
+      - nms-lint-report
+      - codeql
     uses: ./.github/workflows/build-nms.yaml
 
   build-rock:
@@ -26,6 +28,6 @@ jobs:
     uses: canonical/sdcore-github-workflows/.github/workflows/scan-rock.yaml@v2.3.0
 
   publish-rock:
-    if: github.ref_name == 'main'
+    if: github.ref_name == 'v1.0.0'
     needs: scan-rock
     uses: canonical/sdcore-github-workflows/.github/workflows/publish-rock.yaml@v2.3.0
