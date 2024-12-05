@@ -12,6 +12,6 @@ NMS needs to be configured with the following environment variables:
 ```console
 export WEBUI_ENDPOINT=10.1.182.28:5000
 
-docker pull ghcr.io/canonical/sdcore-nms:0.2.0
-docker run -it --env WEBUI_ENDPOINT ghcr.io/canonical/sdcore-nms:0.2.0
+docker pull ghcr.io/canonical/sdcore-nms:1.1.0
+docker run -it --env WEBUI_ENDPOINT ghcr.io/canonical/sdcore-nms:1.1.0
 ```
