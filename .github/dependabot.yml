@@ -21,3 +21,31 @@ updates:
       npm_dependencies:
         patterns:
           - "*"
+
+  - package-ecosystem: "github-actions"
+    target-branch: v1.0.0
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "chore: "
+    groups:
+      github_actions:
+        patterns:
+          - "*"
+    labels:
+      - v1.0.0
+
+  - package-ecosystem: "npm"
+    target-branch: v1.0.0
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "chore: "
+    groups:
+      npm_dependencies:
+        patterns:
+          - "*"
+    labels:
+      - v1.0.0

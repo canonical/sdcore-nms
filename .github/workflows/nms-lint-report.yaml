@@ -2,13 +2,21 @@ name: Lint report
 
 on:
   workflow_call:
+    inputs:
+      branch-name:
+        description: Name of the branch to checkout
+        required: false
+        type: string
+        default: ${{ github.ref }}
 
 jobs:
   nms-lint-report:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/v4
+        with:
+          ref: ${{ inputs.branch-name }}
 
       - name: Install Node
         uses: actions/setup-node@v4
