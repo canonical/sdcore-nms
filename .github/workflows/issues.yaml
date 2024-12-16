@@ -7,5 +7,5 @@ on:
 jobs:
   update:
     name: Update Issue
-    uses: canonical/sdcore-github-workflows/.github/workflows/issues.yaml@v2.3.0
+    uses: canonical/sdcore-github-workflows/.github/workflows/issues.yaml@v2.3.1
     secrets: inherit
