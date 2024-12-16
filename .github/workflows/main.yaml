@@ -5,6 +5,8 @@ on:
     branches:
       - v1.0.0
   push:
+    branches:
+      - v1.0.0
 
 jobs:
   nms-lint-report:
@@ -21,13 +23,13 @@ jobs:
 
   build-rock:
     needs: build-nms
-    uses: canonical/sdcore-github-workflows/.github/workflows/build-rock.yaml@v2.3.0
+    uses: canonical/sdcore-github-workflows/.github/workflows/build-rock.yaml@v2.3.1
 
   scan-rock:
     needs: build-rock
-    uses: canonical/sdcore-github-workflows/.github/workflows/scan-rock.yaml@v2.3.0
+    uses: canonical/sdcore-github-workflows/.github/workflows/scan-rock.yaml@v2.3.1
 
   publish-rock:
     if: github.ref_name == 'v1.0.0'
     needs: scan-rock
-    uses: canonical/sdcore-github-workflows/.github/workflows/publish-rock.yaml@v2.3.0
+    uses: canonical/sdcore-github-workflows/.github/workflows/publish-rock.yaml@v2.3.1
