@@ -2,10 +2,14 @@ name: Main branch CI
 
 on:
   pull_request:
+    types: [edited, opened, reopened, synchronize]
     branches:
       - main
-
+      - v**
   push:
+    branches:
+      - main
+      - v**
   schedule:
     - cron: "0 0 * * 0"
 
@@ -22,13 +26,13 @@ jobs:
 
   build-rock:
     needs: build-nms
-    uses: canonical/sdcore-github-workflows/.github/workflows/build-rock.yaml@v2.3.0
+    uses: canonical/sdcore-github-workflows/.github/workflows/build-rock.yaml@v2.3.1
 
   scan-rock:
     needs: build-rock
-    uses: canonical/sdcore-github-workflows/.github/workflows/scan-rock.yaml@v2.3.0
+    uses: canonical/sdcore-github-workflows/.github/workflows/scan-rock.yaml@v2.3.1
 
   publish-rock:
     if: github.ref_name == 'main'
     needs: scan-rock
-    uses: canonical/sdcore-github-workflows/.github/workflows/publish-rock.yaml@v2.3.0
+    uses: canonical/sdcore-github-workflows/.github/workflows/publish-rock.yaml@v2.3.1

@@ -23,12 +23,12 @@ jobs:
 
   build-rock:
     needs: build-nms
-    uses: canonical/sdcore-github-workflows/.github/workflows/build-rock.yaml@v2.3.0
+    uses: canonical/sdcore-github-workflows/.github/workflows/build-rock.yaml@v2.3.1
     with:
       branch-name: "v1.0.0"
 
   scan-rock:
     needs: build-rock
-    uses: canonical/sdcore-github-workflows/.github/workflows/scan-rock.yaml@v2.3.0
+    uses: canonical/sdcore-github-workflows/.github/workflows/scan-rock.yaml@v2.3.1
     with:
       branch-name: "v1.0.0"
