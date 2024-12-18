@@ -124,7 +124,7 @@ const NetworkSliceModal = ({ networkSlice, toggleModal }: NetworkSliceModalProps
     },
   });
 
-  const { data: upfList = [], isLoading: isUpfLoading } = useQuery({
+  const { data: upfList = [], isLoading: isUpfLoading, isError: isUpfError } = useQuery({
     queryKey: [queryKeys.upfList, auth.user?.authToken],
     queryFn: () => getUpfList(auth.user ? auth.user.authToken : ""),
     enabled: auth.user ? true : false,
@@ -132,14 +132,16 @@ const NetworkSliceModal = ({ networkSlice, toggleModal }: NetworkSliceModalProps
 
   useEffect(() => {
     const checkUpfList = async () => {
-      if (!isUpfLoading && upfList.length === 0) {
-        setUpfApiError("Failed to retrieve the list of UPFs from the server.");
+      if (isUpfError) {
+        setUpfApiError("Failed to retrieve the list of UPFs from the server.")
+      } else if (!isUpfLoading && upfList.length === 0) {
+        setUpfApiError("No available UPF. Please add at least one UPF.");
       }
     };
     checkUpfList();
-  }, [isUpfLoading, upfList]);
+  }, [isUpfLoading, isUpfError, upfList]);
 
-  const { data: gnbList = [], isLoading: isGnbLoading } = useQuery({
+  const { data: gnbList = [], isLoading: isGnbLoading, isError: isGnbError } = useQuery({
     queryKey: [queryKeys.gnbList, auth.user?.authToken],
     queryFn: () => getGnbList(auth.user ? auth.user.authToken : ""),
     enabled: auth.user ? true : false,
@@ -147,12 +149,14 @@ const NetworkSliceModal = ({ networkSlice, toggleModal }: NetworkSliceModalProps
 
   useEffect(() => {
     const checkGnbList = async () => {
-      if (!isGnbLoading && gnbList.length === 0) {
-        setGnbApiError("Failed to retrieve the list of GNBs from the server.");
+      if (isGnbError) {
+        setGnbApiError("Failed to retrieve the list of GNBs from the server.")
+      } else if (!isGnbLoading && gnbList.length === 0) {
+        setGnbApiError("No available GNB. Please add at least one GNB.");
       }
     };
     checkGnbList();
-  }, [isGnbLoading, gnbList]);
+  }, [isGnbLoading, isGnbError, gnbList]);
 
   const handleUpfChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const upf = upfList.find(
