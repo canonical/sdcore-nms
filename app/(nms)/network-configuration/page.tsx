@@ -24,7 +24,7 @@ const NetworkConfiguration = () => {
   const [isCreateModalVisible, setCreateModalVisible] = useState(false);
   const [isEditModalVisible, setEditModalVisible] = useState(false);
   const [networkSlice, setNetworkSlice] = useState<NetworkSlice | undefined>(undefined);
-  const [refresh, setRefresh] = useState(false); // State to track refresh (optional if using mutation directly)
+  const [refresh, setRefresh] = useState(false); // State to track refresh
   const auth = useAuth()
 
   const { data: networkSlices = [], isLoading: loading, status: networkSlicesQueryStatus, error: networkSlicesQueryError } = useQuery({
