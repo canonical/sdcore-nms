@@ -117,9 +117,10 @@ const NetworkConfiguration = () => {
       });
   };
 
-  const toggleCreateNetworkSliceModal = () =>
-    setCreateModalVisible((prev) => !prev);
-    setNetworkSlice(undefined); // Clear selection when closing modal
+  const toggleCreateNetworkSliceModal = () => {
+      setCreateModalVisible((prev) => !prev);
+      setNetworkSlice(undefined); // Clear selection when closing modal
+  };
 
   const toggleEditNetworkSliceModal = () =>
     setEditModalVisible((prev) => !prev);
