@@ -27,32 +27,24 @@ const NetworkConfiguration = () => {
   const [refresh, setRefresh] = useState(false); // State to track refresh (optional if using mutation directly)
   const auth = useAuth()
 
-  // Fetching Network Slices using useQuery
   const { data: networkSlices = [], isLoading: loading, status: networkSlicesQueryStatus, error: networkSlicesQueryError } = useQuery({
     queryKey: [queryKeys.networkSlices, auth.user?.authToken],
     queryFn: () => getNetworkSlices(auth.user ? auth.user.authToken : ""),
     enabled: !!auth.user, // Only enable if the user is authenticated
-    retry: (failureCount, error): boolean => {
-      if (error.message.includes("401")) {
-        return false
-      }
-      return true
-    }
+    retry: (failureCount, error) => !(error instanceof Error && error.message.includes("401"))
   });
 
-  // Mutation hook to add a new Network Slice
   const addNetworkSlice = async (newSlice: NetworkSlice): Promise<Response> => {
       return await apiPostNetworkSlice(newSlice["slice-name"], newSlice, auth.user?.authToken || "");
   };
 
+  // Mutation hook to add a new Network Slice
   const addNetworkSliceMutation = useMutation<unknown, Error, NetworkSlice>({
       mutationFn: addNetworkSlice,
       onSuccess: () => {
           // Invalidate and refetch the network slices query
           queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
-
-          // Optionally trigger refresh via state (if more actions depend on it)
-          setRefresh(true);
+          setCreateModalVisible(false); // Close model on success
       },
       onError: (error) => {
           console.error("Error adding network slice:", error);
@@ -64,80 +56,124 @@ const NetworkConfiguration = () => {
       if (refresh) {
           setRefresh(false); // Reset refresh state
           setCreateModalVisible(false); // Close modal after adding network slice
+          setEditModalVisible(false); // Close modal after editing network slice
       }
-  }, [refresh]);
+  }, [refresh, setCreateModalVisible, setEditModalVisible]);
 
   const handleAddNetworkSlice = (newSlice: NetworkSlice) => {
-      addNetworkSliceMutation.mutate(newSlice);
+      addNetworkSliceMutation.mutate(newSlice, {
+          onSuccess: () => {
+              queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
+              setCreateModalVisible(false); // Close modal on success
+          },
+      });
+  };
+
+  const editNetworkSlice = async (updatedSlice: NetworkSlice): Promise<Response> => {
+      // Call the API for editing the slice
+      return await apiPostNetworkSlice(updatedSlice["slice-name"], updatedSlice, auth.user?.authToken || "");
+  };
+
+  // Mutation hook to edit Network Slice
+  const editNetworkSliceMutation = useMutation<unknown, Error, NetworkSlice>({
+      mutationFn: editNetworkSlice,
+      onSuccess: () => {
+          // Invalidate and refetch network slices
+          queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
+          setEditModalVisible(false);
+      },
+      onError: (error) => {
+          console.error("Error editing network slice:", error);
+      },
+  });
+
+  const handleEditNetworkSlice = (updatedSlice: NetworkSlice) => {
+      editNetworkSliceMutation.mutate(updatedSlice, {
+          onSuccess: () => {
+              queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
+              setEditModalVisible(false); // Close modal on success
+          },
+      });
+  };
+
+  const deleteNetworkSliceMutation = useMutation<void, Error, string>({
+      mutationFn: async (sliceName: string) => {
+          await deleteNetworkSlice(sliceName, auth.user?.authToken || "");
+      },
+      onSuccess: () => {
+          // Invalidate and refetch network slices
+          queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
+      },
+      onError: (error) => {
+          console.error("Error deleting network slice:", error);
+      },
+  });
+
+  const handleConfirmDelete = (sliceName: string) => {
+      deleteNetworkSliceMutation.mutate(sliceName, {
+          onSuccess: () => {
+              queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
+          },
+      });
   };
 
   const toggleCreateNetworkSliceModal = () =>
     setCreateModalVisible((prev) => !prev);
+    setNetworkSlice(undefined); // Clear selection when closing modal
 
   const toggleEditNetworkSliceModal = () =>
     setEditModalVisible((prev) => !prev);
 
-  const handleConfirmDelete = async (sliceName: string) => {
-    await deleteNetworkSlice(sliceName, auth.user ? auth.user.authToken : "");
-    void queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
-  };
-
   const handleEditButton = (networkSlice: NetworkSlice) => {
     setNetworkSlice(networkSlice);
-    toggleEditNetworkSliceModal();
+    setEditModalVisible(true);
   }
 
   const getEditButton = (networkSlice: NetworkSlice) => {
     return <Button
       appearance=""
-      onClick={() => { handleEditButton(networkSlice) }}
+      onClick={() => handleEditButton(networkSlice) }
       className="u-no-margin--bottom">
       Edit
     </Button>
   }
 
   const getDeleteButton = (sliceName: string, deviceGroups: string[] | undefined) => {
-    if (deviceGroups &&
-      deviceGroups.length > 0) {
-      return <ConfirmationButton
-        appearance="negative"
-        className="u-no-margin--bottom"
-        confirmationModalProps={{
-          title: "Warning",
-          confirmButtonLabel: "Delete",
-          buttonRow: (null),
-          onConfirm: () => { },
-          children: (
-            <p>
-              Network slice <b>{sliceName}</b> cannot be deleted.<br />
-              Please remove the following device groups first:
-              <br />
-              {deviceGroups.join(", ")}.
-            </p>
-          ),
-        }} >
-        Delete
-      </ConfirmationButton>
-    }
-    return <ConfirmationButton
-      appearance="negative"
-      className="u-no-margin--bottom"
-      shiftClickEnabled
-      showShiftClickHint
-      confirmationModalProps={{
-        title: "Confirm Delete",
+    const isDeletable = !(deviceGroups && deviceGroups.length > 0);
+
+    const commonConfirmationProps = {
         confirmButtonLabel: "Delete",
         onConfirm: () => handleConfirmDelete(sliceName),
-        children: (
-          <p>
-            This will permanently delete the network slice <b>{sliceName}</b><br />
-            This action cannot be undone.
-          </p>
-        ),
-      }} >
-      Delete
-    </ConfirmationButton>
-  }
+    };
+    return (
+        <ConfirmationButton
+            appearance="negative"
+            className="u-no-margin--bottom"
+            shiftClickEnabled={!isDeletable}
+            showShiftClickHint={!isDeletable}
+            confirmationModalProps={{
+                ...commonConfirmationProps,
+                title: isDeletable ? "Confirm Delete" : "Warning",
+                children: isDeletable ? (
+                    <p>
+                        This will permanently delete the network slice <b>{sliceName}</b>
+                        <br />
+                        This action cannot be undone.
+                    </p>
+                ) : (
+                    <p>
+                        Network slice <b>{sliceName}</b> cannot be deleted.<br />
+                        Please remove the following device groups first:
+                        <br />
+                        {deviceGroups.join(", ")}.
+                    </p>
+                ),
+            }}
+        >
+            Delete
+        </ConfirmationButton>
+    );
+  };
 
   if (loading) {
     return <Loader text="Loading..." />;
@@ -187,6 +223,7 @@ const NetworkConfiguration = () => {
         <NetworkSliceModal
           networkSlice={networkSlice}
           toggleModal={toggleEditNetworkSliceModal}
+          onSave={handleEditNetworkSlice} // Pass the mutation handler to modal for saving existing slice
         />
       )}
     </>

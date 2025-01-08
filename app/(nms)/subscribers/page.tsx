@@ -24,7 +24,7 @@ export type Subscriber = {
   ueId: string;
 };
 
-const addSubscriber = async (newSubscriber: void, token: string | undefined) => {
+const addSubscriber = async (newSubscriber: Subscriber, token: string | undefined) => {
   const response = await fetch("/api/subscribers", {
     method: "POST",
     headers: {
@@ -46,29 +46,27 @@ const Subscribers = () => {
   const queryClient = useQueryClient();
   const [isCreateModalVisible, setCreateModalVisible] = useState(false);
   const [isEditModalVisible, setEditModalVisible] = useState(false);
-  const [newSubscriberAdded, setNewSubscriberAdded] = useState(false); // Tracks if updates are needed
+  const [newSubscriberAdded, setNewSubscriberAdded] = useState(false);
   const [subscriber, setSubscriber] = useState<any | undefined>(undefined);
   const auth = useAuth()
 
   const { data: subscribers = [], isLoading: isSubscribersLoading, status: subscribersQueryStatus, error: subscribersQueryError } = useQuery({
     queryKey: [queryKeys.subscribers, auth.user?.authToken],
     queryFn: () => getSubscribers(auth.user ? auth.user.authToken : ""),
-    enabled: auth.user ? true : false,
+    enabled: !!auth.user,
     retry: (failureCount, error): boolean => {
-      if (error.message.includes("401")) {
-        return false
-      }
-      return true
+      const errorMessage = error?.message || "";
+      return !errorMessage.includes("401");
     }
   });
 
   // Mutation to add a subscriber
   const mutation = useMutation({
-    mutationFn: (newSubscriber) => addSubscriber(newSubscriber, auth.user?.authToken),
+    mutationFn: (newSubscriber: Subscriber) => addSubscriber(newSubscriber, auth.user?.authToken),
     onSuccess: () => {
       // On successful addition, invalidate the query to refresh
-      queryClient.invalidateQueries({ queryKey: [queryKeys.subscribers] });
-      setNewSubscriberAdded(true); // Indicate that new data is added
+      handleRefresh()
+      setCreateModalVisible(false); // Closes model
     },
   });
 
@@ -78,9 +76,9 @@ const Subscribers = () => {
       queryClient.invalidateQueries({ queryKey: [queryKeys.subscribers] });
       setNewSubscriberAdded(false);
     }
-  }, [newSubscriberAdded, queryClient]); // `queryClient` is now included in the dependency array.
+  }, [newSubscriberAdded, queryClient, queryKeys.subscribers]);
 
-  const handleCreateSubscriber = async (newSubscriber: void) => {
+  const handleCreateSubscriber = async (newSubscriber: Subscriber) => {
     try {
       await mutation.mutateAsync(newSubscriber); // Trigger mutation
       setCreateModalVisible(false); // Close the modal
@@ -89,16 +87,56 @@ const Subscribers = () => {
     }
   };
 
+  const editSubscriber = async (updatedSubscriber: Subscriber, token: string | undefined) => {
+    const response = await fetch(`/api/subscribers/${updatedSubscriber.ueId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(updatedSubscriber),
+    });
+
+    if (!response.ok) {
+      const errorBody = await response.json().catch(() => ({}));
+      throw new Error(errorBody.message || "Failed to edit subscriber");
+    }
+
+    return response.json();
+  };
+
+  const editMutation = useMutation({
+    mutationFn: (updatedSubscriber: Subscriber) =>
+        editSubscriber(updatedSubscriber, auth.user?.authToken), // Perform edit request
+    onSuccess: () => {
+      handleRefresh();
+      setEditModalVisible(false); // Close the modal after success
+    },
+    onError: (error) => {
+      console.error("Error editing subscriber:", error);
+    },
+  });
+
+  const handleEditSubscriber = async (updatedSubscriber: Subscriber) => {
+    try {
+      await editMutation.mutateAsync(updatedSubscriber);
+      // Close the edit modal
+      setEditModalVisible(false);
+    } catch (error) {
+      console.error("Error editing subscriber:", error);
+    }
+  };
+
   const { data: deviceGroups = [], isLoading: isDeviceGroupsLoading } = useQuery({
     queryKey: [queryKeys.deviceGroups, auth.user?.authToken],
     queryFn: () => getDeviceGroups(auth.user ? auth.user.authToken : ""),
-    enabled: auth.user ? true : false,
+    enabled: !!auth.user,
   });
 
   const { data: slices = [], isLoading: isSlicesLoading } = useQuery({
     queryKey: [queryKeys.networkSlices, auth.user?.authToken],
     queryFn: () => getNetworkSlices(auth.user ? auth.user.authToken : ""),
-    enabled: auth.user ? true : false,
+    enabled: !!auth.user,
   });
 
   if (subscribersQueryStatus == "error") {
@@ -220,7 +258,12 @@ const Subscribers = () => {
           />)
       }
       {isEditModalVisible &&
-        <SubscriberModal toggleModal={toggleEditModal} subscriber={subscriber} slices={slices} deviceGroups={deviceGroups} />}
+        <SubscriberModal toggleModal={toggleEditModal}
+                         subscriber={subscriber}
+                         slices={slices}
+                         deviceGroups={deviceGroups}
+                         onSubmit={handleEditSubscriber}
+        />}
     </>
   );
 };
