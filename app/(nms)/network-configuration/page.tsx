@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Button,
   Card,
@@ -11,24 +11,27 @@ import NetworkSliceModal from "@/components/NetworkSliceModal";
 import NetworkSliceEmptyState from "@/components/NetworkSliceEmptyState";
 import { NetworkSliceTable } from "@/components/NetworkSliceTable";
 import Loader from "@/components/Loader";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/utils/queryKeys";
 import PageHeader from "@/components/PageHeader";
 import PageContent from "@/components/PageContent";
 import { NetworkSlice } from "@/components/types";
 import { useAuth } from "@/utils/auth";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { apiPostNetworkSlice } from "@/utils/callNetworkSliceApi";
 
 const NetworkConfiguration = () => {
   const queryClient = useQueryClient();
   const [isCreateModalVisible, setCreateModalVisible] = useState(false);
   const [isEditModalVisible, setEditModalVisible] = useState(false);
   const [networkSlice, setNetworkSlice] = useState<NetworkSlice | undefined>(undefined);
+  const [refresh, setRefresh] = useState(false); // State to track refresh (optional if using mutation directly)
   const auth = useAuth()
 
+  // Fetching Network Slices using useQuery
   const { data: networkSlices = [], isLoading: loading, status: networkSlicesQueryStatus, error: networkSlicesQueryError } = useQuery({
     queryKey: [queryKeys.networkSlices, auth.user?.authToken],
     queryFn: () => getNetworkSlices(auth.user ? auth.user.authToken : ""),
-    enabled: auth.user ? true : false,
+    enabled: !!auth.user, // Only enable if the user is authenticated
     retry: (failureCount, error): boolean => {
       if (error.message.includes("401")) {
         return false
@@ -36,12 +39,37 @@ const NetworkConfiguration = () => {
       return true
     }
   });
-  if (networkSlicesQueryStatus == "error") {
-    if (networkSlicesQueryError.message.includes("401")) {
-      auth.logout()
-    }
-    return <p>{networkSlicesQueryError.message}</p>
-  }
+
+  // Mutation hook to add a new Network Slice
+  const addNetworkSlice = async (newSlice: NetworkSlice): Promise<Response> => {
+      return await apiPostNetworkSlice(newSlice["slice-name"], newSlice, auth.user?.authToken || "");
+  };
+
+  const addNetworkSliceMutation = useMutation<unknown, Error, NetworkSlice>({
+      mutationFn: addNetworkSlice,
+      onSuccess: () => {
+          // Invalidate and refetch the network slices query
+          queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
+
+          // Optionally trigger refresh via state (if more actions depend on it)
+          setRefresh(true);
+      },
+      onError: (error) => {
+          console.error("Error adding network slice:", error);
+      },
+  });
+
+  // Trigger UI refresh when refresh flag is set
+  useEffect(() => {
+      if (refresh) {
+          setRefresh(false); // Reset refresh state
+          setCreateModalVisible(false); // Close modal after adding network slice
+      }
+  }, [refresh]);
+
+  const handleAddNetworkSlice = (newSlice: NetworkSlice) => {
+      addNetworkSliceMutation.mutate(newSlice);
+  };
 
   const toggleCreateNetworkSliceModal = () =>
     setCreateModalVisible((prev) => !prev);
@@ -115,6 +143,13 @@ const NetworkConfiguration = () => {
     return <Loader text="Loading..." />;
   }
 
+  if (networkSlicesQueryStatus == "error") {
+      if (networkSlicesQueryError.message.includes("401")) {
+          auth.logout()
+      }
+      return <p>{networkSlicesQueryError.message}</p>
+  }
+
   return (
     <>
       {networkSlices.length > 0 && (
@@ -145,6 +180,7 @@ const NetworkConfiguration = () => {
       {isCreateModalVisible && (
         <NetworkSliceModal
           toggleModal={toggleCreateNetworkSliceModal}
+          onSave={handleAddNetworkSlice} // Pass the mutation handler to modal for saving new slice
         />
       )}
       {isEditModalVisible && (

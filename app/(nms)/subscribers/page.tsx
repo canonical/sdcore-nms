@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Button,
   MainTable,
@@ -13,7 +13,7 @@ import { getNetworkSlices } from "@/utils/getNetworkSlices";
 import SyncOutlinedIcon from "@mui/icons-material/SyncOutlined";
 import { deleteSubscriber } from "@/utils/deleteSubscriber";
 import Loader from "@/components/Loader";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/utils/queryKeys";
 import PageHeader from "@/components/PageHeader";
 import PageContent from "@/components/PageContent";
@@ -24,10 +24,29 @@ export type Subscriber = {
   ueId: string;
 };
 
+const addSubscriber = async (newSubscriber: void, token: string | undefined) => {
+  const response = await fetch("/api/subscribers", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(newSubscriber),
+  });
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => ({}));
+    throw new Error(
+        errorBody.message || "Failed to add subscriber"
+    );
+  }
+  return response.json();
+};
+
 const Subscribers = () => {
   const queryClient = useQueryClient();
   const [isCreateModalVisible, setCreateModalVisible] = useState(false);
   const [isEditModalVisible, setEditModalVisible] = useState(false);
+  const [newSubscriberAdded, setNewSubscriberAdded] = useState(false); // Tracks if updates are needed
   const [subscriber, setSubscriber] = useState<any | undefined>(undefined);
   const auth = useAuth()
 
@@ -42,6 +61,33 @@ const Subscribers = () => {
       return true
     }
   });
+
+  // Mutation to add a subscriber
+  const mutation = useMutation({
+    mutationFn: (newSubscriber) => addSubscriber(newSubscriber, auth.user?.authToken),
+    onSuccess: () => {
+      // On successful addition, invalidate the query to refresh
+      queryClient.invalidateQueries({ queryKey: [queryKeys.subscribers] });
+      setNewSubscriberAdded(true); // Indicate that new data is added
+    },
+  });
+
+  // Effect to handle state changes
+  useEffect(() => {
+    if (newSubscriberAdded) {
+      queryClient.invalidateQueries({ queryKey: [queryKeys.subscribers] });
+      setNewSubscriberAdded(false);
+    }
+  }, [newSubscriberAdded, queryClient]); // `queryClient` is now included in the dependency array.
+
+  const handleCreateSubscriber = async (newSubscriber: void) => {
+    try {
+      await mutation.mutateAsync(newSubscriber); // Trigger mutation
+      setCreateModalVisible(false); // Close the modal
+    } catch (error) {
+      console.error("Error adding subscriber:", error); // Handle error
+    }
+  };
 
   const { data: deviceGroups = [], isLoading: isDeviceGroupsLoading } = useQuery({
     queryKey: [queryKeys.deviceGroups, auth.user?.authToken],
@@ -165,7 +211,14 @@ const Subscribers = () => {
           rows={tableContent}
         />
       </PageContent>
-      {isCreateModalVisible && <SubscriberModal toggleModal={toggleCreateModal} slices={slices} deviceGroups={deviceGroups} />}
+      {isCreateModalVisible && (
+          <SubscriberModal
+              toggleModal={toggleCreateModal}
+              onSubmit={(newSubscriber: any) => handleCreateSubscriber(newSubscriber)}
+              slices={slices}
+              deviceGroups={deviceGroups}
+          />)
+      }
       {isEditModalVisible &&
         <SubscriberModal toggleModal={toggleEditModal} subscriber={subscriber} slices={slices} deviceGroups={deviceGroups} />}
     </>
