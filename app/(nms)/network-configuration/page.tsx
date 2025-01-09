@@ -24,7 +24,7 @@ const NetworkConfiguration = () => {
   const [isCreateModalVisible, setCreateModalVisible] = useState(false);
   const [isEditModalVisible, setEditModalVisible] = useState(false);
   const [networkSlice, setNetworkSlice] = useState<NetworkSlice | undefined>(undefined);
-    const [refresh, setRefresh] = useState(false); // State to track refresh
+  const [refresh, setRefresh] = useState(false);
   const auth = useAuth()
 
   const { data: networkSlices = [], isLoading: loading, status: networkSlicesQueryStatus, error: networkSlicesQueryError } = useQuery({
@@ -35,29 +35,32 @@ const NetworkConfiguration = () => {
   });
 
   const addNetworkSlice = async (newSlice: NetworkSlice): Promise<Response> => {
-      return await apiPostNetworkSlice(newSlice["slice-name"], newSlice, auth.user?.authToken || "");
+    return await apiPostNetworkSlice(newSlice["slice-name"], newSlice, auth.user?.authToken || "");
   };
 
   // Mutation hook to add a new Network Slice
   const addNetworkSliceMutation = useMutation<unknown, Error, NetworkSlice>({
-      mutationFn: addNetworkSlice,
-      onSuccess: () => {
-          // Invalidate and refetch the network slices query
-          queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
-          setCreateModalVisible(false); // Close model on success
-      },
-      onError: (error) => {
-          console.error("Error adding network slice:", error);
-      },
+    mutationFn: addNetworkSlice,
+    onSuccess: () => {
+        // Invalidate and refetch the network slices query
+        queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
+        setCreateModalVisible(false); // Close model on success
+    },
+    onError: (error) => {
+       console.error("Error adding network slice:", error);
+    },
   });
 
   // Trigger UI refresh when refresh flag is set
   useEffect(() => {
-      if (refresh) {
-          setRefresh(false); // Reset refresh state
-          setCreateModalVisible(false); // Close modal after adding network slice
-          setEditModalVisible(false); // Close modal after editing network slice
-      }
+    if (refresh) {
+        // Reset refresh state
+        setRefresh(false);
+        // Close modal after adding network slice
+        setCreateModalVisible(false);
+        // Close modal after editing network slice
+        setEditModalVisible(false);
+    }
   }, [refresh, setCreateModalVisible, setEditModalVisible]);
 
   const handleAddNetworkSlice = (newSlice: NetworkSlice) => {
@@ -70,56 +73,57 @@ const NetworkConfiguration = () => {
   };
 
   const editNetworkSlice = async (updatedSlice: NetworkSlice): Promise<Response> => {
-      // Call the API for editing the slice
-      return await apiPostNetworkSlice(updatedSlice["slice-name"], updatedSlice, auth.user?.authToken || "");
+    return await apiPostNetworkSlice(updatedSlice["slice-name"], updatedSlice, auth.user?.authToken || "");
   };
 
   // Mutation hook to edit Network Slice
   const editNetworkSliceMutation = useMutation<unknown, Error, NetworkSlice>({
-      mutationFn: editNetworkSlice,
-      onSuccess: () => {
-          // Invalidate and refetch network slices
-          queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
-          setEditModalVisible(false);
-      },
-      onError: (error) => {
-          console.error("Error editing network slice:", error);
-      },
+    mutationFn: editNetworkSlice,
+    onSuccess: () => {
+        // Invalidate and refetch network slices
+        queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
+        setEditModalVisible(false);
+    },
+    onError: (error) => {
+        console.error("Error editing network slice:", error);
+    },
   });
 
   const handleEditNetworkSlice = (updatedSlice: NetworkSlice) => {
-      editNetworkSliceMutation.mutate(updatedSlice, {
-          onSuccess: () => {
-              queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
-              setEditModalVisible(false); // Close modal on success
-          },
-      });
+    editNetworkSliceMutation.mutate(updatedSlice, {
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
+            // Close modal on success
+            setEditModalVisible(false);
+        },
+    });
   };
 
   const deleteNetworkSliceMutation = useMutation<void, Error, string>({
-      mutationFn: async (sliceName: string) => {
-          await deleteNetworkSlice(sliceName, auth.user?.authToken || "");
-      },
-      onSuccess: () => {
-          // Invalidate and refetch network slices
-          queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
-      },
-      onError: (error) => {
-          console.error("Error deleting network slice:", error);
-      },
+    mutationFn: async (sliceName: string) => {
+        await deleteNetworkSlice(sliceName, auth.user?.authToken || "");
+    },
+    onSuccess: () => {
+        // Invalidate and refetch network slices
+        queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
+    },
+    onError: (error) => {
+        console.error("Error deleting network slice:", error);
+    },
   });
 
   const handleConfirmDelete = (sliceName: string) => {
-      deleteNetworkSliceMutation.mutate(sliceName, {
-          onSuccess: () => {
-              queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
-          },
-      });
+    deleteNetworkSliceMutation.mutate(sliceName, {
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
+        },
+    });
   };
 
   const toggleCreateNetworkSliceModal = () => {
-      setCreateModalVisible((prev) => !prev);
-      setNetworkSlice(undefined); // Clear selection when closing modal
+    setCreateModalVisible((prev) => !prev);
+    // Clear selection when closing modal
+    setNetworkSlice(undefined);
   };
 
   const toggleEditNetworkSliceModal = () =>
@@ -140,41 +144,47 @@ const NetworkConfiguration = () => {
   }
 
   const getDeleteButton = (sliceName: string, deviceGroups: string[] | undefined) => {
-    const isDeletable = !(deviceGroups && deviceGroups.length > 0);
-
-    const commonConfirmationProps = {
+    if (deviceGroups &&
+      deviceGroups.length > 0) {
+      return <ConfirmationButton
+        appearance="negative"
+        className="u-no-margin--bottom"
+        confirmationModalProps={{
+          title: "Warning",
+          confirmButtonLabel: "Delete",
+          buttonRow: (null),
+          onConfirm: () => { },
+          children: (
+            <p>
+              Network slice <b>{sliceName}</b> cannot be deleted.<br />
+              Please remove the following device groups first:
+              <br />
+              {deviceGroups.join(", ")}.
+            </p>
+          ),
+        }} >
+        Delete
+      </ConfirmationButton>
+    }
+    return <ConfirmationButton
+      appearance="negative"
+      className="u-no-margin--bottom"
+      shiftClickEnabled
+      showShiftClickHint
+      confirmationModalProps={{
+        title: "Confirm Delete",
         confirmButtonLabel: "Delete",
         onConfirm: () => handleConfirmDelete(sliceName),
-    };
-    return (
-        <ConfirmationButton
-            appearance="negative"
-            className="u-no-margin--bottom"
-            shiftClickEnabled={!isDeletable}
-            showShiftClickHint={!isDeletable}
-            confirmationModalProps={{
-                ...commonConfirmationProps,
-                title: isDeletable ? "Confirm Delete" : "Warning",
-                children: isDeletable ? (
-                    <p>
-                        This will permanently delete the network slice <b>{sliceName}</b>
-                        <br />
-                        This action cannot be undone.
-                    </p>
-                ) : (
-                    <p>
-                        Network slice <b>{sliceName}</b> cannot be deleted.<br />
-                        Please remove the following device groups first:
-                        <br />
-                        {deviceGroups.join(", ")}.
-                    </p>
-                ),
-            }}
-        >
-            Delete
-        </ConfirmationButton>
-    );
-  };
+        children: (
+          <p>
+            This will permanently delete the network slice <b>{sliceName}</b><br />
+            This action cannot be undone.
+          </p>
+        ),
+      }} >
+      Delete
+    </ConfirmationButton>
+  }
 
   if (loading) {
     return <Loader text="Loading..." />;

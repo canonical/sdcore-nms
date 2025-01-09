@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Button,
   MainTable,
@@ -46,7 +46,6 @@ const Subscribers = () => {
   const queryClient = useQueryClient();
   const [isCreateModalVisible, setCreateModalVisible] = useState(false);
   const [isEditModalVisible, setEditModalVisible] = useState(false);
-  const [newSubscriberAdded, setNewSubscriberAdded] = useState(false);
   const [subscriber, setSubscriber] = useState<Subscriber | undefined>(undefined);
   const auth = useAuth()
 
@@ -66,23 +65,17 @@ const Subscribers = () => {
     onSuccess: () => {
       // On successful addition, invalidate the query to refresh
       handleRefresh()
-      setCreateModalVisible(false); // Closes model
+      // Close model
+      setCreateModalVisible(false);
     },
   });
 
-  // Effect to handle state changes
-  useEffect(() => {
-    if (newSubscriberAdded) {
-      queryClient.invalidateQueries({ queryKey: [queryKeys.subscribers] });
-      setNewSubscriberAdded(false);
-    }
-  }, [newSubscriberAdded, queryClient]);
-
   const handleCreateSubscriber = async (newSubscriber: Subscriber) => {
     try {
-      await mutation.mutateAsync(newSubscriber); // Trigger mutation
+      // Trigger mutation
+      await mutation.mutateAsync(newSubscriber);
     } catch (error) {
-      console.error("Error adding subscriber:", error); // Handle error
+      console.error("Error adding subscriber:", error);
     }
   };
 
@@ -109,19 +102,25 @@ const Subscribers = () => {
       editSubscriber(updatedSubscriber, auth.user?.authToken || ""), // Perform edit request
     onSuccess: () => {
       handleRefresh();
-      setEditModalVisible(false); // Close the modal after success
+      // Close the modal after success
+      setEditModalVisible(false);
     },
     onError: (error) => {
       console.error("Error editing subscriber:", error);
     },
   });
 
-  const deleteMutation = useMutation({
-    mutationFn: (deletedSubscriber: Subscriber) =>
-      deleteSubscriber(deletedSubscriber.ueId, auth.user?.authToken || ""),
+  const deleteSubscriberWithImsi = async (subscriberImsi: string) => {
+     await deleteSubscriber(subscriberImsi, auth.user?.authToken || "");
+  };
+
+  const deleteSubscriberMutation = useMutation({
+    mutationFn: async (subscriberImsi: string) => {
+      await deleteSubscriberWithImsi(subscriberImsi)
+    },
     onSuccess: () => {
-      handleRefresh()
-      // Directly reload the page after successful deletion
+      // Invalidate and refetch subscriber
+      queryClient.invalidateQueries({ queryKey: [queryKeys.subscribers] });
       window.location.reload();
     },
     onError: (error) => {
@@ -135,6 +134,14 @@ const Subscribers = () => {
     } catch (error) {
       console.error("Error editing subscriber:", error);
     }
+  };
+
+  const handleConfirmDelete = async (subscriberImsi: string) => {
+      deleteSubscriberMutation.mutate(subscriberImsi, {
+      onSuccess: () => {
+        handleRefresh();
+      },
+    });
   };
 
   const { data: deviceGroups = [], isLoading: isDeviceGroupsLoading } = useQuery({
@@ -162,16 +169,6 @@ const Subscribers = () => {
     await queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
   };
 
-  const handleConfirmDelete = async (deletedSubscriberImsi: string) => {
-      try {
-        const subscriberToDelete = subscribers.find((sub) => sub.ueId === deletedSubscriberImsi);
-        if (subscriberToDelete) {
-          await deleteMutation.mutateAsync(subscriberToDelete);
-        }
-      } catch (error) {
-        console.error("Error deleting subscriber:", error);
-      }
-    };
 
   const toggleCreateModal = () => setCreateModalVisible((prev) => !prev);
   const toggleEditModal = () => setEditModalVisible((prev) => !prev);
