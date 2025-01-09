@@ -228,14 +228,14 @@ const NetworkConfiguration = () => {
       {isCreateModalVisible && (
         <NetworkSliceModal
           toggleModal={toggleCreateNetworkSliceModal}
-          onSave={handleAddNetworkSlice} // Pass the mutation handler to modal for saving new slice
+          onSave={handleAddNetworkSlice}
         />
       )}
       {isEditModalVisible && (
         <NetworkSliceModal
           networkSlice={networkSlice}
           toggleModal={toggleEditNetworkSliceModal}
-          onSave={handleEditNetworkSlice} // Pass the mutation handler to modal for saving existing slice
+          onSave={handleEditNetworkSlice}
         />
       )}
     </>
