@@ -52,7 +52,7 @@ const Subscribers = () => {
   const { data: subscribers = [], isLoading: isSubscribersLoading, status: subscribersQueryStatus, error: subscribersQueryError } = useQuery({
     queryKey: [queryKeys.subscribers, auth.user?.authToken],
     queryFn: () => getSubscribers(auth.user?.authToken || ""),
-    enabled: !!auth.user,
+    enabled: Boolean(auth.user),
     retry: (failureCount, error): boolean => {
       const errorMessage = error?.message || "";
       return !errorMessage.includes("401");
@@ -147,13 +147,13 @@ const Subscribers = () => {
   const { data: deviceGroups = [], isLoading: isDeviceGroupsLoading } = useQuery({
     queryKey: [queryKeys.deviceGroups, auth.user?.authToken],
     queryFn: () => getDeviceGroups(auth.user?.authToken || ""),
-    enabled: !!auth.user,
+    enabled: Boolean(auth.user),
   });
 
   const { data: slices = [], isLoading: isSlicesLoading } = useQuery({
     queryKey: [queryKeys.networkSlices, auth.user?.authToken],
     queryFn: () => getNetworkSlices(auth.user?.authToken || ""),
-    enabled: !!auth.user,
+    enabled: Boolean(auth.user),
   });
 
   if (subscribersQueryStatus == "error") {

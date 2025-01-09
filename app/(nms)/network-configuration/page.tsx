@@ -30,7 +30,7 @@ const NetworkConfiguration = () => {
   const { data: networkSlices = [], isLoading: loading, status: networkSlicesQueryStatus, error: networkSlicesQueryError } = useQuery({
     queryKey: [queryKeys.networkSlices, auth.user?.authToken],
     queryFn: () => getNetworkSlices(auth.user ? auth.user.authToken : ""),
-    enabled: !!auth.user, // Only enable if the user is authenticated
+    enabled: Boolean(auth.user),
     retry: (failureCount, error) => !(error instanceof Error && error.message.includes("401"))
   });
 
@@ -44,7 +44,8 @@ const NetworkConfiguration = () => {
     onSuccess: () => {
         // Invalidate and refetch the network slices query
         queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
-        setCreateModalVisible(false); // Close model on success
+        // Close model on success
+        setCreateModalVisible(false);
     },
     onError: (error) => {
        console.error("Error adding network slice:", error);
