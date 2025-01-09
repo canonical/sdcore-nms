@@ -47,7 +47,7 @@ const Subscribers = () => {
   const [isCreateModalVisible, setCreateModalVisible] = useState(false);
   const [isEditModalVisible, setEditModalVisible] = useState(false);
   const [newSubscriberAdded, setNewSubscriberAdded] = useState(false);
-  const [subscriber, setSubscriber] = useState<any | undefined>(undefined);
+  const [subscriber, setSubscriber] = useState<Subscriber | undefined>(undefined);
   const auth = useAuth()
 
   const { data: subscribers = [], isLoading: isSubscribersLoading, status: subscribersQueryStatus, error: subscribersQueryError } = useQuery({
@@ -62,7 +62,7 @@ const Subscribers = () => {
 
   // Mutation to add a subscriber
   const mutation = useMutation({
-      mutationFn: (newSubscriber: Subscriber) => addSubscriber(newSubscriber, auth.user?.authToken || ""),
+    mutationFn: (newSubscriber: Subscriber) => addSubscriber(newSubscriber, auth.user?.authToken || ""),
     onSuccess: () => {
       // On successful addition, invalidate the query to refresh
       handleRefresh()
@@ -76,7 +76,7 @@ const Subscribers = () => {
       queryClient.invalidateQueries({ queryKey: [queryKeys.subscribers] });
       setNewSubscriberAdded(false);
     }
-  }, [newSubscriberAdded, queryClient, queryKeys.subscribers]);
+  }, [newSubscriberAdded, queryClient]);
 
   const handleCreateSubscriber = async (newSubscriber: Subscriber) => {
     try {
@@ -106,7 +106,7 @@ const Subscribers = () => {
 
   const editMutation = useMutation({
     mutationFn: (updatedSubscriber: Subscriber) =>
-        editSubscriber(updatedSubscriber, auth.user?.authToken || ""), // Perform edit request
+      editSubscriber(updatedSubscriber, auth.user?.authToken || ""), // Perform edit request
     onSuccess: () => {
       handleRefresh();
       setEditModalVisible(false); // Close the modal after success
@@ -118,9 +118,11 @@ const Subscribers = () => {
 
   const deleteMutation = useMutation({
     mutationFn: (deletedSubscriber: Subscriber) =>
-        deleteSubscriber(deletedSubscriber.ueId, auth.user?.authToken || ""),
+      deleteSubscriber(deletedSubscriber.ueId, auth.user?.authToken || ""),
     onSuccess: () => {
-      handleRefresh();
+      handleRefresh()
+      // Directly reload the page after successful deletion
+      window.location.reload();
     },
     onError: (error) => {
       console.error("Error deleting subscriber:", error);
