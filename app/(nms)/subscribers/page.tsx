@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Button,
   MainTable,
@@ -46,6 +46,7 @@ const Subscribers = () => {
   const queryClient = useQueryClient();
   const [isCreateModalVisible, setCreateModalVisible] = useState(false);
   const [isEditModalVisible, setEditModalVisible] = useState(false);
+  const [newSubscriberAdded, setNewSubscriberAdded] = useState(false);
   const [subscriber, setSubscriber] = useState<any | undefined>(undefined);
   const auth = useAuth()
 
@@ -68,6 +69,14 @@ const Subscribers = () => {
       setCreateModalVisible(false); // Closes model
     },
   });
+
+  // Effect to handle state changes
+  useEffect(() => {
+    if (newSubscriberAdded) {
+      queryClient.invalidateQueries({ queryKey: [queryKeys.subscribers] });
+      setNewSubscriberAdded(false);
+    }
+  }, [newSubscriberAdded, queryClient, queryKeys.subscribers]);
 
   const handleCreateSubscriber = async (newSubscriber: Subscriber) => {
     try {
