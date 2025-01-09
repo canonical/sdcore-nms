@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Button,
   Card,
@@ -24,7 +24,6 @@ const NetworkConfiguration = () => {
   const [isCreateModalVisible, setCreateModalVisible] = useState(false);
   const [isEditModalVisible, setEditModalVisible] = useState(false);
   const [networkSlice, setNetworkSlice] = useState<NetworkSlice | undefined>(undefined);
-  const [refresh, setRefresh] = useState(false);
   const auth = useAuth()
 
   const { data: networkSlices = [], isLoading: loading, status: networkSlicesQueryStatus, error: networkSlicesQueryError } = useQuery({
@@ -51,18 +50,6 @@ const NetworkConfiguration = () => {
        console.error("Error adding network slice:", error);
     },
   });
-
-  // Trigger UI refresh when refresh flag is set
-  useEffect(() => {
-    if (refresh) {
-        // Reset refresh state
-        setRefresh(false);
-        // Close modal after adding network slice
-        setCreateModalVisible(false);
-        // Close modal after editing network slice
-        setEditModalVisible(false);
-    }
-  }, [refresh, setCreateModalVisible, setEditModalVisible]);
 
   const handleAddNetworkSlice = (newSlice: NetworkSlice) => {
       addNetworkSliceMutation.mutate(newSlice, {
@@ -153,7 +140,7 @@ const NetworkConfiguration = () => {
         confirmationModalProps={{
           title: "Warning",
           confirmButtonLabel: "Delete",
-          buttonRow: (null),
+          buttonRow: null,
           onConfirm: () => { },
           children: (
             <p>
