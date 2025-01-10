@@ -27,11 +27,12 @@ interface NetworkSliceValues {
 }
 
 interface NetworkSliceModalProps {
-  networkSlice?: NetworkSlice;
-  toggleModal: () => void;
+  networkSlice?: NetworkSlice,
+  toggleModal: () => void,
+  onSave?: (newSlice: NetworkSlice) => void
 }
 
-const NetworkSliceModal = ({ networkSlice, toggleModal }: NetworkSliceModalProps) => {
+const NetworkSliceModal = ({ networkSlice, toggleModal, onSave }: NetworkSliceModalProps) => {
   const auth = useAuth()
   const queryClient = useQueryClient();
   const [apiError, setApiError] = useState<string | null>(null);

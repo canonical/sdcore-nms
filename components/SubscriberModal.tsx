@@ -27,13 +27,14 @@ interface SubscriberValues {
 }
 
 type Props = {
-  toggleModal: () => void;
-  subscriber?: any;
-  slices: NetworkSlice[];
-  deviceGroups: any[]
+  toggleModal: () => void,
+  subscriber?: any,
+  slices: NetworkSlice[],
+  deviceGroups: any[],
+  onSubmit?: (newSubscriber: any) => Promise<void>
 };
 
-const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups }: Props) => {
+const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups, onSubmit }: Props) => {
   const queryClient = useQueryClient();
   const auth = useAuth()
   const [apiError, setApiError] = useState<string | null>(null);
