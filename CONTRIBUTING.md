@@ -19,15 +19,15 @@ This target will produce the webconsole binary with the static export of NMS emb
 
 ### `make rock`
 
-This target will produce a  `sdcore-nms.rock` OCI image file, which will have the webconsole binary as a service. It will use the master branch of webconsole by default.
-If you want to use a specific tag for the webconsole repo, you must switch to the branch/tag in ./build/webconsole-src
+This target will produce a `sdcore-nms.rock` OCI image file, which will have the webconsole binary as a service. It will use the master branch of webconsole by default.
+If you want to use a specific tag for the webconsole repository, you must switch to the branch/tag in ./build/webconsole-src
 
 `rockcraft` must be installed to use this option.
 
 ### `make deploy`
 
 This target will create an LXC VM called `nms`, install docker, deploy the `NMS` and `MongoDB` OCI image, create a valid config file for `NMS`, and start the program.
-After the process is done, from your host machine you can run `lxc list`, and use the IP address to connect to both mongodb and NMS. The port for NMS is `:5000` and the port for mongodb is `:27017`.
+After the process is done, from your host machine you can run `lxc list`, and use the IP address to connect to both MongoDB and NMS. The port for NMS is `:5000` and the port for MongoDB is `:27017`.
 
 `make rock` must have successfully completed and `lxd` must be installed to use this option.
 
@@ -67,7 +67,7 @@ for them are stored in the `/artifacts` folder. Any files used in the build proc
 
 ### Webconsole binary
 
-`go` and `nodejs` is required to build webconsole.
+`go` and `nodejs` are required to build webconsole.
 
 The `make webconsole` target is responsible for producing the binary that serves the NMS frontend. Once run, it will:
 
@@ -83,7 +83,7 @@ The binary will need to be run with a config file. An example is available in th
 
 `rockcraft` is required to create the OCI image.
 
-The rock can be built with `rockcraft pack`. This process will use the local NMS and a predefined tag of webconsole repo to create an OCI image. The webconsole branch/tag is defined in the `rockcraft.yaml` file.
+The rock can be built with `rockcraft pack`. This process will use the local NMS and a predefined tag of webconsole repository to create an OCI image. The webconsole branch/tag is defined in the `rockcraft.yaml` file.
 
 The `make rock` target modifies this build process by directly using the `build/webconsole-src` directory. This allows you to use a local version of webconsole in the OCI image instead of having to pull from the specified tag in `rockcraft.yaml`. This is useful if you want to test changes to the backend rather than the frontend. The process is:
 
@@ -93,7 +93,7 @@ The `make rock` target modifies this build process by directly using the `build/
 
 ## Deploy
 
-The binary requires a config file and an available mongodb deployment to operate. By default, the path for the config file is `./config/webuicfg.yaml` from the directory of the binary. The OCI image does not come with a config file preconfigured, but the repo contains an example at `examples/config/webuicfg.yaml`.
+The binary requires a config file and an available MongoDB deployment to operate. By default, the path for the config file is `./config/webuicfg.yaml` from the directory of the binary. The OCI image does not come with a config file preconfigured, but the repository contains an example at `examples/config/webuicfg.yaml`.
 
 `make deploy` takes care of quickly getting a running program. It will:
 

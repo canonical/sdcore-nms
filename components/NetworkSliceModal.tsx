@@ -74,7 +74,10 @@ const NetworkSliceModal = ({ networkSlice, toggleModal, onSave }: NetworkSliceMo
 
   const getUpfFromNetworkSlice = () => {
     if (networkSlice) {
-      return { hostname: networkSlice["site-info"]["upf"]["upf-name"], port: networkSlice["site-info"]["upf"]["upf-port"] };
+      return {
+        hostname: networkSlice["site-info"]?.["upf"]?.["upf-name"] ?? "",
+        port: networkSlice["site-info"]?.["upf"]?.["upf-port"] ?? "",
+      };
     } else {
       return {} as UpfItem;
     }
