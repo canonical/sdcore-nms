@@ -10,7 +10,7 @@ import {
 import { NetworkSlice } from "@/components/types";
 import { createNetworkSlice } from "@/utils/createNetworkSlice";
 import { editNetworkSlice } from "@/utils/editNetworkSlice";
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/utils/queryKeys";
 import { getUpfList, UpfItem } from "@/utils/getUpfList";
 import { getGnbList, GnbItem } from "@/utils/getGnbList";
