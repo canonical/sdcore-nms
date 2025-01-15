@@ -56,7 +56,7 @@ export const NetworkSliceTable: React.FC<NetworkSliceTableProps> = ({
             columns: [
               { content: "MCC" },
               {
-                content: slice["site-info"]?.plmn.mcc || "N/A",
+                content: slice["site-info"]?.plmn.mcc || "",
                 className: "u-align--right",
               },
             ],
@@ -66,7 +66,7 @@ export const NetworkSliceTable: React.FC<NetworkSliceTableProps> = ({
             columns: [
               { content: "MNC" },
               {
-                content: slice["site-info"]?.plmn.mnc || "N/A",
+                content: slice["site-info"]?.plmn.mnc || "",
                 className: "u-align--right",
               },
             ],
@@ -76,10 +76,14 @@ export const NetworkSliceTable: React.FC<NetworkSliceTableProps> = ({
             columns: [
               { content: "UPF" },
               {
-                content: `${slice["site-info"]?.upf?.["upf-name"] || "N/A"}:${
-                  slice["site-info"]?.upf?.["upf-port"] || "N/A"
-                }`,
-
+                content: (() => {
+                  const upfName = slice["site-info"]?.upf?.["upf-name"] ?? "";
+                  const upfPort = slice["site-info"]?.upf?.["upf-port"] ?? "";
+                  if (upfName === "" && upfPort === "") {
+                    return "";
+                  }
+                  return `${upfName}:${upfPort}`;
+                })(),
                 className: "u-align--right",
               },
             ],
@@ -90,7 +94,7 @@ export const NetworkSliceTable: React.FC<NetworkSliceTableProps> = ({
               { content: "gNodeBs" },
               {
                 content:
-                  slice?.["site-info"]?.gNodeBs?.length.toString() || "N/A",
+                  slice?.["site-info"]?.gNodeBs?.length.toString() || "0",
                 className: "u-align--right",
               },
             ],
