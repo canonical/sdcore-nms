@@ -157,7 +157,8 @@ export const NetworkSliceGroups: React.FC<NetworkSliceTableProps> = ({
         <MainTable
           headers={[
             {
-              content: deviceGroup?.["group-name"] || "N/A",
+              content: deviceGroup?.["group-name"] || "",
+              style: { textTransform: "none" },
             },
             {
               content:
@@ -177,7 +178,7 @@ export const NetworkSliceGroups: React.FC<NetworkSliceTableProps> = ({
                   content:
                     deviceGroup?.["ip-domain-expanded"]?.[
                     "ue-ip-pool"
-                    ] || "N/A",
+                    ] || "",
 
                   className: "u-align--right",
                 },
@@ -190,7 +191,7 @@ export const NetworkSliceGroups: React.FC<NetworkSliceTableProps> = ({
                   content:
                     deviceGroup?.["ip-domain-expanded"]?.[
                     "dns-primary"
-                    ] || "N/A",
+                    ] || "",
 
                   className: "u-align--right",
                 },
@@ -203,7 +204,7 @@ export const NetworkSliceGroups: React.FC<NetworkSliceTableProps> = ({
                   content:
                     deviceGroup?.["ip-domain-expanded"]?.[
                     "mtu"
-                    ] || "N/A",
+                    ] || "",
 
                   className: "u-align--right",
                 },
@@ -222,7 +223,7 @@ export const NetworkSliceGroups: React.FC<NetworkSliceTableProps> = ({
                     "ue-dnn-qos"
                     ]?.["dnn-mbr-downlink"] / 1_000_000
                     } Mbps`
-                    : "N/A",
+                    : "",
                   className: "u-align--right",
                 },
               ],
@@ -240,7 +241,7 @@ export const NetworkSliceGroups: React.FC<NetworkSliceTableProps> = ({
                     "ue-dnn-qos"
                     ]?.["dnn-mbr-uplink"] / 1_000_000
                     } Mbps`
-                    : "N/A",
+                    : "",
                   className: "u-align--right",
                 },
               ],
