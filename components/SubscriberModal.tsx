@@ -1,5 +1,5 @@
 "use client";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   ActionButton,
   Form,
@@ -37,13 +37,16 @@ type Props = {
 
 const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups, onSubmit }: Props) => {
   const queryClient = useQueryClient();
-  const auth = useAuth()
+  const auth = useAuth();
   const [apiError, setApiError] = useState<string | null>(null);
   const rawIMSI = subscriber?.ueId.split("-")[1];
+  const token = auth.user?.authToken || "";
 
-  const oldDeviceGroup = deviceGroups.find(
-    (deviceGroup) => deviceGroup["imsis"]?.includes(rawIMSI)
-  );
+  const oldDeviceGroup =
+      deviceGroups.find((deviceGroup) =>
+          deviceGroup["imsis"]?.includes(rawIMSI)
+      ) || {};
+
   const oldDeviceGroupName: string = oldDeviceGroup ? oldDeviceGroup["group-name"] : "";
 
   const oldNetworkSlice = slices.find(
@@ -53,33 +56,25 @@ const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups, onSubm
 
   const SubscriberSchema = Yup.object().shape({
     imsi: Yup.string()
-      .min(14)
-      .max(15)
-      .matches(/^[0-9]+$/, { message: "Only numbers are allowed." })
-      .required("IMSI must be 14 or 15 digits"),
+      .min(14, "IMSI must be at least 14 digits")
+      .max(15, "IMSI must be at most 15 digits")
+      .matches(/^[0-9]+$/, "Only numbers are allowed.")
+      .required("IMSI is required"),
     opc: Yup.string()
-      .length(32)
-      .matches(/^[A-Za-z0-9]+$/, {
-        message: "Only alphanumeric characters are allowed.",
-      })
-      .required("OPC must be a 32 character hexadecimal"),
+      .length(32, "OPC must be 32  hexadecimal characters")
+      .matches(/^[A-Za-z0-9]+$/, "Use valid hexadecimal characters.")
+      .required("OPC is required"),
     key: Yup.string()
-      .length(32)
-      .matches(/^[A-Za-z0-9]+$/, {
-        message: "Only alphanumeric characters are allowed.",
-      })
-      .required("Key must be a 32 character hexadecimal"),
+      .length(32, "Key must be 32 hexadecimal characters" )
+      .matches(/^[A-Za-z0-9]+$/, "Use valid hexadecimal characters.")
+      .required("Key is required"),
     sequenceNumber: Yup.string().required("Sequence number is required"),
-    deviceGroup: Yup.string().required(""),
+    selectedSlice: Yup.string().required("Network Slice selection is required"),
+    deviceGroup: Yup.string().required("Device Group selection is required"),
   });
 
-  const modalTitle = () => {
-    return subscriber && rawIMSI ? ("Edit Subscriber: " + rawIMSI) : "Create Subscriber"
-  }
-
-  const buttonText = () => {
-    return subscriber ? "Save Changes" : "Create"
-  }
+  const modalTitle = subscriber && rawIMSI ? `Edit Subscriber: ${rawIMSI}` : "Create Subscriber";
+  const buttonText = subscriber ? "Save Changes" : "Create";
 
   const formik = useFormik<SubscriberValues>({
     initialValues: {
@@ -99,9 +94,9 @@ const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups, onSubm
             opc: values.opc,
             key: values.key,
             sequenceNumber: values.sequenceNumber,
-            oldDeviceGroupName: oldDeviceGroupName,
+            oldDeviceGroupName,
             newDeviceGroupName: values.deviceGroup,
-            token: auth.user?.authToken ?? ""
+            token,
           });
         } else {
           await createSubscriber({
@@ -110,7 +105,7 @@ const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups, onSubm
             key: values.key,
             sequenceNumber: values.sequenceNumber,
             deviceGroupName: values.deviceGroup,
-            token: auth.user ? auth.user.authToken : ""
+            token,
           });
         }
         await handleRefresh(queryClient, auth.user?.authToken ?? "");
@@ -128,47 +123,33 @@ const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups, onSubm
   });
 
   const handleSliceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    void formik.setFieldValue("selectedSlice", e.target.value);
+    const selectedSliceName = e.target.value;
+    formik.setFieldValue("selectedSlice", selectedSliceName);
+
+    const selectedSlice = slices.find((slice) => slice["slice-name"] === selectedSliceName);
+    if (selectedSlice?.["site-device-group"]?.length === 1) {
+      formik.setFieldValue("deviceGroup", selectedSlice["site-device-group"][0]);
+    } else {
+      formik.setFieldValue("deviceGroup", "");
+    }
   };
 
   const handleDeviceGroupChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    void formik.setFieldValue("deviceGroup", e.target.value);
+    formik.setFieldValue("deviceGroup", e.target.value);
   };
 
-  const selectedSlice = slices.find(
-    (slice) => slice["slice-name"] === formik.values.selectedSlice,
-  );
-
-  const setDeviceGroup = useCallback(
-    (deviceGroup: string) => {
-      if (formik.values.deviceGroup !== deviceGroup) {
-        formik.setFieldValue("deviceGroup", deviceGroup);
-      }
-    },
-    [formik],
-  );
-
   const deviceGroupOptions = React.useMemo(() => {
-    return selectedSlice && selectedSlice["site-device-group"]
-      ? selectedSlice["site-device-group"]
-      : [];
-  }, [selectedSlice]);
+    const selectedSlice = slices.find(
+        (slice) => slice["slice-name"] === formik.values.selectedSlice,
+    );
+    return selectedSlice?.["site-device-group"] || [];
+  }, [formik.values.selectedSlice, slices]);
 
-  useEffect(() => {
-    if (subscriber && selectedSlice && oldNetworkSliceName === selectedSlice["slice-name"]) {
-      setDeviceGroup(oldDeviceGroupName);
-    }
-    else if (selectedSlice && selectedSlice["site-device-group"]?.length === 1) {
-      setDeviceGroup(selectedSlice["site-device-group"][0]);
-    } else {
-      setDeviceGroup("");
-    }
-  }, [subscriber, selectedSlice, oldNetworkSliceName, oldDeviceGroupName, setDeviceGroup, deviceGroupOptions]);
 
   return (
     <Modal
       close={toggleModal}
-      title={modalTitle()}
+      title={modalTitle}
       buttonRow={
         <>
           <ActionButton
@@ -178,7 +159,7 @@ const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups, onSubm
             disabled={!(formik.isValid && formik.dirty)}
             loading={formik.isSubmitting}
           >
-            {buttonText()}
+            {buttonText}
           </ActionButton>
         </>
       }
@@ -245,11 +226,7 @@ const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups, onSubm
             formik.touched.selectedSlice ? formik.errors.selectedSlice : null
           }
           options={[
-            {
-              disabled: true,
-              label: "Select an option",
-              value: "",
-            },
+            { disabled: true, label: "Select an option", value: "" },
             ...slices.map((slice) => ({
               label: slice["slice-name"],
               value: slice["slice-name"],
@@ -265,11 +242,7 @@ const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups, onSubm
           onChange={handleDeviceGroupChange}
           error={formik.touched.deviceGroup ? formik.errors.deviceGroup : null}
           options={[
-            {
-              disabled: true,
-              label: "Select an option",
-              value: "",
-            },
+            { disabled: true, label: "Select an option", value: "" },
             ...deviceGroupOptions.map((group) => ({
               label: group,
               value: group,

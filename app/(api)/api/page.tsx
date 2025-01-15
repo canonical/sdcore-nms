@@ -1,7 +1,6 @@
 "use client";
-
-import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
+import { useState } from "react";
 
 const DynamicReactSwagger = dynamic(() => import("./react-swagger"), {
   ssr: false,
@@ -10,23 +9,33 @@ const DynamicReactSwagger = dynamic(() => import("./react-swagger"), {
 
 export default function IndexPage() {
   const [spec, setSpec] = useState(null);
+  const [error, setError] = useState(false);
 
-  useEffect(() => {
-    async function fetchSpecs() {
+  (async function fetchSpecs() {
+    if (spec || error) return;
+    try {
       const response = await fetch("swagger/doc.json");
 
-      if (response.ok) {
+      if (!response.ok) throw new Error("Failed to fetch API docs");
         const fetchedSpec = await response.json();
         setSpec(fetchedSpec);
-      } else {
-        console.error("Failed to fetch API docs");
-      }
+    } catch (err) {
+        console.error("Error fetching Swagger specs:", err);
+        setError(true);
     }
+  })();
 
-    fetchSpecs();
-  }, []);
+  if (error) {
+    return <div>Error loading API documentation. Please try again later.</div>;
+  }
 
-  if (!spec) return <div>Loading...</div>;
+  if (!spec) {
+    return (
+        <div className="loading">
+          <span>Loading API documentation...</span>
+        </div>
+    );
+  }
 
   return (
     <section className="container">

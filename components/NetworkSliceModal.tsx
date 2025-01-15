@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Input,
   Notification,
@@ -10,7 +10,7 @@ import {
 import { NetworkSlice } from "@/components/types";
 import { createNetworkSlice } from "@/utils/createNetworkSlice";
 import { editNetworkSlice } from "@/utils/editNetworkSlice";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from "@/utils/queryKeys";
 import { getUpfList, UpfItem } from "@/utils/getUpfList";
 import { getGnbList, GnbItem } from "@/utils/getGnbList";
@@ -36,8 +36,8 @@ const NetworkSliceModal = ({ networkSlice, toggleModal, onSave }: NetworkSliceMo
   const auth = useAuth()
   const queryClient = useQueryClient();
   const [apiError, setApiError] = useState<string | null>(null);
-  const [upfApiError, setUpfApiError] = useState<string | null>(null);
   const [gnbApiError, setGnbApiError] = useState<string | null>(null);
+  const [upfApiError, setUpfApiError] = useState<string | null>(null);
 
   const NetworkSliceSchema = Yup.object().shape({
     name: Yup.string()
@@ -58,10 +58,16 @@ const NetworkSliceModal = ({ networkSlice, toggleModal, onSave }: NetworkSliceMo
       .required("MNC is required."),
     upf: Yup.object()
       .shape({ hostname: Yup.string().required("Please select a UPF.") })
+      .shape({ port: Yup.string().required("Please select a UPF.") })
       .required("Selecting a UPF is required."),
     gnbList: Yup.array()
-      .min(1)
-      .required("Selecting at least 1 gNodeB is required."),
+        .of(
+            Yup.object().shape({
+              name: Yup.string().required("gNodeB name is required."),
+              tac: Yup.string().required("gNodeB TAC is required."),
+            })
+        )
+        .min(1, "Selecting at least 1 gNodeB is required."),
   });
 
   const modalTitle = () => {
@@ -94,6 +100,14 @@ const NetworkSliceModal = ({ networkSlice, toggleModal, onSave }: NetworkSliceMo
     validationSchema: NetworkSliceSchema,
     onSubmit: async (values) => {
       try {
+        if (upfItems.length === 0) {
+          setUpfApiError("No available UPF. Please add at least one UPF.");
+          return;
+        }
+        if (gnbItems.length === 0) {
+          setGnbApiError("No available GNB. Please add at least one GNB.");
+          return;
+        }
         if (networkSlice) {
           await editNetworkSlice({
             name: values.name,
@@ -131,55 +145,29 @@ const NetworkSliceModal = ({ networkSlice, toggleModal, onSave }: NetworkSliceMo
     },
   });
 
-  const { data: upfList = [], isLoading: isUpfLoading, isError: isUpfError } = useQuery({
+  const upfQuery = useQuery({
     queryKey: [queryKeys.upfList, auth.user?.authToken],
-    queryFn: () => getUpfList(auth.user ? auth.user.authToken : ""),
-    enabled: auth.user ? true : false,
+    queryFn: () => getUpfList(auth.user!.authToken),
+    enabled: auth.user ? true : false
   });
 
-  useEffect(() => {
-    const checkUpfList = async () => {
-      if (isUpfError) {
-        setUpfApiError("Failed to retrieve the list of UPFs from the server.")
-      } else if (!isUpfLoading && upfList.length === 0) {
-        setUpfApiError("No available UPF. Please add at least one UPF.");
-      }
-    };
-    checkUpfList();
-  }, [isUpfLoading, isUpfError, upfList]);
-
-  const { data: gnbList = [], isLoading: isGnbLoading, isError: isGnbError } = useQuery({
+  const gnbQuery = useQuery({
     queryKey: [queryKeys.gnbList, auth.user?.authToken],
-    queryFn: () => getGnbList(auth.user ? auth.user.authToken : ""),
-    enabled: auth.user ? true : false,
+    queryFn: () => getGnbList(auth.user!.authToken),
+    enabled: auth.user ? true : false
   });
 
-  useEffect(() => {
-    const checkGnbList = async () => {
-      if (isGnbError) {
-        setGnbApiError("Failed to retrieve the list of GNBs from the server.")
-      } else if (!isGnbLoading && gnbList.length === 0) {
-        setGnbApiError("No available GNB. Please add at least one GNB.");
-      }
-    };
-    checkGnbList();
-  }, [isGnbLoading, isGnbError, gnbList]);
+  const upfItems = (upfQuery.data as UpfItem[]) || [];
+  const gnbItems = (gnbQuery.data as GnbItem[]) || [];
 
   const handleUpfChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const upf = upfList.find(
-      (item) => e.target.value === `${item.hostname}:${item.port}`,
-    );
+    const upf = upfItems.find((item: UpfItem) => e.target.value === `${item.hostname}:${item.port}`);
     void formik.setFieldValue("upf", upf);
   };
 
   const handleGnbChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedOptions = Array.from(e.target.selectedOptions);
-    const items = gnbList.filter((item) =>
-      selectedOptions.some(
-        (option) => option.value === `${item.name}:${item.tac}`,
-      ),
-    );
-    void formik.setFieldValue("gnbList", items);
+    const gnb = gnbItems.find((item: GnbItem) => e.target.value === `${item.name}:${item.tac}`);
+    void formik.setFieldValue("gnbList", [...formik.values.gnbList, gnb]);
   };
 
   const getGnbListValueAsString = () => {
@@ -191,6 +179,42 @@ const NetworkSliceModal = ({ networkSlice, toggleModal, onSave }: NetworkSliceMo
   const getUpfValueAsString = () => {
     return formik.values.upf.hostname ? `${formik.values.upf.hostname}:${formik.values.upf.port}` : "";
   };
+
+  const ErrorNotification = ({
+    error,
+  }: {
+    error: string | null;
+  }) => {
+    return error ? (
+        <Notification severity="negative" title="Error">
+          {error}
+        </Notification>
+    ) : null;
+  };
+
+  if (upfQuery.isLoading || gnbQuery.isLoading) {
+    return (
+        <Notification severity="information" title="Loading...">
+          Fetching data...
+        </Notification>
+    );
+  }
+
+  if (upfQuery.isError) {
+    return (
+        <Notification severity="negative" title="Error">
+          Failed to retrieve the list of UPFs from the server.
+        </Notification>
+    );
+  }
+
+  if (gnbQuery.isError) {
+    return (
+        <Notification severity="negative" title="Error">
+          Failed to retrieve the list of gNodeBs from the server.
+        </Notification>
+    );
+  }
 
   return (
     <Modal
@@ -208,21 +232,9 @@ const NetworkSliceModal = ({ networkSlice, toggleModal, onSave }: NetworkSliceMo
         </ActionButton>
       }
     >
-      {apiError && (
-        <Notification severity="negative" title="Error">
-          {apiError}
-        </Notification>
-      )}
-      {upfApiError && (
-        <Notification severity="negative" title="Error">
-          {upfApiError}
-        </Notification>
-      )}
-      {gnbApiError && (
-        <Notification severity="negative" title="Error">
-          {gnbApiError}
-        </Notification>
-      )}
+      {apiError && <ErrorNotification error={apiError} />}
+      {upfApiError && <ErrorNotification error={upfApiError} />}
+      {gnbApiError && <ErrorNotification error={gnbApiError} />}
       <Form>
         <Input
           type="text"
@@ -272,7 +284,7 @@ const NetworkSliceModal = ({ networkSlice, toggleModal, onSave }: NetworkSliceMo
               label: "Select an option",
               value: "",
             },
-            ...upfList.map((upf) => ({
+            ...upfItems.map((upf) => ({
               label: `${upf.hostname}:${upf.port}`,
               value: `${upf.hostname}:${upf.port}`,
             })),
@@ -289,7 +301,7 @@ const NetworkSliceModal = ({ networkSlice, toggleModal, onSave }: NetworkSliceMo
               disabled: true,
               label: "Select...",
             },
-            ...gnbList.map((gnb) => ({
+            ...gnbItems.map((gnb) => ({
               label: `${gnb.name} (tac:${gnb.tac})`,
               value: `${gnb.name}:${gnb.tac}`,
             })),
