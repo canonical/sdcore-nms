@@ -33,11 +33,15 @@ deploy: rockcraft.yaml
 	lxc exec nms -- snap install rockcraft --classic
 	lxc exec nms -- docker pull mongo:noble 	
 	@if [ "$$(lxc exec nms -- docker ps 2> /dev/null | grep mongodb > /dev/null; echo $$?)" = 1 ]; then \
-		echo "creating and running mongodb in Docker"; \
+		echo "creating and running MongoDB as a replica set in Docker"; \
 		lxc exec nms -- docker run -d \
 			--name mongodb \
 			--network host \
-			mongo:noble; \
+			-e MONGO_REPLICA_SET_NAME=rs0 \
+			mongo:noble --replSet rs0; \
+		sleep 10; \
+		echo "Initializing replica set"; \
+		lxc exec nms -- docker exec mongodb mongosh --eval 'rs.initiate({_id: "rs0", members: [{_id: 0, host: "127.0.0.1:27017"}]})'; \
 	fi
 
 	lxc file push $(ARTIFACT_FOLDER)/$(ROCK_ARTIFACT_NAME) nms/root/$(ROCK_ARTIFACT_NAME)
@@ -70,6 +74,10 @@ logs:
 clean:
 	rm -rf $(BUILD_FOLDER)
 	rm -rf $(ARTIFACT_FOLDER)
+	-lxc stop nms
+	-lxc delete nms
+
+clean-vm:
 	-lxc stop nms
 	-lxc delete nms
 
