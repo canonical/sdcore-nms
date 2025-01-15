@@ -40,6 +40,7 @@ export const editNetworkSlice = async ({
     sliceData["site-info"]["plmn"].mcc = mcc
     sliceData["site-info"]["plmn"].mnc = mnc
     sliceData["site-info"]["gNodeBs"] = gnbList
+    sliceData["site-info"]["upf"] = sliceData["site-info"]["upf"] ?? {};
     sliceData["site-info"]["upf"]["upf-name"] = upfName
     sliceData["site-info"]["upf"]["upf-port"] = upfPort
 
