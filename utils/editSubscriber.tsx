@@ -57,7 +57,7 @@ const updateSubscriber = async (subscriberData: any, token: string) => {
     var existingSubscriberData = await getSubscriberResponse.json();
     if (!getSubscriberResponse.ok ||
       (!existingSubscriberData["AuthenticationSubscription"]["authenticationMethod"] &&
-        !existingSubscriberData["AmPolicyData"]["subscCats"])) {
+        !existingSubscriberData["AccessAndMobilitySubscriptionData"]["nssai"])) {
       throw new Error("Subscriber does not exist.");
     }
 
