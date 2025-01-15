@@ -83,9 +83,9 @@ const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups, onSubm
   const formik = useFormik<SubscriberValues>({
     initialValues: {
       imsi: rawIMSI || "",
-      opc: subscriber?.["AuthenticationSubscription"]["opc"]["opcValue"] || "",
-      key: subscriber?.["AuthenticationSubscription"]["permanentKey"]["permanentKeyValue"] || "",
-      sequenceNumber: subscriber?.["AuthenticationSubscription"]["sequenceNumber"] || "",
+      opc: subscriber?.["AuthenticationSubscription"]?.["opc"]?.["opcValue"] ?? "",
+      key: subscriber?.["AuthenticationSubscription"]?.["permanentKey"]?.["permanentKeyValue"] ?? "",
+      sequenceNumber: subscriber?.["AuthenticationSubscription"]?.["sequenceNumber"] ?? "",
       selectedSlice: oldNetworkSliceName,
       deviceGroup: oldDeviceGroupName,
     },
