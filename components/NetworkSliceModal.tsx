@@ -57,17 +57,18 @@ const NetworkSliceModal = ({ networkSlice, toggleModal, onSave }: NetworkSliceMo
       .max(3)
       .required("MNC is required."),
     upf: Yup.object()
-      .shape({ hostname: Yup.string().required("Please select a UPF.") })
-      .shape({ port: Yup.string().required("Please select a UPF.") })
+      .shape({ hostname: Yup.string().required("A UPF hostname is required.") })
+      .shape({ port: Yup.string().required("A UPF port is required.") })
       .required("Selecting a UPF is required."),
     gnbList: Yup.array()
+        .required("Selecting at least 1 gNodeB is required.")
         .of(
             Yup.object().shape({
               name: Yup.string().required("gNodeB name is required."),
               tac: Yup.string().required("gNodeB TAC is required."),
             })
         )
-        .min(1, "Selecting at least 1 gNodeB is required."),
+        .min(1)
   });
 
   const modalTitle = () => {
@@ -100,14 +101,6 @@ const NetworkSliceModal = ({ networkSlice, toggleModal, onSave }: NetworkSliceMo
     validationSchema: NetworkSliceSchema,
     onSubmit: async (values) => {
       try {
-        if (upfItems.length === 0) {
-          setUpfApiError("No available UPF. Please add at least one UPF.");
-          return;
-        }
-        if (gnbItems.length === 0) {
-          setGnbApiError("No available GNB. Please add at least one GNB.");
-          return;
-        }
         if (networkSlice) {
           await editNetworkSlice({
             name: values.name,
@@ -201,19 +194,19 @@ const NetworkSliceModal = ({ networkSlice, toggleModal, onSave }: NetworkSliceMo
   }
 
   if (upfQuery.isError) {
-    return (
-        <Notification severity="negative" title="Error">
-          Failed to retrieve the list of UPFs from the server.
-        </Notification>
-    );
+    setUpfApiError("Failed to retrieve UPFs.");
   }
 
   if (gnbQuery.isError) {
-    return (
-        <Notification severity="negative" title="Error">
-          Failed to retrieve the list of gNodeBs from the server.
-        </Notification>
-    );
+    setGnbApiError("Failed to retrieve gNodeBs.");
+  }
+
+  if (upfItems.length === 0 && !upfApiError) {
+    setUpfApiError("No UPFs available. Please register a UPF.");
+  }
+
+  if (gnbItems.length === 0 && !gnbApiError) {
+    setGnbApiError("No gNodeBs available. Please register at least one gNodeB.");
   }
 
   return (

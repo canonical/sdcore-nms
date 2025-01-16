@@ -61,15 +61,14 @@ const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups, onSubm
       .matches(/^[0-9]+$/, "Only numbers are allowed.")
       .required("IMSI is required"),
     opc: Yup.string()
-      .length(32, "OPC must be 32  hexadecimal characters")
-      .matches(/^[A-Za-z0-9]+$/, "Use valid hexadecimal characters.")
+      .length(32, "OPC must be 32 hexadecimal characters")
+      .matches(/^[A-Fa-f0-9]+$/, "Use valid hexadecimal characters.")
       .required("OPC is required"),
     key: Yup.string()
       .length(32, "Key must be 32 hexadecimal characters" )
-      .matches(/^[A-Za-z0-9]+$/, "Use valid hexadecimal characters.")
+      .matches(/^[A-Fa-f0-9]+$/, "Use valid hexadecimal characters.")
       .required("Key is required"),
     sequenceNumber: Yup.string().required("Sequence number is required"),
-    selectedSlice: Yup.string().required("Network Slice selection is required"),
     deviceGroup: Yup.string().required("Device Group selection is required"),
   });
 
@@ -94,9 +93,9 @@ const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups, onSubm
             opc: values.opc,
             key: values.key,
             sequenceNumber: values.sequenceNumber,
-            oldDeviceGroupName,
+            oldDeviceGroupName: oldDeviceGroupName,
             newDeviceGroupName: values.deviceGroup,
-            token,
+            token: token,
           });
         } else {
           await createSubscriber({
@@ -105,7 +104,7 @@ const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups, onSubm
             key: values.key,
             sequenceNumber: values.sequenceNumber,
             deviceGroupName: values.deviceGroup,
-            token,
+            token: token,
           });
         }
         await handleRefresh(queryClient, auth.user?.authToken ?? "");

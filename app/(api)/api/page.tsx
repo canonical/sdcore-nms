@@ -17,11 +17,11 @@ export default function IndexPage() {
       const response = await fetch("swagger/doc.json");
 
       if (!response.ok) throw new Error("Failed to fetch API docs");
-        const fetchedSpec = await response.json();
-        setSpec(fetchedSpec);
+      const fetchedSpec = await response.json();
+      setSpec(fetchedSpec);
     } catch (err) {
-        console.error("Error fetching Swagger specs:", err);
-        setError(true);
+      console.error("Error fetching Swagger specs:", err);
+      setError(true);
     }
   })();
 
