@@ -55,11 +55,15 @@ const updateSubscriber = async (subscriberData: any, token: string) => {
 
     // Workaround for https://github.com/omec-project/webconsole/issues/109
     var existingSubscriberData = await getSubscriberResponse.json();
-    if (!getSubscriberResponse.ok || !existingSubscriberData["AuthenticationSubscription"]["authenticationMethod"]) {
+    if (!getSubscriberResponse.ok ||
+      (!existingSubscriberData["AuthenticationSubscription"]["authenticationMethod"] &&
+        !existingSubscriberData["AccessAndMobilitySubscriptionData"]["nssai"])) {
       throw new Error("Subscriber does not exist.");
     }
 
+    existingSubscriberData["AuthenticationSubscription"]["opc"] = existingSubscriberData["AuthenticationSubscription"]["opc"] ?? {};
     existingSubscriberData["AuthenticationSubscription"]["opc"]["opcValue"] = subscriberData.opc;
+    existingSubscriberData["AuthenticationSubscription"]["permanentKey"] = existingSubscriberData["AuthenticationSubscription"]["permanentKey"] ?? {};
     existingSubscriberData["AuthenticationSubscription"]["permanentKey"]["permanentKeyValue"] = subscriberData.key;
     existingSubscriberData["AuthenticationSubscription"]["sequenceNumber"] = subscriberData.sequenceNumber;
 
