@@ -44,6 +44,7 @@ const NetworkConfiguration = () => {
         // Invalidate and refetch the network slices query
         queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
         // Close model on success
+        window.location.reload();
         setCreateModalVisible(false);
         // InvalidateQueries does not work in the first attempt
         // So, window is reloaded.
