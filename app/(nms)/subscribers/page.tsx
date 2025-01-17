@@ -66,6 +66,7 @@ const Subscribers = () => {
       // On successful addition, invalidate the query to refresh
       handleRefresh()
       // Close model
+      window.location.reload();
       setCreateModalVisible(false);
     },
   });
