@@ -20,8 +20,10 @@ export default function IndexPage() {
       const fetchedSpec = await response.json();
       setSpec(fetchedSpec);
     } catch (err) {
-      console.error("Error fetching Swagger specs:", err);
-      setError(true);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error fetching Swagger specs:", err);
+        setError(true);
+      }
     }
   })();
 
