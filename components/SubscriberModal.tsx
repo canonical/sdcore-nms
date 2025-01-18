@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useMemo, useState} from "react";
 import {
   ActionButton,
   Form,
@@ -42,17 +42,20 @@ const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups, onSubm
   const rawIMSI = subscriber?.ueId.split("-")[1];
   const token = auth.user?.authToken || "";
 
-  const oldDeviceGroup =
-      deviceGroups.find((deviceGroup) =>
-          deviceGroup["imsis"]?.includes(rawIMSI)
-      ) || {};
+  const oldNetworkSlice = slices.find(
+      (slice) => slice["site-device-group"]?.includes(oldDeviceGroupName)
+  );
+  const oldNetworkSliceName: string = oldNetworkSlice ? oldNetworkSlice["slice-name"] : "";
+  const oldDeviceGroup = deviceGroups.find(
+    (deviceGroup) => deviceGroup["imsis"]?.includes(rawIMSI)
+  );
 
   const oldDeviceGroupName: string = oldDeviceGroup ? oldDeviceGroup["group-name"] : "";
 
-  const oldNetworkSlice = slices.find(
-    (slice) => slice["site-device-group"]?.includes(oldDeviceGroupName)
-  );
-  const oldNetworkSliceName: string = oldNetworkSlice ? oldNetworkSlice["slice-name"] : "";
+  const defaultDeviceGroupOptions = useMemo(() => {
+    const initialSlice = slices.find((slice) => slice["slice-name"] === oldNetworkSliceName);
+    return initialSlice?.["site-device-group"] || [];
+  }, [slices, oldNetworkSliceName]);
 
   const SubscriberSchema = Yup.object().shape({
     imsi: Yup.string()
@@ -81,8 +84,8 @@ const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups, onSubm
       opc: subscriber?.["AuthenticationSubscription"]?.["opc"]?.["opcValue"] ?? "",
       key: subscriber?.["AuthenticationSubscription"]?.["permanentKey"]?.["permanentKeyValue"] ?? "",
       sequenceNumber: subscriber?.["AuthenticationSubscription"]?.["sequenceNumber"] ?? "",
-      selectedSlice: oldNetworkSliceName,
-      deviceGroup: oldDeviceGroupName,
+      selectedSlice: oldNetworkSliceName || "",
+      deviceGroup: oldDeviceGroup || (defaultDeviceGroupOptions.length === 1 ? defaultDeviceGroupOptions[0] : ""),
     },
     validationSchema: SubscriberSchema,
     onSubmit: async (values) => {
@@ -93,7 +96,7 @@ const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups, onSubm
             opc: values.opc,
             key: values.key,
             sequenceNumber: values.sequenceNumber,
-            oldDeviceGroupName: oldDeviceGroupName,
+            oldDeviceGroupName: oldDeviceGroup,
             newDeviceGroupName: values.deviceGroup,
             token: token,
           });
@@ -123,27 +126,22 @@ const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups, onSubm
 
   const handleSliceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedSliceName = e.target.value;
-    formik.setFieldValue("selectedSlice", selectedSliceName);
 
     const selectedSlice = slices.find((slice) => slice["slice-name"] === selectedSliceName);
-    if (selectedSlice?.["site-device-group"]?.length === 1) {
-      formik.setFieldValue("deviceGroup", selectedSlice["site-device-group"][0]);
-    } else {
-      formik.setFieldValue("deviceGroup", "");
-    }
+    const deviceGroupOptions = selectedSlice?.["site-device-group"] || [];
+
+    formik.setFieldValue("selectedSlice", selectedSliceName);
+    formik.setFieldValue("deviceGroup", deviceGroupOptions.length === 1 ? deviceGroupOptions[0] : "");
   };
 
   const handleDeviceGroupChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     formik.setFieldValue("deviceGroup", e.target.value);
   };
 
-  const deviceGroupOptions = React.useMemo(() => {
-    const selectedSlice = slices.find(
-        (slice) => slice["slice-name"] === formik.values.selectedSlice,
-    );
+  const deviceGroupOptions = useMemo(() => {
+    const selectedSlice = slices.find((slice) => slice["slice-name"] === formik.values.selectedSlice);
     return selectedSlice?.["site-device-group"] || [];
   }, [formik.values.selectedSlice, slices]);
-
 
   return (
     <Modal
