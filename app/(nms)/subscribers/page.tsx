@@ -60,7 +60,7 @@ const Subscribers = () => {
   });
 
   // Mutation to add a subscriber
-  const mutation = useMutation({
+  const addSubscriberMutation = useMutation({
     mutationFn: (newSubscriber: Subscriber) => addSubscriber(newSubscriber, auth.user?.authToken || ""),
     onSuccess: () => {
       // On successful addition, invalidate the query to refresh
@@ -73,7 +73,7 @@ const Subscribers = () => {
   const handleCreateSubscriber = async (newSubscriber: Subscriber) => {
     try {
       // Trigger mutation
-      await mutation.mutateAsync(newSubscriber);
+      await addSubscriberMutation.mutateAsync(newSubscriber);
     } catch (error) {
       console.error("Error adding subscriber:", error);
     }
@@ -97,12 +97,20 @@ const Subscribers = () => {
     return response.json();
   };
 
-  const editMutation = useMutation({
+  const editSubscriberMutation = useMutation({
     mutationFn: (updatedSubscriber: Subscriber) =>
-      editSubscriber(updatedSubscriber, auth.user?.authToken || ""), // Perform edit request
-    onSuccess: () => {
-      handleRefresh();
-      // Close the modal after success
+        editSubscriber(updatedSubscriber, auth.user?.authToken || ""),
+    onSuccess: (updatedSubscriber) => {
+      // Update client cache data
+      queryClient.setQueryData([queryKeys.subscribers, auth.user?.authToken], (oldSubscribers?: Subscriber[]) => {
+        if (!oldSubscribers) return [];
+        return oldSubscribers.map((subscriber) =>
+            subscriber.ueId === updatedSubscriber.ueId ? { ...subscriber, ...updatedSubscriber } : subscriber
+        );
+      });
+
+      // Invalidate queries to sync with the backend later
+      queryClient.invalidateQueries({ queryKey: [queryKeys.subscribers, auth.user?.authToken], refetchActive: true });
       setEditModalVisible(false);
     },
     onError: (error) => {
@@ -116,12 +124,18 @@ const Subscribers = () => {
 
   const deleteSubscriberMutation = useMutation({
     mutationFn: async (subscriberImsi: string) => {
-      await deleteSubscriberWithImsi(subscriberImsi)
+      await deleteSubscriberWithImsi(subscriberImsi);
     },
-    onSuccess: () => {
-      // Invalidate and refetch subscriber
-      queryClient.invalidateQueries({ queryKey: [queryKeys.subscribers] });
-      window.location.reload();
+    onSuccess: (_, subscriberImsi) => {
+      // Update client cache immediately
+      queryClient.setQueryData([queryKeys.subscribers, auth.user?.authToken], (oldSubscribers?: Subscriber[]) => {
+        if (!oldSubscribers) return [];
+        return oldSubscribers.filter(
+            (subscriber) => subscriber.ueId.split("-")[1] !== subscriberImsi
+        );
+      });
+
+      queryClient.invalidateQueries({ queryKey: [queryKeys.subscribers, auth.user?.authToken], refetchActive: true });
     },
     onError: (error) => {
       console.error("Error deleting subscriber:", error);
@@ -130,19 +144,19 @@ const Subscribers = () => {
 
   const handleEditSubscriber = async (updatedSubscriber: Subscriber) => {
     try {
-      await editMutation.mutateAsync(updatedSubscriber);
+      editSubscriberMutation.mutate(updatedSubscriber);
     } catch (error) {
       console.error("Error editing subscriber:", error);
     }
   };
 
   const handleConfirmDelete = async (subscriberImsi: string) => {
-      deleteSubscriberMutation.mutate(subscriberImsi, {
-      onSuccess: () => {
-        handleRefresh();
-      },
-    });
-  };
+    try {
+      deleteSubscriberMutation.mutate(subscriberImsi);
+    } catch (error) {
+      console.error("Error deleting subscriber:", error);
+    }
+  }
 
   const { data: deviceGroups = [], isLoading: isDeviceGroupsLoading } = useQuery({
     queryKey: [queryKeys.deviceGroups, auth.user?.authToken],
@@ -164,11 +178,24 @@ const Subscribers = () => {
   }
 
   const handleRefresh = async () => {
-    await queryClient.invalidateQueries({ queryKey: [queryKeys.subscribers] });
-    await queryClient.invalidateQueries({ queryKey: [queryKeys.deviceGroups] });
-    await queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
+    try {
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: [queryKeys.subscribers, auth.user?.authToken],
+          refetchActive: true, // Automatically fetch updated data
+        }),
+        queryClient.invalidateQueries({ queryKey: [queryKeys.deviceGroups, auth.user?.authToken],
+          refetchActive: true,
+        }),
+        queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices, auth.user?.authToken],
+          refetchActive: true,
+        }),
+      ]);
+      console.log("Refreshed queries.");
+    } catch (error) {
+      console.error("Error refreshing queries:", error);
+    }
   };
-
 
   const toggleCreateModal = () => setCreateModalVisible((prev) => !prev);
   const toggleEditModal = () => setEditModalVisible((prev) => !prev);
@@ -275,7 +302,7 @@ const Subscribers = () => {
                          subscriber={subscriber}
                          slices={slices}
                          deviceGroups={deviceGroups}
-                         onSubmit={handleEditSubscriber}
+                         onSubmit={(updatedSubscriber: any) => handleEditSubscriber(updatedSubscriber)}
         />}
     </>
   );

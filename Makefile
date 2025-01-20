@@ -1,5 +1,5 @@
 BUILD_FOLDER := build
-ARTIFACT_FOLDER := artifacts
+ARTIFACT_FOLDER := .
 
 WEBCONSOLE_PROJECT_DIR := webconsole-src
 WEBCONSOLE_FILES := $(shell find $(BUILD_FOLDER)/$(WEBCONSOLE_PROJECT_DIR) -regex ".*\.go" 2> /dev/null)
@@ -9,7 +9,7 @@ WEBCONSOLE_ARTIFACT_NAME := webconsole
 NMS_FILES := $(shell find app components images utils -type f) package.json package-lock.json
 NMS_ARTIFACT_NAME := nms-static
 
-ROCK_ARTIFACT_NAME := sdcore-nms.rock
+ROCK_ARTIFACT_NAME := sdcore-nms_1.1.0_amd64.rock
 
 $(shell   mkdir -p $(BUILD_FOLDER))
 $(shell   mkdir -p $(ARTIFACT_FOLDER))
@@ -31,7 +31,7 @@ deploy: rockcraft.yaml
 	sleep 10
 	lxc exec nms -- snap install docker --classic
 	lxc exec nms -- snap install rockcraft --classic
-	lxc exec nms -- docker pull mongo:noble 	
+	lxc exec nms -- docker pull mongo:noble
 	@if [ "$$(lxc exec nms -- docker ps 2> /dev/null | grep mongodb > /dev/null; echo $$?)" = 1 ]; then \
 		echo "creating and running MongoDB as a replica set in Docker"; \
 		lxc exec nms -- docker run -d \
@@ -52,7 +52,7 @@ deploy: rockcraft.yaml
 		lxc exec nms -- docker rm nms; \
 	fi
 	
-	lxc exec nms -- rockcraft.skopeo --insecure-policy copy oci-archive:sdcore-nms.rock docker-daemon:nms:latest
+	lxc exec nms -- rockcraft.skopeo --insecure-policy copy oci-archive:sdcore-nms_1.1.0_amd64.rock docker-daemon:nms:latest
 	lxc exec nms -- docker run -d \
 		--name nms \
 		-e WEBUI_ENDPOINT=$$(lxc info nms | grep enp5s0 -A 15 | grep inet: | grep -oE '([0-9]{1,3}\.){3}[0-9]{1,3}'):5000 \
