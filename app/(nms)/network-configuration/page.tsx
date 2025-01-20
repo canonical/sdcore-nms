@@ -45,6 +45,7 @@ const NetworkConfiguration = () => {
         queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
         // Close model on success
         setCreateModalVisible(false);
+        window.location.reload();
     },
     onError: (error) => {
        console.error("Error adding network slice:", error);
