@@ -18,6 +18,7 @@ import { queryKeys } from "@/utils/queryKeys";
 import PageHeader from "@/components/PageHeader";
 import PageContent from "@/components/PageContent";
 import { useAuth } from "@/utils/auth";
+import {handleRefresh} from "@/utils/refreshQueries";
 
 export type Subscriber = {
   plmnID: string;
@@ -63,8 +64,6 @@ const Subscribers = () => {
   const addSubscriberMutation = useMutation({
     mutationFn: (newSubscriber: Subscriber) => addSubscriber(newSubscriber, auth.user?.authToken || ""),
     onSuccess: () => {
-      // On successful addition, invalidate the query to refresh
-      handleRefresh()
       // Close model
       setCreateModalVisible(false);
     },
@@ -72,7 +71,6 @@ const Subscribers = () => {
 
   const handleCreateSubscriber = async (newSubscriber: Subscriber) => {
     try {
-      // Trigger mutation
       await addSubscriberMutation.mutateAsync(newSubscriber);
     } catch (error) {
       console.error("Error adding subscriber:", error);
@@ -99,18 +97,9 @@ const Subscribers = () => {
 
   const editSubscriberMutation = useMutation({
     mutationFn: (updatedSubscriber: Subscriber) =>
-        editSubscriber(updatedSubscriber, auth.user?.authToken || ""),
-    onSuccess: (updatedSubscriber) => {
-      // Update client cache data
-      queryClient.setQueryData([queryKeys.subscribers, auth.user?.authToken], (oldSubscribers?: Subscriber[]) => {
-        if (!oldSubscribers) return [];
-        return oldSubscribers.map((subscriber) =>
-            subscriber.ueId === updatedSubscriber.ueId ? { ...subscriber, ...updatedSubscriber } : subscriber
-        );
-      });
-
-      // Invalidate queries to sync with the backend later
-      queryClient.invalidateQueries({ queryKey: [queryKeys.subscribers, auth.user?.authToken], refetchActive: true });
+      editSubscriber(updatedSubscriber, auth.user?.authToken || ""),
+    onSuccess: () => {
+      // Close model
       setEditModalVisible(false);
     },
     onError: (error) => {
@@ -126,16 +115,10 @@ const Subscribers = () => {
     mutationFn: async (subscriberImsi: string) => {
       await deleteSubscriberWithImsi(subscriberImsi);
     },
-    onSuccess: (_, subscriberImsi) => {
-      // Update client cache immediately
-      queryClient.setQueryData([queryKeys.subscribers, auth.user?.authToken], (oldSubscribers?: Subscriber[]) => {
-        if (!oldSubscribers) return [];
-        return oldSubscribers.filter(
-            (subscriber) => subscriber.ueId.split("-")[1] !== subscriberImsi
-        );
-      });
-
-      queryClient.invalidateQueries({ queryKey: [queryKeys.subscribers, auth.user?.authToken], refetchActive: true });
+    onSuccess: () => {
+      // Invalidate queries does not work in the first attempt
+      // Hence, window is reloaded.
+      window.location.reload();
     },
     onError: (error) => {
       console.error("Error deleting subscriber:", error);
@@ -176,26 +159,6 @@ const Subscribers = () => {
     }
     return <p>{subscribersQueryError.message}</p>
   }
-
-  const handleRefresh = async () => {
-    try {
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: [queryKeys.subscribers, auth.user?.authToken],
-          refetchActive: true, // Automatically fetch updated data
-        }),
-        queryClient.invalidateQueries({ queryKey: [queryKeys.deviceGroups, auth.user?.authToken],
-          refetchActive: true,
-        }),
-        queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices, auth.user?.authToken],
-          refetchActive: true,
-        }),
-      ]);
-      console.log("Refreshed queries.");
-    } catch (error) {
-      console.error("Error refreshing queries:", error);
-    }
-  };
 
   const toggleCreateModal = () => setCreateModalVisible((prev) => !prev);
   const toggleEditModal = () => setEditModalVisible((prev) => !prev);
@@ -269,7 +232,7 @@ const Subscribers = () => {
         <Button
           hasIcon
           appearance="base"
-          onClick={handleRefresh}
+          onClick={() => handleRefresh(queryClient, auth.user?.authToken)}
           title="refresh subscriber list"
         >
           <SyncOutlinedIcon style={{ color: "#666" }} />
