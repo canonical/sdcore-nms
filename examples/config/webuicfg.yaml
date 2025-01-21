@@ -4,17 +4,80 @@ configuration:
     syncUrl: ""
   mongodb:
     name: free5gc
-    url: mongodb://relation-117:WKu41vhksRAIipwAb3XZThofkIXQmzYa@mongodb-0.mongodb-endpoints:27017/free5gc?replicaSet=mongodb&authSource=admin
+    url: mongodb://localhost:27017
     authKeysDbName: authentication
-    authUrl: mongodb://relation-118:WOhBfSjJrIZVv3PmmE5SBqezYct2CTnC@mongodb-0.mongodb-endpoints:27017/authentication?replicaSet=mongodb&authSource=admin
-    webuiDbName: webui
-    webuiDbUrl: mongodb://relation-116:8xO84US2L5XwjFGIzA2ngBr6zKp37y2w@mongodb-0.mongodb-endpoints:27017/webui?replicaSet=mongodb&authSource=admin
+    authUrl: mongodb://localhost:27017
+    webuiDbName: mydatabase
+    webuiDbUrl: mongodb://localhost:27017
   spec-compliant-sdf: false
-  enableAuthentication: false
+  enableAuthentication: true
 info:
   description: WebUI initial local configuration
   version: 1.0.0
-  http-version: 2
 logger:
+  AMF:
+    ReportCaller: false
+    debugLevel: info
+  AUSF:
+    ReportCaller: false
+    debugLevel: info
+  Aper:
+    ReportCaller: false
+    debugLevel: info
+  CommonConsumerTest:
+    ReportCaller: false
+    debugLevel: info
+  FSM:
+    ReportCaller: false
+    debugLevel: info
+  MongoDBLibrary:
+    ReportCaller: false
+    debugLevel: info
+  N3IWF:
+    ReportCaller: false
+    debugLevel: info
+  NAS:
+    ReportCaller: false
+    debugLevel: info
+  NGAP:
+    ReportCaller: false
+    debugLevel: info
+  NRF:
+    ReportCaller: false
+    debugLevel: info
+  NamfComm:
+    ReportCaller: false
+    debugLevel: info
+  NamfEventExposure:
+    ReportCaller: false
+    debugLevel: info
+  NsmfPDUSession:
+    ReportCaller: false
+    debugLevel: info
+  NudrDataRepository:
+    ReportCaller: false
+    debugLevel: info
+  OpenApi:
+    ReportCaller: false
+    debugLevel: info
+  PCF:
+    ReportCaller: false
+    debugLevel: info
+  PFCP:
+    ReportCaller: false
+    debugLevel: info
+  PathUtil:
+    ReportCaller: false
+    debugLevel: info
+  SMF:
+    ReportCaller: false
+    debugLevel: info
+  UDM:
+    ReportCaller: false
+    debugLevel: info
+  UDR:
+    ReportCaller: false
+    debugLevel: info
   WEBUI:
+    ReportCaller: false
     debugLevel: info
