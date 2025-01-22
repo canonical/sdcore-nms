@@ -69,7 +69,6 @@ const Subscribers = () => {
         refetchActive: true,
       });
       // Close model
-      window.location.reload();
       setCreateModalVisible(false);
     },
   });

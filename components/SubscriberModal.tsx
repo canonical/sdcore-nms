@@ -49,7 +49,6 @@ const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups, onSubm
   const oldDeviceGroup = deviceGroups.find(
     (deviceGroup) => deviceGroup["imsis"]?.includes(rawIMSI)
   );
-
   const oldDeviceGroupName: string = oldDeviceGroup ? oldDeviceGroup["group-name"] : "";
 
   const defaultDeviceGroupOptions = useMemo(() => {
