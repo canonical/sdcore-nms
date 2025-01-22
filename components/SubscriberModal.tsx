@@ -39,22 +39,18 @@ const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups, onSubm
   const queryClient = useQueryClient();
   const auth = useAuth();
   const [apiError, setApiError] = useState<string | null>(null);
-  const rawIMSI = subscriber?.ueId.split("-")[1];
+  const rawIMSI = subscriber?.ueId?.split("-")[1] || "";
   const token = auth.user?.authToken || "";
 
-  const oldNetworkSlice = slices.find(
-      (slice) => slice["site-device-group"]?.includes(oldDeviceGroupName)
-  );
-  const oldNetworkSliceName: string = oldNetworkSlice ? oldNetworkSlice["slice-name"] : "";
   const oldDeviceGroup = deviceGroups.find(
     (deviceGroup) => deviceGroup["imsis"]?.includes(rawIMSI)
   );
   const oldDeviceGroupName: string = oldDeviceGroup ? oldDeviceGroup["group-name"] : "";
 
-  const defaultDeviceGroupOptions = useMemo(() => {
-    const initialSlice = slices.find((slice) => slice["slice-name"] === oldNetworkSliceName);
-    return initialSlice?.["site-device-group"] || [];
-  }, [slices, oldNetworkSliceName]);
+  const oldNetworkSlice = slices.find(
+    (slice) => slice["site-device-group"]?.includes(oldDeviceGroupName)
+  );
+  const oldNetworkSliceName: string = oldNetworkSlice ? oldNetworkSlice["slice-name"] : "";
 
   const SubscriberSchema = Yup.object().shape({
     imsi: Yup.string()
@@ -83,8 +79,8 @@ const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups, onSubm
       opc: subscriber?.["AuthenticationSubscription"]?.["opc"]?.["opcValue"] ?? "",
       key: subscriber?.["AuthenticationSubscription"]?.["permanentKey"]?.["permanentKeyValue"] ?? "",
       sequenceNumber: subscriber?.["AuthenticationSubscription"]?.["sequenceNumber"] ?? "",
-      selectedSlice: oldNetworkSliceName || "",
-      deviceGroup: oldDeviceGroup || (defaultDeviceGroupOptions.length === 1 ? defaultDeviceGroupOptions[0] : ""),
+      selectedSlice: oldNetworkSliceName,
+      deviceGroup: oldDeviceGroupName,
     },
     validationSchema: SubscriberSchema,
     onSubmit: async (values) => {
@@ -95,7 +91,7 @@ const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups, onSubm
             opc: values.opc,
             key: values.key,
             sequenceNumber: values.sequenceNumber,
-            oldDeviceGroupName: oldDeviceGroup,
+            oldDeviceGroupName: oldDeviceGroupName,
             newDeviceGroupName: values.deviceGroup,
             token: token,
           });
@@ -129,8 +125,11 @@ const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups, onSubm
     const selectedSlice = slices.find((slice) => slice["slice-name"] === selectedSliceName);
     const deviceGroupOptions = selectedSlice?.["site-device-group"] || [];
 
-    formik.setFieldValue("selectedSlice", selectedSliceName);
-    formik.setFieldValue("deviceGroup", deviceGroupOptions.length === 1 ? deviceGroupOptions[0] : "");
+    formik.setValues({
+      ...formik.values,
+      selectedSlice: selectedSliceName,
+      deviceGroup: deviceGroupOptions.length === 1 ? deviceGroupOptions[0] : "",
+    });
   };
 
   const handleDeviceGroupChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
