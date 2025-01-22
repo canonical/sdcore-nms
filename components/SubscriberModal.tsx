@@ -12,7 +12,6 @@ import { NetworkSlice } from "@/components/types";
 import { createSubscriber } from "@/utils/createSubscriber";
 import { editSubscriber } from "@/utils/editSubscriber";
 import { useQueryClient } from "@tanstack/react-query";
-import { queryKeys } from "@/utils/queryKeys";
 import * as Yup from "yup";
 import { useFormik } from "formik";
 import { useAuth } from "@/utils/auth";
@@ -121,18 +120,25 @@ const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups, onSubm
 
   const handleSliceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedSliceName = e.target.value;
-
     const selectedSlice = slices.find((slice) => slice["slice-name"] === selectedSliceName);
     const deviceGroupOptions = selectedSlice?.["site-device-group"] || [];
 
     formik.setValues({
       ...formik.values,
       selectedSlice: selectedSliceName,
-      deviceGroup: deviceGroupOptions.length === 1 ? deviceGroupOptions[0] : "",
+      deviceGroup: deviceGroupOptions.length > 1 ? "" : deviceGroupOptions[0] || "",
     });
   };
 
   const handleDeviceGroupChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedSlice = slices.find((slice) => slice["slice-name"] === formik.values.selectedSlice);
+    const deviceGroupOptions = selectedSlice?.["site-device-group"] || [];
+
+    if (deviceGroupOptions.length > 1) {
+      formik.setFieldValue("deviceGroup", "");
+      return;
+    }
+
     formik.setFieldValue("deviceGroup", e.target.value);
   };
 
