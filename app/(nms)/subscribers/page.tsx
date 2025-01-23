@@ -18,6 +18,7 @@ import { queryKeys } from "@/utils/queryKeys";
 import PageHeader from "@/components/PageHeader";
 import PageContent from "@/components/PageContent";
 import { useAuth } from "@/utils/auth";
+import {handleRefresh} from "@/utils/refreshQueries";
 
 export type Subscriber = {
   plmnID: string;
@@ -60,11 +61,13 @@ const Subscribers = () => {
   });
 
   // Mutation to add a subscriber
-  const mutation = useMutation({
+  const addSubscriberMutation = useMutation({
     mutationFn: (newSubscriber: Subscriber) => addSubscriber(newSubscriber, auth.user?.authToken || ""),
     onSuccess: () => {
-      // On successful addition, invalidate the query to refresh
-      handleRefresh()
+      queryClient.invalidateQueries({
+        queryKey: [queryKeys.subscribers, auth.user?.authToken ?? ""],
+        refetchActive: true,
+      });
       // Close model
       setCreateModalVisible(false);
     },
@@ -72,8 +75,7 @@ const Subscribers = () => {
 
   const handleCreateSubscriber = async (newSubscriber: Subscriber) => {
     try {
-      // Trigger mutation
-      await mutation.mutateAsync(newSubscriber);
+      await addSubscriberMutation.mutateAsync(newSubscriber);
     } catch (error) {
       console.error("Error adding subscriber:", error);
     }
@@ -97,12 +99,15 @@ const Subscribers = () => {
     return response.json();
   };
 
-  const editMutation = useMutation({
+  const editSubscriberMutation = useMutation({
     mutationFn: (updatedSubscriber: Subscriber) =>
-      editSubscriber(updatedSubscriber, auth.user?.authToken || ""), // Perform edit request
+      editSubscriber(updatedSubscriber, auth.user?.authToken || ""),
     onSuccess: () => {
-      handleRefresh();
-      // Close the modal after success
+      queryClient.invalidateQueries({
+        queryKey: [queryKeys.subscribers, auth.user?.authToken ?? ""],
+        refetchActive: true,
+      });
+      // Close model
       setEditModalVisible(false);
     },
     onError: (error) => {
@@ -116,11 +121,15 @@ const Subscribers = () => {
 
   const deleteSubscriberMutation = useMutation({
     mutationFn: async (subscriberImsi: string) => {
-      await deleteSubscriberWithImsi(subscriberImsi)
+      await deleteSubscriberWithImsi(subscriberImsi);
     },
     onSuccess: () => {
-      // Invalidate and refetch subscriber
-      queryClient.invalidateQueries({ queryKey: [queryKeys.subscribers] });
+      queryClient.invalidateQueries({
+        queryKey: [queryKeys.subscribers, auth.user?.authToken ?? ""],
+        refetchActive: true,
+      });
+      // Invalidate queries does not work in the first attempt
+      // Hence, window is reloaded.
       window.location.reload();
     },
     onError: (error) => {
@@ -130,19 +139,19 @@ const Subscribers = () => {
 
   const handleEditSubscriber = async (updatedSubscriber: Subscriber) => {
     try {
-      await editMutation.mutateAsync(updatedSubscriber);
+      editSubscriberMutation.mutate(updatedSubscriber);
     } catch (error) {
       console.error("Error editing subscriber:", error);
     }
   };
 
   const handleConfirmDelete = async (subscriberImsi: string) => {
-      deleteSubscriberMutation.mutate(subscriberImsi, {
-      onSuccess: () => {
-        handleRefresh();
-      },
-    });
-  };
+    try {
+      deleteSubscriberMutation.mutate(subscriberImsi);
+    } catch (error) {
+      console.error("Error deleting subscriber:", error);
+    }
+  }
 
   const { data: deviceGroups = [], isLoading: isDeviceGroupsLoading } = useQuery({
     queryKey: [queryKeys.deviceGroups, auth.user?.authToken],
@@ -162,13 +171,6 @@ const Subscribers = () => {
     }
     return <p>{subscribersQueryError.message}</p>
   }
-
-  const handleRefresh = async () => {
-    await queryClient.invalidateQueries({ queryKey: [queryKeys.subscribers] });
-    await queryClient.invalidateQueries({ queryKey: [queryKeys.deviceGroups] });
-    await queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
-  };
-
 
   const toggleCreateModal = () => setCreateModalVisible((prev) => !prev);
   const toggleEditModal = () => setEditModalVisible((prev) => !prev);
@@ -242,7 +244,7 @@ const Subscribers = () => {
         <Button
           hasIcon
           appearance="base"
-          onClick={handleRefresh}
+          onClick={() => handleRefresh(queryClient, auth.user?.authToken)}
           title="refresh subscriber list"
         >
           <SyncOutlinedIcon style={{ color: "#666" }} />
@@ -275,7 +277,7 @@ const Subscribers = () => {
                          subscriber={subscriber}
                          slices={slices}
                          deviceGroups={deviceGroups}
-                         onSubmit={handleEditSubscriber}
+                         onSubmit={(updatedSubscriber: any) => handleEditSubscriber(updatedSubscriber)}
         />}
     </>
   );

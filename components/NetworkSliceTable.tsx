@@ -24,10 +24,10 @@ export const NetworkSliceTable: React.FC<NetworkSliceTableProps> = ({
 
   const handleDeviceGroupCreated = async () => {
     await queryClient.invalidateQueries({
-      queryKey: [queryKeys.networkSlices],
+      queryKey: [queryKeys.networkSlices], refetchActive: true,
     });
     await queryClient.invalidateQueries({
-      queryKey: [queryKeys.deviceGroups, slice["slice-name"]],
+      queryKey: [queryKeys.deviceGroups, slice["slice-name"]], refetchActive: true,
     });
   };
 
