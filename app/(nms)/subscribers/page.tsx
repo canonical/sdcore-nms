@@ -64,6 +64,10 @@ const Subscribers = () => {
   const addSubscriberMutation = useMutation({
     mutationFn: (newSubscriber: Subscriber) => addSubscriber(newSubscriber, auth.user?.authToken || ""),
     onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [queryKeys.subscribers, auth.user?.authToken ?? ""],
+        refetchActive: true,
+      });
       // Close model
       setCreateModalVisible(false);
     },
@@ -99,6 +103,10 @@ const Subscribers = () => {
     mutationFn: (updatedSubscriber: Subscriber) =>
       editSubscriber(updatedSubscriber, auth.user?.authToken || ""),
     onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [queryKeys.subscribers, auth.user?.authToken ?? ""],
+        refetchActive: true,
+      });
       // Close model
       setEditModalVisible(false);
     },
@@ -116,6 +124,10 @@ const Subscribers = () => {
       await deleteSubscriberWithImsi(subscriberImsi);
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [queryKeys.subscribers, auth.user?.authToken ?? ""],
+        refetchActive: true,
+      });
       // Invalidate queries does not work in the first attempt
       // Hence, window is reloaded.
       window.location.reload();

@@ -45,9 +45,6 @@ const NetworkConfiguration = () => {
         queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
         // Close model on success
         setCreateModalVisible(false);
-        // InvalidateQueries does not work in the first attempt
-        // So, window is reloaded.
-        window.location.reload();
     },
     onError: (error) => {
        console.error("Error adding network slice:", error);
@@ -67,7 +64,7 @@ const NetworkConfiguration = () => {
     mutationFn: editNetworkSlice,
     onSuccess: () => {
         // Invalidate and refetch network slices
-        queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
+        queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices, auth.user?.authToken ?? ""], refetchActive: true });
         setEditModalVisible(false);
     },
     onError: (error) => {
@@ -85,7 +82,7 @@ const NetworkConfiguration = () => {
     },
     onSuccess: () => {
         // Invalidate and refetch network slices
-        queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
+        queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices, auth.user?.authToken ?? ""], refetchActive: true });
     },
     onError: (error) => {
         console.error("Error deleting network slice:", error);

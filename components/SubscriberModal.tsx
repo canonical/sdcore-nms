@@ -115,7 +115,7 @@ const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups, onSubm
         }
         await handleRefresh(queryClient, auth.user?.authToken ?? "");
         toggleModal();
-        // InvalidateQueries is not enough while editing subscribers
+        // InvalidateQueries does not work for the first subscriber creation.
         // Hence, window is reloaded.
         window.location.reload();
       } catch (error) {

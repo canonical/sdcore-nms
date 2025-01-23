@@ -51,12 +51,12 @@ export const NetworkSliceGroups: React.FC<NetworkSliceTableProps> = ({
       networkSliceName,
       token: auth.user ? auth.user.authToken : ""
     });
-    await queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
+    await queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices, auth.user?.authToken ?? ""], refetchActive: true });
   };
 
   const handleDeviceGroupEdited = async () => {
     await queryClient.invalidateQueries({
-      queryKey: [queryKeys.deviceGroups],
+      queryKey: [queryKeys.deviceGroups, auth.user?.authToken ?? ""], refetchActive: true,
     });
   };
 
