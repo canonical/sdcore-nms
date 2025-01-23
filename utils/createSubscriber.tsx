@@ -30,7 +30,8 @@ export const createSubscriber = async ({
 
     // Workaround for https://github.com/omec-project/webconsole/issues/109
     const existingSubscriberData = await getSubscriberResponse.json();
-    if (getSubscriberResponse.ok && existingSubscriberData["AuthenticationSubscription"]["authenticationMethod"]) {
+    if (getSubscriberResponse.ok && existingSubscriberData["AuthenticationSubscription"]["authenticationMethod"]
+      && existingSubscriberData["AccessAndMobilitySubscriptionData"]["nssai"]) {
       throw new Error("Subscriber already exists.");
     }
 
@@ -43,6 +44,11 @@ export const createSubscriber = async ({
 
     const existingDeviceGroupResponse = await apiGetDeviceGroup(deviceGroupName, token);
     var existingDeviceGroupData = await existingDeviceGroupResponse.json();
+
+    if (!existingDeviceGroupData){
+      console.error("failed to add subscriber to device group");
+      return
+    }
 
     if (!existingDeviceGroupData["imsis"]) {
       existingDeviceGroupData["imsis"] = [];
