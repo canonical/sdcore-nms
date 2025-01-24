@@ -116,8 +116,11 @@ const NetworkSliceModal = ({ networkSlice, toggleModal, onSave }: NetworkSliceMo
           });
         }
         await queryClient.invalidateQueries({
-          queryKey: [queryKeys.networkSlices],
+          queryKey: [queryKeys.networkSlices, auth.user?.authToken ?? ""], refetchActive: true,
         });
+        // Invalidate queries does not work in the first slice creation.
+        // Hence, window is reloaded.
+        window.location.reload();
         toggleModal();
       } catch (error) {
         console.error(error);

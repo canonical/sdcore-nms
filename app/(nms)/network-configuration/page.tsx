@@ -52,13 +52,8 @@ const NetworkConfiguration = () => {
   });
 
   const handleAddNetworkSlice = (newSlice: NetworkSlice) => {
-      addNetworkSliceMutation.mutate(newSlice, {
-          onSuccess: () => {
-              queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
-              setCreateModalVisible(false); // Close modal on success
-          },
-      });
-  };
+      addNetworkSliceMutation.mutate(newSlice);
+  }
 
   const editNetworkSlice = async (updatedSlice: NetworkSlice): Promise<Response> => {
     return await apiPostNetworkSlice(updatedSlice["slice-name"], updatedSlice, auth.user?.authToken || "");
@@ -69,7 +64,7 @@ const NetworkConfiguration = () => {
     mutationFn: editNetworkSlice,
     onSuccess: () => {
         // Invalidate and refetch network slices
-        queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
+        queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices, auth.user?.authToken ?? ""], refetchActive: true });
         setEditModalVisible(false);
     },
     onError: (error) => {
@@ -78,13 +73,7 @@ const NetworkConfiguration = () => {
   });
 
   const handleEditNetworkSlice = (updatedSlice: NetworkSlice) => {
-    editNetworkSliceMutation.mutate(updatedSlice, {
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
-            // Close modal on success
-            setEditModalVisible(false);
-        },
-    });
+    editNetworkSliceMutation.mutate(updatedSlice);
   };
 
   const deleteNetworkSliceMutation = useMutation<void, Error, string>({
@@ -93,7 +82,7 @@ const NetworkConfiguration = () => {
     },
     onSuccess: () => {
         // Invalidate and refetch network slices
-        queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
+        queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices, auth.user?.authToken ?? ""], refetchActive: true });
     },
     onError: (error) => {
         console.error("Error deleting network slice:", error);
@@ -101,11 +90,7 @@ const NetworkConfiguration = () => {
   });
 
   const handleConfirmDelete = (sliceName: string) => {
-    deleteNetworkSliceMutation.mutate(sliceName, {
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
-        },
-    });
+    deleteNetworkSliceMutation.mutate(sliceName);
   };
 
   const toggleCreateNetworkSliceModal = () => {

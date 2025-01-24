@@ -16,6 +16,7 @@ import { queryKeys } from "@/utils/queryKeys";
 import * as Yup from "yup";
 import { useFormik } from "formik";
 import { useAuth } from "@/utils/auth";
+import {handleRefresh} from "@/utils/refreshQueries";
 
 interface SubscriberValues {
   imsi: string;
@@ -100,7 +101,7 @@ const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups, onSubm
             sequenceNumber: values.sequenceNumber,
             oldDeviceGroupName: oldDeviceGroupName,
             newDeviceGroupName: values.deviceGroup,
-            token: auth.user ? auth.user.authToken : ""
+            token: auth.user?.authToken ?? ""
           });
         } else {
           await createSubscriber({
@@ -112,10 +113,11 @@ const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups, onSubm
             token: auth.user ? auth.user.authToken : ""
           });
         }
-        await queryClient.invalidateQueries({ queryKey: [queryKeys.subscribers] });
-        await queryClient.invalidateQueries({ queryKey: [queryKeys.deviceGroups] });
-        await queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
+        await handleRefresh(queryClient, auth.user?.authToken ?? "");
         toggleModal();
+        // InvalidateQueries does not work for the first subscriber creation.
+        // Hence, window is reloaded.
+        window.location.reload();
       } catch (error) {
         console.error(error);
         setApiError(
