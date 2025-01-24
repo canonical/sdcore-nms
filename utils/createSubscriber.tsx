@@ -34,18 +34,16 @@ export const createSubscriber = async ({
       throw new Error("Subscriber already exists.");
     }
 
+    const existingDeviceGroupResponse = await apiGetDeviceGroup(deviceGroupName, token);
+    var existingDeviceGroupData = await existingDeviceGroupResponse.json();
+    if (!existingDeviceGroupData){
+      throw new Error(`Device group ${deviceGroupName} cannot be found`);
+    }
     const updateSubscriberResponse = await apiPostSubscriber(imsi, subscriberData, token);
     if (!updateSubscriberResponse.ok) {
       throw new Error(
         `Error creating subscriber. Error code: ${updateSubscriberResponse.status}`,
       );
-    }
-
-    const existingDeviceGroupResponse = await apiGetDeviceGroup(deviceGroupName, token);
-    var existingDeviceGroupData = await existingDeviceGroupResponse.json();
-
-    if (!existingDeviceGroupData){
-      return
     }
     if (!existingDeviceGroupData["imsis"]) {
       existingDeviceGroupData["imsis"] = [];
