@@ -45,10 +45,8 @@ export const createSubscriber = async ({
     var existingDeviceGroupData = await existingDeviceGroupResponse.json();
 
     if (!existingDeviceGroupData){
-      console.error("failed to add subscriber to device group");
       return
     }
-
     if (!existingDeviceGroupData["imsis"]) {
       existingDeviceGroupData["imsis"] = [];
     }
