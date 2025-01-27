@@ -29,13 +29,20 @@ export const editSubscriber = async ({
   };
 
   try {
+    var newDeviceGroupData = await getDeviceGroupData(newDeviceGroupName, token);
+    if (!newDeviceGroupData){
+      throw new Error(`Device group ${newDeviceGroupName} cannot be found`);
+    }
     await updateSubscriber(subscriberData, token);
     if (oldDeviceGroupName != newDeviceGroupName) {
-      var oldDeviceGroupData = await getDeviceGroupData(oldDeviceGroupName, token);
-      const index = oldDeviceGroupData["imsis"].indexOf(imsi);
-      oldDeviceGroupData["imsis"].splice(index, 1);
-      await updateDeviceGroupData(oldDeviceGroupName, oldDeviceGroupData, token);
-      var newDeviceGroupData = await getDeviceGroupData(newDeviceGroupName, token);
+      if (oldDeviceGroupName){
+        var oldDeviceGroupData = await getDeviceGroupData(oldDeviceGroupName, token);
+        if (oldDeviceGroupData){
+          const index = oldDeviceGroupData["imsis"].indexOf(imsi);
+          oldDeviceGroupData["imsis"].splice(index, 1);
+          await updateDeviceGroupData(oldDeviceGroupName, oldDeviceGroupData, token);
+        }
+      }
       newDeviceGroupData["imsis"].push(imsi);
       await updateDeviceGroupData(newDeviceGroupName, newDeviceGroupData, token);
     }
@@ -83,7 +90,7 @@ const getDeviceGroupData = async (deviceGroupName: string, token: string) => {
     const existingDeviceGroupResponse = await apiGetDeviceGroup(deviceGroupName, token);
     var existingDeviceGroupData = await existingDeviceGroupResponse.json();
 
-    if (!existingDeviceGroupData["imsis"]) {
+    if (existingDeviceGroupData && !existingDeviceGroupData["imsis"]) {
       existingDeviceGroupData["imsis"] = [];
     }
     return existingDeviceGroupData;
