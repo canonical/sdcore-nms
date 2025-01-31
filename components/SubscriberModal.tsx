@@ -131,14 +131,6 @@ const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups, onSubm
   };
 
   const handleDeviceGroupChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedSlice = slices.find((slice) => slice["slice-name"] === formik.values.selectedSlice);
-    const deviceGroupOptions = selectedSlice?.["site-device-group"] || [];
-
-    if (deviceGroupOptions.length > 1) {
-      formik.setFieldValue("deviceGroup", "");
-      return;
-    }
-
     formik.setFieldValue("deviceGroup", e.target.value);
   };
 
