@@ -1,5 +1,5 @@
 "use client";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   ActionButton,
   Form,
@@ -125,42 +125,26 @@ const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups }: Prop
   });
 
   const handleSliceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    void formik.setFieldValue("selectedSlice", e.target.value);
+    const selectedSliceName = e.target.value;
+    const selectedSlice = slices.find((slice) => slice["slice-name"] === selectedSliceName);
+    const deviceGroupOptions = selectedSlice?.["site-device-group"] || [];
+
+    formik.setValues({
+      ...formik.values,
+      selectedSlice: selectedSliceName,
+      deviceGroup: deviceGroupOptions.length > 1 ? "" : deviceGroupOptions[0] || "",
+    });
   };
 
   const handleDeviceGroupChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    void formik.setFieldValue("deviceGroup", e.target.value);
+    formik.setFieldValue("deviceGroup", e.target.value);
   };
 
-  const selectedSlice = slices.find(
-    (slice) => slice["slice-name"] === formik.values.selectedSlice,
-  );
+  const deviceGroupOptions = useMemo(() => {
+    const selectedSlice = slices.find((slice) => slice["slice-name"] === formik.values.selectedSlice);
+    return selectedSlice?.["site-device-group"] || [];
+  }, [formik.values.selectedSlice, slices]);
 
-  const setDeviceGroup = useCallback(
-    (deviceGroup: string) => {
-      if (formik.values.deviceGroup !== deviceGroup) {
-        formik.setFieldValue("deviceGroup", deviceGroup);
-      }
-    },
-    [formik],
-  );
-
-  const deviceGroupOptions = React.useMemo(() => {
-    return selectedSlice && selectedSlice["site-device-group"]
-      ? selectedSlice["site-device-group"]
-      : [];
-  }, [selectedSlice]);
-
-  useEffect(() => {
-    if (subscriber && selectedSlice && oldNetworkSliceName === selectedSlice["slice-name"]) {
-      setDeviceGroup(oldDeviceGroupName);
-    }
-    else if (selectedSlice && selectedSlice["site-device-group"]?.length === 1) {
-      setDeviceGroup(selectedSlice["site-device-group"][0]);
-    } else {
-      setDeviceGroup("");
-    }
-  }, [subscriber, selectedSlice, oldNetworkSliceName, oldDeviceGroupName, setDeviceGroup, deviceGroupOptions]);
 
   return (
     <Modal
