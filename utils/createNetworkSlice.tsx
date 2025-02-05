@@ -75,6 +75,13 @@ export const createNetworkSlice = async ({
       throw new Error("Network slice already exists");
     }
 
+    const devicegroupResponse = await apiPostDeviceGroup(deviceGroupName, deviceGroupData, token);
+    if (!devicegroupResponse.ok) {
+      throw new Error(
+        `Error creating device group. Error code: ${devicegroupResponse.status}`,
+      );
+    }
+
     const updateNetworkSliceResponse = await apiPostNetworkSlice(name, sliceData, token);
     if (!updateNetworkSliceResponse.ok) {
       const networkSliceData = await updateNetworkSliceResponse.json();
@@ -84,13 +91,6 @@ export const createNetworkSlice = async ({
       debugger;
       throw new Error(
         `Error creating network slice. Error code: ${updateNetworkSliceResponse.status}`,
-      );
-    }
-
-    const devicegroupResponse = await apiPostDeviceGroup(deviceGroupName, deviceGroupData, token);
-    if (!devicegroupResponse.ok) {
-      throw new Error(
-        `Error creating device group. Error code: ${devicegroupResponse.status}`,
       );
     }
 
