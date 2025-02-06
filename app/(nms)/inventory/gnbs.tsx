@@ -64,7 +64,7 @@ export default function GnbTable() {
           hasIcon
           appearance="base"
           onClick={() => { query.refetch() }}
-          title="refresh accounts list"
+          title="Refresh gNodeB list"
         >
           <SyncOutlinedIcon style={{ color: "#666" }} />
         </Button>

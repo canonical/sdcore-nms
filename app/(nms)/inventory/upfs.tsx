@@ -65,7 +65,7 @@ export default function UpfTable() {
             hasIcon
             appearance="base"
             onClick={() => { query.refetch() }}
-            title="refresh accounts list"
+            title="Refresh UPF list"
             >
           <SyncOutlinedIcon style={{ color: "#666" }} />
           </Button>
