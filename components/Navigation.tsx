@@ -104,6 +104,22 @@ const Navigation: FC = () => {
                       Subscribers
                     </a>
                   </li>
+                  <li className="p-side-navigation__item">
+                    <a
+                      className="p-side-navigation__link"
+                      href="/inventory"
+                      title="Inventory"
+                      aria-current={
+                        pathname === "/inventory" ? "page" : undefined
+                      }
+                    >
+                      <Icon
+                        className="is-light p-side-navigation__icon"
+                        name="add-logical-volume"
+                      />{" "}
+                      Inventory
+                    </a>
+                  </li>
                   {auth.user?.role == 1 && <li className="p-side-navigation__item">
                     <a
                       className="p-side-navigation__link"
