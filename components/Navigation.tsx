@@ -91,6 +91,24 @@ const Navigation: FC = () => {
                   <li className="p-side-navigation__item">
                     <a
                       className="p-side-navigation__link"
+                      href="/device-groups"
+                      title="Device groups"
+                      aria-current={
+                        pathname === "/device-groups"
+                          ? "page"
+                          : undefined
+                      }
+                    >
+                      <Icon
+                        className="is-light p-side-navigation__icon"
+                        name="connected"
+                      />{" "}
+                      Device groups
+                    </a>
+                  </li>
+                  <li className="p-side-navigation__item">
+                    <a
+                      className="p-side-navigation__link"
                       href={`/subscribers`}
                       title={`Subscribers`}
                       aria-current={
