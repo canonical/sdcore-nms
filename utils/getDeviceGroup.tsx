@@ -1,4 +1,4 @@
-import { NetworkSlice } from "@/components/types";
+import { NetworkSlice, DeviceGroup } from "@/components/types";
 import { apiGetDeviceGroup, apiGetAllDeviceGroups } from "@/utils/callDeviceGroupApi";
 
 export const getDeviceGroupsFromNetworkSlice = async (token: string, slice?: NetworkSlice) => {
@@ -48,6 +48,40 @@ export const getDeviceGroup = async (deviceGroupName: string, token: string) => 
     return deviceGroup;
   } catch (error) {
     console.error(error);
+  }
+};
+
+export const getDeviceGroups2 = async (token: string): Promise<DeviceGroup[]> => {
+  try {
+    const response = await apiGetAllDeviceGroups(token);
+    if (!response.ok) {
+      throw new Error("Failed to fetch GNB list");
+    }
+    const deviceGroupNames = await response.json();
+    const dgs = await Promise.all(
+      deviceGroupNames.map((name: string) => getDeviceGroup2(name, token))
+    );
+    return dgs
+
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+
+export const getDeviceGroup2 = async (deviceGroupName: string, token: string): Promise<DeviceGroup> => {
+  try {
+    const response = await apiGetDeviceGroup(deviceGroupName, token);
+    if (!response.ok) {
+      throw new Error("Failed to fetch device group list");
+    }
+    const deviceGroup = await response.json();
+    return deviceGroup as DeviceGroup;
+
+  } catch (error) {
+    console.error(error);
+    throw error;
   }
 };
 
