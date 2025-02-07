@@ -1,9 +1,10 @@
 import React, { FC, MouseEvent, useState } from "react";
 import { Button, Icon } from "@canonical/react-components";
-import classnames from "classnames";
-import Logo from "./Logo";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/utils/auth";
+import classnames from "classnames";
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import Logo from "@/components/Logo"
 
 const Navigation: FC = () => {
   const pathname = usePathname();
@@ -113,10 +114,11 @@ const Navigation: FC = () => {
                         pathname === "/inventory" ? "page" : undefined
                       }
                     >
-                      <Icon
+                      <Inventory2OutlinedIcon
                         className="is-light p-side-navigation__icon"
-                        name="add-logical-volume"
-                      />{" "}
+                        fontSize="inherit"
+                        style={{ color: "#fff" }}
+                      />
                       Inventory
                     </a>
                   </li>

@@ -3,13 +3,13 @@
 import { useState } from "react";
 import { Tabs } from "@canonical/react-components"
 
-import GnbTable from "./gnbs";
+import GnbTable from "@/app/(nms)/inventory/gnbs";;
 import PageContent from "@/components/PageContent"
 import PageHeader from "@/components/PageHeader"
-import UpfTable from "./upfs";
+import UpfTable from "@/app/(nms)/inventory/upfs";;
 
 
-export default function Gnbs() {
+export default function Inventory() {
   const GNBS = "gnbs"
   const UPFS = "upfs"
   const [activeTab, setActiveTab] = useState(GNBS);
