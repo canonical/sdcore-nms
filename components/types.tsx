@@ -25,6 +25,7 @@ export type NetworkSlice = {
 
 export type DeviceGroup = {
   "group-name": string;
+  "network-slice": string;
   imsis: string[];
   "site-info": string;
   "ip-domain-name": string;
