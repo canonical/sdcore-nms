@@ -1,28 +1,27 @@
 "use client"
 
-import { useQuery } from "@tanstack/react-query"
-import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
-import { getDeviceGroups2 } from "@/utils/getDeviceGroup";
-import Loader from "@/components/Loader"
-import { useAuth } from "@/utils/auth"
-import PageHeader from "@/components/PageHeader"
 import { Button, MainTable } from "@canonical/react-components"
-import PageContent from "@/components/PageContent"
-import { useState } from "react"
-import SyncOutlinedIcon from "@mui/icons-material/SyncOutlined";
-import { MainTableRow } from "@canonical/react-components/dist/components/MainTable/MainTable"
-import { useRouter } from "next/navigation"
-import { DeviceGroup } from "@/components/types";
 import { CreateDeviceGroupModal, EditDeviceGroupModal, DeleteDeviceGroupButton } from "@/app/(nms)/device-groups/modals";
+import { DeviceGroup } from "@/components/types";
+import { getDeviceGroups } from "@/utils/getDeviceGroup";
+import { MainTableRow } from "@canonical/react-components/dist/components/MainTable/MainTable"
+import { useAuth } from "@/utils/auth"
+import { useQuery } from "@tanstack/react-query"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
+
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import Loader from "@/components/Loader"
+import PageContent from "@/components/PageContent"
+import PageHeader from "@/components/PageHeader"
+import SyncOutlinedIcon from "@mui/icons-material/SyncOutlined";
 
 const CREATE = "create"
 const EDIT = "edit"
-const DELETE = "delete"
 
 type modalData = {
   deviceGroup: DeviceGroup
-  networkSliceName: string
-  action: "delete" | "edit" | "create"
+  action: "edit" | "create"
 }
 
 export default function DeviceGroups() {
@@ -31,7 +30,7 @@ export default function DeviceGroups() {
   const router = useRouter()
   const deviceGroupQuery = useQuery<DeviceGroup[], Error>({
     queryKey: ['device-groups', auth.user?.authToken],
-    queryFn: () => getDeviceGroups2(auth.user?.authToken ?? ""),
+    queryFn: () => getDeviceGroups(auth.user?.authToken ?? ""),
     enabled: auth.user ? true : false,
     retry: (failureCount, error): boolean => {
       if (error.message.includes("401") || error.message.includes("403")) {
@@ -72,7 +71,7 @@ export default function DeviceGroups() {
               small
               hasIcon
               appearance={"base"}
-              onClick={() => setModalData({ deviceGroup: deviceGroup, networkSliceName: deviceGroup["network-slice"], action: EDIT })}
+              onClick={() => setModalData({ deviceGroup: deviceGroup, action: EDIT })}
               title="Edit"
             >
               {editIcon}
@@ -99,7 +98,7 @@ export default function DeviceGroups() {
         >
           <SyncOutlinedIcon style={{ color: "#666" }} />
         </Button>
-        <Button appearance="positive" onClick={() => setModalData({ deviceGroup: {} as DeviceGroup, networkSliceName: "", action: CREATE })}>
+        <Button appearance="positive" onClick={() => setModalData({ deviceGroup: {} as DeviceGroup, action: CREATE })}>
           Create
         </Button>
       </PageHeader>
@@ -124,7 +123,7 @@ export default function DeviceGroups() {
         />
       </PageContent>
       {modalData?.action == CREATE && <CreateDeviceGroupModal closeFn={() => setModalData(null)} />}
-      {modalData?.action == EDIT && <EditDeviceGroupModal deviceGroup={modalData.deviceGroup} networkSliceName={modalData.networkSliceName} closeFn={() => setModalData(null)} />}
+      {modalData?.action == EDIT && <EditDeviceGroupModal deviceGroup={modalData.deviceGroup} closeFn={() => setModalData(null)} />}
       </>
   )
 }

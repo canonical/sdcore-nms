@@ -1,25 +1,18 @@
-import { UserEntry } from "@/components/types"
-import { useAuth } from "@/utils/auth"
-import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
-import { changePassword, deleteUser, postUser } from "@/utils/accountQueries"
-import { passwordIsValid } from "@/utils/utils"
-import { Button, Form, Input, ConfirmationButton, Modal, Notification, PasswordToggle } from "@canonical/react-components"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { ChangeEvent, useState } from "react"
-import { DeviceGroup } from "@/components/types";
+import { Button, Form, Input, ConfirmationButton, Modal, Notification, Select } from "@canonical/react-components"
 import { createDeviceGroup } from "@/utils/createDeviceGroup";
-import { getNetworkSliceNames } from "@/utils/getNetworkSlices"
-import * as Yup from "yup";
-import { useRouter } from "next/navigation"
-import { useFormik } from "formik";
-import { useQuery } from "@tanstack/react-query"
-import Loader from "@/components/Loader"
-import { editDeviceGroup } from "@/utils/editDeviceGroup";
 import { deleteDeviceGroup } from "@/utils/deleteDeviceGroup";
-import {
-  Select,
-  ActionButton,
-} from "@canonical/react-components";
+import { DeviceGroup } from "@/components/types";
+import { editDeviceGroup } from "@/utils/editDeviceGroup";
+import { getNetworkSliceNames } from "@/utils/getNetworkSlices"
+import { useAuth } from "@/utils/auth"
+import { useFormik } from "formik";
+import { useQueryClient } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
+import { useState } from "react"
+
+import * as Yup from "yup";
+import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
+
 
 type createNewDeviceGroupModalProps = {
     closeFn: () => void
@@ -125,36 +118,17 @@ export function CreateDeviceGroupModal({ closeFn }: createNewDeviceGroupModalPro
     },
   });
 
-  const router = useRouter()
   const query = useQuery<string[], Error>({
     queryKey: ['network-slice', auth.user?.authToken],
     queryFn: () => getNetworkSliceNames(auth.user?.authToken ?? ""),
     enabled: auth.user ? true : false,
-    retry: (failureCount, error): boolean => {
-      if (error.message.includes("401") || error.message.includes("403")) {
-        return false
-      }
-      return true
-    },
   })
-  if (query.status == "pending") { return <Loader text="loading..." /> }
-  if (query.status == "error") {
-    if (query.error.message.includes("401")) {
-      auth.logout()
-    }
-    if (query.error.message.includes("403")) {
-      router.push("/")
-    }
-    return <p>{query.error.message}</p>
-  }
-
   const networkSliceItems = (query.data as string[]) || [];
-
 
   const handleNetworkSliceChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     void formik.setFieldValue("networkSlice", event.target.value);
   };
-    
+
   const handle5QIChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
       void formik.setFieldValue("5qi", event.target.value);
   };
@@ -165,8 +139,7 @@ export function CreateDeviceGroupModal({ closeFn }: createNewDeviceGroupModalPro
   const getNetworkSliceValueAsString = () => {
     return formik.values.networkSlice ? formik.values.networkSlice : "";
   };
-
-                   
+        
   return (
       <Modal
       title="Create device group"
@@ -341,11 +314,10 @@ export function CreateDeviceGroupModal({ closeFn }: createNewDeviceGroupModalPro
 
 type editDeviceGroupActionModalProps = {
   deviceGroup: DeviceGroup
-  networkSliceName: string
   closeFn: () => void
 }
 
-export function EditDeviceGroupModal({ deviceGroup, networkSliceName, closeFn }: editDeviceGroupActionModalProps) {
+export function EditDeviceGroupModal({ deviceGroup, closeFn }: editDeviceGroupActionModalProps) {
   const auth = useAuth()
   const [apiError, setApiError] = useState<string | null>(null);
   const queryClient = useQueryClient()
@@ -353,7 +325,7 @@ export function EditDeviceGroupModal({ deviceGroup, networkSliceName, closeFn }:
   const formik = useFormik<DeviceGroupValues>({
     initialValues: {
       name: deviceGroup["group-name"] || "",
-      networkSlice: networkSliceName,
+      networkSlice:deviceGroup["network-slice"] || "",
       ueIpPool: deviceGroup["ip-domain-expanded"]?.["ue-ip-pool"] || "",
       dns: deviceGroup["ip-domain-expanded"]?.["dns-primary"] || "8.8.8.8",
       mtu: deviceGroup["ip-domain-expanded"]?.["mtu"] || 1456,
@@ -564,7 +536,6 @@ type deviceGroupDeleteActionModalProps = {
   deviceGroupName: string
   networkSliceName: string
   subscribers: string[]
-  //closeFn: () => void
 }
 export function DeleteDeviceGroupButton({ deviceGroupName, networkSliceName, subscribers }: deviceGroupDeleteActionModalProps) {
   const auth = useAuth()

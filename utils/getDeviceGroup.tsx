@@ -1,89 +1,37 @@
 import { NetworkSlice, DeviceGroup } from "@/components/types";
 import { apiGetDeviceGroup, apiGetAllDeviceGroups } from "@/utils/callDeviceGroupApi";
 import { getNetworkSlices } from "@/utils/getNetworkSlices";
+import { HTTPStatus } from "@/utils/utils";
 
-export const getDeviceGroupsFromNetworkSlice = async (token: string, slice?: NetworkSlice) => {
-  if (!slice || !slice["site-device-group"]) {
-    return [];
-  }
-
-  const allDeviceGroups = await Promise.all(
-    slice["site-device-group"].map(async (name: string) =>
-      await getDeviceGroup(name, token),
-    ),
-  );
-
-  return allDeviceGroups.filter((item) => item !== undefined);
-}
-
-export const getDeviceGroups = async (token: string) => {
-  try {
-    const response = await apiGetAllDeviceGroups(token);
-    if (!response.ok)
-      throw new Error(
-        `Failed to fetch device group. Status: ${response.status}`,
-      );
-    const deviceGroups = await response.json();
-
-    const deviceGroupsDetails = await Promise.all(
-      deviceGroups.map(async (name: string) =>
-        await getDeviceGroup(name, token),
-      ),
-    );
-
-    return deviceGroupsDetails.filter((item) => item !== undefined);
-
-  } catch (error) {
-    console.error(error);
-  }
-};
-
-export const getDeviceGroup = async (deviceGroupName: string, token: string) => {
-  try {
-    const response = await apiGetDeviceGroup(deviceGroupName, token);
-    if (!response.ok)
-      throw new Error(
-        `Failed to fetch device group. Status: ${response.status}`,
-      );
-    const deviceGroup = await response.json();
-    return deviceGroup;
-  } catch (error) {
-    console.error(error);
-  }
-};
-
-export const getDeviceGroups2 = async (token: string): Promise<DeviceGroup[]> => {
+export const getDeviceGroups = async (token: string): Promise<DeviceGroup[]> => {
   try {
     const deviceGroupResponse = await apiGetAllDeviceGroups(token);
-    if (!deviceGroupResponse.ok) {
-      throw new Error("Failed to fetch Device Group list");
-    }
     const deviceGroupNames = await deviceGroupResponse.json();
+    if (!deviceGroupResponse.ok) {
+        throw new Error(`${deviceGroupResponse.status}: ${HTTPStatus(deviceGroupResponse.status)}. ${deviceGroupNames.error}`)
+    }
     const networkSlices = await getNetworkSlices(token);
-
-    const dgs = await Promise.all(
-      deviceGroupNames.map(async (name: string) => {
-        const deviceGroup = await getDeviceGroup2(name, token);
-        const networkSliceName = getNetworkSliceNameFromDeviceGroup(name, networkSlices);
+    const deviceGroups = await Promise.all(
+      deviceGroupNames.map(async (deviceGroupName: string) => {
+        const deviceGroup = await getDeviceGroup(deviceGroupName, token);
+        const networkSliceName = findDeviceGroupNetworkSlice(deviceGroupName, networkSlices);
         return { ...deviceGroup, "network-slice": networkSliceName };
       })
     );
-    return dgs
-
+    return deviceGroups
   } catch (error) {
     console.error(error);
     throw error;
   }
 };
 
-
-export const getDeviceGroup2 = async (deviceGroupName: string, token: string): Promise<DeviceGroup> => {
+export const getDeviceGroup = async (deviceGroupName: string, token: string): Promise<DeviceGroup> => {
   try {
     const response = await apiGetDeviceGroup(deviceGroupName, token);
-    if (!response.ok) {
-      throw new Error("Failed to fetch device group list");
-    }
     const deviceGroup = await response.json();
+    if (!response.ok) {
+      throw new Error(`${response.status}: ${HTTPStatus(response.status)}. ${deviceGroup.error}`)
+  }
     return deviceGroup as DeviceGroup;
 
   } catch (error) {
@@ -92,7 +40,7 @@ export const getDeviceGroup2 = async (deviceGroupName: string, token: string): P
   }
 };
 
-const getNetworkSliceNameFromDeviceGroup = (deviceGroupName: string, networkSlices: NetworkSlice[]) => {
+const findDeviceGroupNetworkSlice = (deviceGroupName: string, networkSlices: NetworkSlice[]): string => {
   for (const networkSlice of networkSlices) {
     if (networkSlice["site-device-group"] && networkSlice["site-device-group"].includes(deviceGroupName)) {
       return networkSlice["slice-name"];
