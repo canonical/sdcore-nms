@@ -1,13 +1,15 @@
 import { apiPostDeviceGroup } from "@/utils/callDeviceGroupApi";
 import { getDeviceGroup } from "@/utils/getDeviceGroup";
 
-interface DeviceGroupArgs {
+interface EditDeviceGroupArgs {
   name: string;
   ueIpPool: string;
   dns: string;
   mtu: number;
   MBRUpstreamBps: number;
   MBRDownstreamBps: number;
+  qos5qi: number;
+  qosArp: number;
   token: string;
 }
 
@@ -18,8 +20,10 @@ export const editDeviceGroup = async ({
   mtu,
   MBRUpstreamBps,
   MBRDownstreamBps,
+  qos5qi,
+  qosArp,
   token
-}: DeviceGroupArgs) => {
+}: EditDeviceGroupArgs) => {
   try {
     const currentConfig = await getDeviceGroup(name, token)
     var imsis = currentConfig["imsis"]
@@ -39,10 +43,10 @@ export const editDeviceGroup = async ({
           "bitrate-unit": "bps",
           "traffic-class": {
             name: "platinum",
-            arp: 6,
+            arp: qosArp,
             pdb: 300,
             pelr: 6,
-            qci: 8,
+            qci: qos5qi,
           },
         },
       },
@@ -60,7 +64,7 @@ export const editDeviceGroup = async ({
     const details =
       error instanceof Error
         ? error.message
-        : "Failed edit device group.";
+        : "Failed to edit device group.";
     throw new Error(details);
   }
 };

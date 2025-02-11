@@ -1,7 +1,7 @@
 import { apiGetNetworkSlice, apiPostNetworkSlice } from "@/utils/callNetworkSliceApi";
 import { apiGetDeviceGroup, apiPostDeviceGroup } from "@/utils/callDeviceGroupApi";
 
-interface DeviceGroupArgs {
+interface CreateDeviceGroupArgs {
   name: string;
   ueIpPool: string;
   dns: string;
@@ -9,6 +9,8 @@ interface DeviceGroupArgs {
   MBRUpstreamBps: number;
   MBRDownstreamBps: number;
   networkSliceName: string;
+  qos5qi: number;
+  qosArp: number;
   token: string;
 }
 
@@ -20,8 +22,10 @@ export const createDeviceGroup = async ({
   MBRUpstreamBps,
   MBRDownstreamBps,
   networkSliceName,
+  qos5qi,
+  qosArp,
   token
-}: DeviceGroupArgs) => {
+}: CreateDeviceGroupArgs) => {
   const deviceGroupData = {
     "site-info": "demo",
     "ip-domain-name": "pool1",
@@ -36,10 +40,10 @@ export const createDeviceGroup = async ({
         "bitrate-unit": "bps",
         "traffic-class": {
           name: "platinum",
-          arp: 6,
+          arp: qosArp,
           pdb: 300,
           pelr: 6,
-          qci: 8,
+          qci: qos5qi,
         },
       },
     },
@@ -50,7 +54,7 @@ export const createDeviceGroup = async ({
     if (getDeviceGroupResponse.ok) {
       throw new Error("Device group already exists");
     }
-
+    // check type of error -> != between auth and not found
     const updateDeviceGroupResponse = await apiPostDeviceGroup(name, deviceGroupData, token);
     if (!updateDeviceGroupResponse.ok) {
       throw new Error(
@@ -79,7 +83,7 @@ export const createDeviceGroup = async ({
     const details =
       error instanceof Error
         ? error.message
-        : "Failed to configure the network.";
+        : "Failed to create device group.";
     throw new Error(details);
   }
 };

@@ -14,11 +14,7 @@ import * as Yup from "yup";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 
 
-type createNewDeviceGroupModalProps = {
-    closeFn: () => void
-}
-
-interface DeviceGroupValues {
+interface DeviceGroupFormValues {
     name: string;
     networkSlice: string;
     ueIpPool: string;
@@ -26,8 +22,8 @@ interface DeviceGroupValues {
     mtu: number;
     MBRDownstreamMbps: number | null;
     MBRUpstreamMbps: number | null;
-    Qos5qi: string;
-    QosArp: number
+    qos5qi: number;
+    qosArp: number;
 }
 
 const regexIp =
@@ -63,22 +59,26 @@ const DeviceGroupSchema = Yup.object().shape({
       .min(0)
       .max(1000000)
       .required("Value should be between 0 and 1,000,000."),
-  //Qos5qi: Yup.string()
-  //    .oneOf(["1", "2", "9"], "5QI must be either 1, 2, or 9")
-  //    .required("5QI is required"),
-  //QosArp: Yup.number()
-  //    .min(1)
-  //    .max(15)
-  //    .required("ARP is required"),
+  qos5qi: Yup.number()
+      .oneOf([1, 2, 9], "5QI must be either 1, 2, or 9")
+      .required("5QI is required"),
+  qosArp: Yup.number()
+      .min(1)
+      .max(15)
+      .required("ARP is required"),
 });
 
+type createNewDeviceGroupModalProps = {
+  closeFn: () => void
+}
 
 export function CreateDeviceGroupModal({ closeFn }: createNewDeviceGroupModalProps) {
   const auth = useAuth()
   const [apiError, setApiError] = useState<string | null>(null);
+  const [networkSliceError, setNetworkSliceError] = useState<string | null>(null);
   const queryClient = useQueryClient()
 
-  const formik = useFormik<DeviceGroupValues>({
+  const formik = useFormik<DeviceGroupFormValues>({
     initialValues: {
       name: "",
       networkSlice: "",
@@ -87,13 +87,13 @@ export function CreateDeviceGroupModal({ closeFn }: createNewDeviceGroupModalPro
       mtu: 1456,
       MBRDownstreamMbps: null,
       MBRUpstreamMbps: null,
-      Qos5qi: "",
-      QosArp: 0,
+      qos5qi: 0,
+      qosArp: 6,
     },
     validationSchema: DeviceGroupSchema,
     onSubmit: async (values) => {
-      const MBRUpstreamBps = Number(values.MBRUpstreamMbps) * 1000000;
-      const MBRDownstreamBps = Number(values.MBRDownstreamMbps) * 1000000;
+      const MBRUpstreamBps = Number(values.MBRUpstreamMbps) * 1_000_000;
+      const MBRDownstreamBps = Number(values.MBRDownstreamMbps) * 1_000_000;
       try {
         await createDeviceGroup({
             name: values.name,
@@ -103,6 +103,8 @@ export function CreateDeviceGroupModal({ closeFn }: createNewDeviceGroupModalPro
             MBRUpstreamBps: MBRUpstreamBps,
             MBRDownstreamBps: MBRDownstreamBps,
             networkSliceName: values.networkSlice,
+            qos5qi: Number(values.qos5qi),
+            qosArp: Number(values.qosArp),
             token: auth.user ? auth.user.authToken : ""
           });
         closeFn()
@@ -118,22 +120,30 @@ export function CreateDeviceGroupModal({ closeFn }: createNewDeviceGroupModalPro
     },
   });
 
-  const query = useQuery<string[], Error>({
+  const networkSlicesQuery = useQuery<string[], Error>({
     queryKey: ['network-slice', auth.user?.authToken],
     queryFn: () => getNetworkSliceNames(auth.user?.authToken ?? ""),
     enabled: auth.user ? true : false,
   })
-  const networkSliceItems = (query.data as string[]) || [];
+  const networkSliceItems = (networkSlicesQuery.data as string[]) || [];
+
+  if (networkSlicesQuery.isError) {
+    setNetworkSliceError("Failed to retrieve network slices.");
+  }
+
+  if (!networkSlicesQuery.isLoading && networkSliceItems.length === 0 && !networkSliceError) {
+    setNetworkSliceError("No network slice available. Please create a network slice.");
+  }
 
   const handleNetworkSliceChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     void formik.setFieldValue("networkSlice", event.target.value);
   };
 
   const handle5QIChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-      void formik.setFieldValue("5qi", event.target.value);
+      void formik.setFieldValue("qos5qi", event.target.value);
   };
   const handleARPChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    void formik.setFieldValue("arp", event.target.value);
+    void formik.setFieldValue("qosArp", event.target.value);
   };
 
   const getNetworkSliceValueAsString = () => {
@@ -161,6 +171,11 @@ export function CreateDeviceGroupModal({ closeFn }: createNewDeviceGroupModalPro
       {apiError && (
         <Notification severity="negative" title="Error">
           {apiError}
+        </Notification>
+      )}
+      {networkSliceError && (
+        <Notification severity="negative" title="Error">
+          {networkSliceError}
         </Notification>
       )}
       <Form>
@@ -273,17 +288,17 @@ export function CreateDeviceGroupModal({ closeFn }: createNewDeviceGroupModalPro
                 {
                   disabled: false,
                   label: "1: GBR - Conversational Voice",
-                  value: "1",
+                  value: 1,
                 },
                 {
                   disabled: false,
                   label: "2: GBR - Conversational Video",
-                  value: "2",
+                  value: 2,
                 },
                 {
                   disabled: false,
                   label: "9: Non-GBR",
-                  value: "9",
+                  value: 9,
                 },
               ]}
           />
@@ -322,7 +337,7 @@ export function EditDeviceGroupModal({ deviceGroup, closeFn }: editDeviceGroupAc
   const [apiError, setApiError] = useState<string | null>(null);
   const queryClient = useQueryClient()
 
-  const formik = useFormik<DeviceGroupValues>({
+  const formik = useFormik<DeviceGroupFormValues>({
     initialValues: {
       name: deviceGroup["group-name"] || "",
       networkSlice:deviceGroup["network-slice"] || "",
@@ -331,13 +346,13 @@ export function EditDeviceGroupModal({ deviceGroup, closeFn }: editDeviceGroupAc
       mtu: deviceGroup["ip-domain-expanded"]?.["mtu"] || 1456,
       MBRDownstreamMbps: deviceGroup["ip-domain-expanded"]?.["ue-dnn-qos"]?.["dnn-mbr-downlink"] / 1_000_000 || null,
       MBRUpstreamMbps: deviceGroup["ip-domain-expanded"]?.["ue-dnn-qos"]?.["dnn-mbr-uplink"] / 1_000_000 || null,
-      Qos5qi: "",
-      QosArp: 0,
+      qos5qi: deviceGroup["ip-domain-expanded"]?.["ue-dnn-qos"]?.["traffic-class"]?.qci || 0,
+      qosArp: deviceGroup["ip-domain-expanded"]?.["ue-dnn-qos"]?.["traffic-class"]?.arp || 0,
     },
     validationSchema: DeviceGroupSchema,
     onSubmit: async (values) => {
-      const MBRUpstreamBps = Number(values.MBRUpstreamMbps) * 1000000;
-      const MBRDownstreamBps = Number(values.MBRDownstreamMbps) * 1000000;
+      const MBRUpstreamBps = Number(values.MBRUpstreamMbps) * 1_000_000;
+      const MBRDownstreamBps = Number(values.MBRDownstreamMbps) * 1_000_000;
       try {
         await editDeviceGroup({
             name: values.name,
@@ -346,6 +361,8 @@ export function EditDeviceGroupModal({ deviceGroup, closeFn }: editDeviceGroupAc
             mtu: values.mtu,
             MBRUpstreamBps: MBRUpstreamBps,
             MBRDownstreamBps: MBRDownstreamBps,
+            qos5qi: Number(values.qos5qi),
+            qosArp: Number(values.qosArp),
             token: auth.user ? auth.user.authToken : ""
           });
         closeFn()
@@ -361,10 +378,10 @@ export function EditDeviceGroupModal({ deviceGroup, closeFn }: editDeviceGroupAc
   });
 
   const handle5QIChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-      void formik.setFieldValue("5qi", event.target.value);
+      void formik.setFieldValue("qos5qi", event.target.value);
   };
   const handleARPChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    void formik.setFieldValue("arp", event.target.value);
+    void formik.setFieldValue("qosArp", event.target.value);
   };
    
   return (
@@ -483,6 +500,7 @@ export function EditDeviceGroupModal({ deviceGroup, closeFn }: editDeviceGroupAc
               stacked
               defaultValue=""
               onChange={handle5QIChange}
+              value={formik.values.qos5qi}
               options={[
                 {
                   disabled: true,
@@ -492,17 +510,17 @@ export function EditDeviceGroupModal({ deviceGroup, closeFn }: editDeviceGroupAc
                 {
                   disabled: false,
                   label: "1: GBR - Conversational Voice",
-                  value: "1",
+                  value: 1,
                 },
                 {
                   disabled: false,
                   label: "2: GBR - Conversational Video",
-                  value: "2",
+                  value: 2,
                 },
                 {
                   disabled: false,
                   label: "9: Non-GBR",
-                  value: "9",
+                  value: 9,
                 },
               ]}
           />
@@ -511,8 +529,9 @@ export function EditDeviceGroupModal({ deviceGroup, closeFn }: editDeviceGroupAc
               label="ARP"
               required
               stacked
-              defaultValue={6}
+              defaultValue=""
               onChange={handleARPChange}
+              value={formik.values.qosArp}
               options={[
                 {
                   disabled: true,
