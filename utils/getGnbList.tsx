@@ -1,3 +1,5 @@
+import { HTTPStatus } from "@/utils/utils";
+
 export interface GnbItem {
   name: string;
   tac: number;
@@ -12,10 +14,11 @@ export const getGnbList = async (token: string): Promise<GnbItem[]> => {
         "Content-Type": "application/json",
       },
     });
-    if (!response.ok) {
-      throw new Error("Failed to fetch GNB list");
-    }
     const gnbList = await response.json();
+    if (!response.ok) {
+      throw new Error(`${response.status}: ${HTTPStatus(response.status)}. ${gnbList.error}`)
+    }
+
     return gnbList.map((gnb: GnbItem) => ({
       ...gnb,
       tac: Number(gnb.tac),

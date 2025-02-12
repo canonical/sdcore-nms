@@ -25,7 +25,7 @@ export default function GnbTable() {
       if (error.message.includes("401") || error.message.includes("403")) {
         return false
       }
-      return true
+      return failureCount < 3
     },
   })
   if (query.status == "pending") { return <Loader text="loading..." /> }
@@ -36,9 +36,15 @@ export default function GnbTable() {
     if (query.error.message.includes("403")) {
       router.push("/")
     }
-    return <p>{query.error.message}</p>
+    return (
+      <>
+        <Notification severity="negative" title="Error">
+          Failed to retrieve gNodeBs.
+        </Notification>
+      </>
+    )
   }
-  const gnbs = Array.from(query.data ? query.data : [])
+  const gnbs = query.data || []
   const tableContent: MainTableRow[] = gnbs.map((gnb) => {
     return {
       key: gnb.name,

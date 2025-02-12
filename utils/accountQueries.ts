@@ -1,3 +1,4 @@
+import { HTTPStatus } from "@/utils/utils";
 import { UserEntry } from "@/components/types";
 
 export async function listUsers(params: { authToken: string }): Promise<UserEntry[]> {
@@ -88,18 +89,4 @@ export async function postUser(userForm: { authToken: string, username: string, 
         throw new Error(`${response.status}: ${HTTPStatus(response.status)}. ${respData.error}`)
     }
     return respData
-}
-
-export const HTTPStatus = (code: number): string => {
-    const map: { [key: number]: string } = {
-        400: "Bad Request",
-        401: "Unauthorized",
-        403: "Forbidden",
-        404: "Not Found",
-        500: "Internal Server Error",
-    }
-    if (!(code in map)) {
-        throw new Error("code not recognized: " + code)
-    }
-    return map[code]
 }

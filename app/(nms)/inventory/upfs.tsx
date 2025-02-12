@@ -26,7 +26,7 @@ export default function UpfTable() {
       if (error.message.includes("401") || error.message.includes("403")) {
         return false
       }
-      return true
+      return failureCount < 3
     },
   })
   if (query.status == "pending") { return <Loader text="loading..." /> }
@@ -37,9 +37,15 @@ export default function UpfTable() {
     if (query.error.message.includes("403")) {
       router.push("/")
     }
-    return <p>{query.error.message}</p>
+    return (
+      <>
+        <Notification severity="negative" title="Error">
+          Failed to retrieve UPFs.
+        </Notification>
+      </>
+    )
   }
-  const upfs = Array.from(query.data ? query.data : [])
+  const upfs = query.data || []
   const tableContent: MainTableRow[] = upfs.map((upf) => {
     return {
       key: upf.hostname,

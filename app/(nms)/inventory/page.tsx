@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { Tabs } from "@canonical/react-components"
 
-import GnbTable from "@/app/(nms)/inventory/gnbs";;
+import GnbTable from "@/app/(nms)/inventory/gnbs";
 import PageContent from "@/components/PageContent"
 import PageHeader from "@/components/PageHeader"
-import UpfTable from "@/app/(nms)/inventory/upfs";;
+import UpfTable from "@/app/(nms)/inventory/upfs";
 
 
 export default function Inventory() {

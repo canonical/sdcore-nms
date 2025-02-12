@@ -23,3 +23,17 @@ export const passwordIsValid = (pw: string) => {
 
     return (result.hasCapital && result.hasLowercase && (result.hasSymbol || result.hasNumber))
 }
+
+export const HTTPStatus = (code: number): string => {
+    const map: { [key: number]: string } = {
+        400: "Bad Request",
+        401: "Unauthorized",
+        403: "Forbidden",
+        404: "Not Found",
+        500: "Internal Server Error",
+    }
+    if (!(code in map)) {
+        throw new Error("code not recognized: " + code)
+    }
+    return map[code]
+}
