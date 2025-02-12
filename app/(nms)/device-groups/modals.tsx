@@ -1,14 +1,14 @@
 import { Button, Form, Input, ConfirmationButton, Modal, Notification, Select } from "@canonical/react-components"
-import { createDeviceGroup } from "@/utils/createDeviceGroup";
+import { createDeviceGroup, editDeviceGroup } from "@/utils/deviceGroupOperations";
 import { deleteDeviceGroup } from "@/utils/deleteDeviceGroup";
 import { DeviceGroup } from "@/components/types";
-import { editDeviceGroup } from "@/utils/editDeviceGroup";
 import { getNetworkSliceNames } from "@/utils/getNetworkSlices"
 import { useAuth } from "@/utils/auth"
 import { useFormik } from "formik";
 import { useQueryClient } from "@tanstack/react-query"
 import { useQuery } from "@tanstack/react-query"
 import { useState } from "react"
+import  { WebconsoleApiError, OperationError}  from "@/utils/errorDefinition";
 
 import * as Yup from "yup";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
@@ -112,10 +112,18 @@ export function CreateDeviceGroupModal({ closeFn }: createNewDeviceGroupModalPro
         await queryClient.invalidateQueries({ queryKey: ['network-slices'] })
       }
       catch (error) {
-        console.error(error);
-        setApiError(
-          (error as Error).message || "An unexpected error occurred.",
-        );
+        if (error instanceof WebconsoleApiError) {
+          if (error.status === 401) {
+            auth.logout()
+          }
+          setApiError(error.message)
+        }
+        else if (error instanceof OperationError) {
+          setApiError(error.message)
+        }
+        else{
+          setApiError("An unexpected error occurred.");
+        }
       }
     },
   });
@@ -369,10 +377,18 @@ export function EditDeviceGroupModal({ deviceGroup, closeFn }: editDeviceGroupAc
         await queryClient.invalidateQueries({ queryKey: ['device-groups'] })
       }
       catch (error) {
-        console.error(error);
-        setApiError(
-          (error as Error).message || "An unexpected error occurred.",
-        );
+        if (error instanceof WebconsoleApiError) {
+          if (error.status === 401) {
+            auth.logout()
+          }
+          setApiError(error.message)
+        }
+        else if (error instanceof OperationError) {
+          setApiError(error.message)
+        }
+        else{
+          setApiError("An unexpected error occurred.");
+        }
       }
     },
   });

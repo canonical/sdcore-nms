@@ -2,6 +2,7 @@ import { NetworkSlice, DeviceGroup } from "@/components/types";
 import { apiGetDeviceGroup, apiGetAllDeviceGroups } from "@/utils/callDeviceGroupApi";
 import { getNetworkSlices } from "@/utils/getNetworkSlices";
 import { HTTPStatus } from "@/utils/utils";
+import  { WebconsoleApiError }  from "@/utils/errorDefinition";
 
 export const getDeviceGroups = async (token: string): Promise<DeviceGroup[]> => {
   try {
@@ -30,8 +31,8 @@ export const getDeviceGroup = async (deviceGroupName: string, token: string): Pr
     const response = await apiGetDeviceGroup(deviceGroupName, token);
     const deviceGroup = await response.json();
     if (!response.ok) {
-      throw new Error(`${response.status}: ${HTTPStatus(response.status)}. ${deviceGroup.error}`)
-  }
+      throw new WebconsoleApiError(response.status, HTTPStatus(response.status));
+    }
     return deviceGroup as DeviceGroup;
 
   } catch (error) {
