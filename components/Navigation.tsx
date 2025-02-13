@@ -5,6 +5,9 @@ import Logo from "./Logo";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/utils/auth";
 
+
+import DisplaySettingsOutlinedIcon from '@mui/icons-material/DisplaySettingsOutlined';
+
 const Navigation: FC = () => {
   const pathname = usePathname();
   const [isCollapsed, setCollapsed] = useState(false);
@@ -86,6 +89,25 @@ const Navigation: FC = () => {
                         name="connected"
                       />{" "}
                       Network slices
+                    </a>
+                  </li>
+                  <li className="p-side-navigation__item">
+                    <a
+                      className="p-side-navigation__link"
+                      href="/device-groups"
+                      title="Device groups"
+                      aria-current={
+                        pathname === "/device-groups"
+                          ? "page"
+                          : undefined
+                      }
+                    >
+                      <DisplaySettingsOutlinedIcon
+                        className="is-light p-side-navigation__icon"
+                        fontSize="inherit"
+                        style={{ color: "#fff" }}
+                      />
+                      Device groups
                     </a>
                   </li>
                   <li className="p-side-navigation__item">

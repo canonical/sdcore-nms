@@ -23,3 +23,12 @@ export const getNetworkSlices = async (token: string): Promise<NetworkSlice[]> =
     throw error;
   }
 };
+
+export const getNetworkSliceNames = async (token: string): Promise<string[]> => {
+    const response = await apiGetAllNetworkSlices(token);
+    const respData = await response.json();
+    if (!response.ok) {
+        throw new Error(`${response.status}: ${respData.error}`)
+    }
+    return respData
+}
