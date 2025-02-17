@@ -16,7 +16,7 @@ export const apiGetAllNetworkSlices = async (token: string): Promise<string[]> =
     });
     const respData = await response.json();
     if (!response.ok) {
-      throw new WebconsoleApiError(response.status, `${HTTPStatus(response.status)}. ${respData.error}`);
+      throw new WebconsoleApiError(response.status, respData.error);
     }
     return respData;
   } catch (error) {

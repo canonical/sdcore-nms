@@ -1,9 +1,13 @@
+import { HTTPStatus } from "@/utils/utils";
+
 export class WebconsoleApiError extends Error {
   status: number;
+  statusText: string;
 
   constructor(status: number, message: string) {
-    super(message);
+    super(`${status}: ${message}`);
     this.status = status;
+    this.statusText = HTTPStatus(status)
     this.name = "WebconsoleApiError";
   }
 }

@@ -1,7 +1,6 @@
 import { NetworkSlice, DeviceGroup } from "@/components/types";
 import { apiGetDeviceGroup, apiGetAllDeviceGroups } from "@/utils/callDeviceGroupApi";
 import { getNetworkSlices } from "@/utils/getNetworkSlices";
-import { HTTPStatus } from "@/utils/utils";
 import  { WebconsoleApiError }  from "@/utils/errors";
 
 export const getDeviceGroups = async (token: string): Promise<DeviceGroup[]> => {
@@ -9,7 +8,7 @@ export const getDeviceGroups = async (token: string): Promise<DeviceGroup[]> => 
     const deviceGroupResponse = await apiGetAllDeviceGroups(token);
     const deviceGroupNames = await deviceGroupResponse.json();
     if (!deviceGroupResponse.ok) {
-        throw new Error(`${deviceGroupResponse.status}: ${HTTPStatus(deviceGroupResponse.status)}. ${deviceGroupNames.error}`)
+      throw new WebconsoleApiError(deviceGroupResponse.status, deviceGroupNames.error);
     }
     const networkSlices = await getNetworkSlices(token);
     const deviceGroups = await Promise.all(
@@ -21,7 +20,7 @@ export const getDeviceGroups = async (token: string): Promise<DeviceGroup[]> => 
     );
     return deviceGroups
   } catch (error) {
-    console.error(error);
+    console.error(`Failed to get device groups: ${error}`);
     throw error;
   }
 };
@@ -31,12 +30,12 @@ export const getDeviceGroup = async (deviceGroupName: string, token: string): Pr
     const response = await apiGetDeviceGroup(deviceGroupName, token);
     const deviceGroup = await response.json();
     if (!response.ok) {
-      throw new WebconsoleApiError(response.status, HTTPStatus(response.status));
+      throw new WebconsoleApiError(response.status, deviceGroup.error);
     }
     return deviceGroup as DeviceGroup;
 
   } catch (error) {
-    console.error(error);
+    console.error(`Failed to get device group ${deviceGroupName} : ${error}`);
     throw error;
   }
 };

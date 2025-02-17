@@ -8,7 +8,7 @@ import { useFormik } from "formik";
 import { useQueryClient } from "@tanstack/react-query"
 import { useQuery } from "@tanstack/react-query"
 import { useState } from "react"
-import  { WebconsoleApiError, OperationError}  from "@/utils/errors";
+import { WebconsoleApiError, OperationError}  from "@/utils/errors";
 
 import * as Yup from "yup";
 
@@ -143,7 +143,7 @@ export const DeviceGroupModal: React.FC<DeviceGroupModalProps> = ({
     validationSchema: DeviceGroupSchema,
     onSubmit: async (values) => {
       try {
-        onSubmit({...values,});
+        await onSubmit({...values,});
         closeFn();
         await queryClient.invalidateQueries({ queryKey: ['device-groups'] });
         await queryClient.invalidateQueries({ queryKey: ['network-slices'] });
@@ -152,7 +152,7 @@ export const DeviceGroupModal: React.FC<DeviceGroupModalProps> = ({
           if (error.status === 401) {
             auth.logout();
           }
-          setApiError(error.message);
+          setApiError(error.statusText);
         } else if (error instanceof OperationError) {
           setApiError(error.message);
         } else {
@@ -174,7 +174,7 @@ export const DeviceGroupModal: React.FC<DeviceGroupModalProps> = ({
   if (!isEdit && !networkSlicesQuery.isLoading && networkSliceItems.length === 0 && !networkSliceError) {
     setNetworkSliceError("No network slice available. Please create a network slice.");
   }
-  
+
   return (
       <Modal
       title={title}
@@ -293,7 +293,7 @@ export const DeviceGroupModal: React.FC<DeviceGroupModalProps> = ({
               stacked
               defaultValue=""
               help="5G Quality of Service Identifier"
-              onChange={(value) => formik.setFieldValue("qos5qi", value)}
+              onChange={(event) => formik.setFieldValue("qos5qi", Number(event.target.value))}
               value={formik.values.qos5qi}
               options={[
                 {
@@ -325,7 +325,7 @@ export const DeviceGroupModal: React.FC<DeviceGroupModalProps> = ({
               stacked
               defaultValue={6}
               help="Allocation and Retention Priority"
-              onChange={(value) => formik.setFieldValue("qosArp", value)}
+              onChange={(event) => formik.setFieldValue("qosArp", Number(event.target.value))}
               value={formik.values.qosArp}
               options={[
                 {
@@ -459,8 +459,11 @@ export const DeleteDeviceGroupButton: React.FC<deleteDeviceGroupActionModalProps
       networkSliceName,
       token: auth.user ? auth.user.authToken : ""
     });
-    await queryClient.invalidateQueries({ queryKey: ['device-groups'] });
-    await queryClient.invalidateQueries({ queryKey: ['network-slices'] });
+
+    setTimeout(async () => { // Wait 100 ms befor invalidating due to a race condition
+      await queryClient.invalidateQueries({ queryKey: ['network-slices'] });
+      await queryClient.invalidateQueries({ queryKey: ['device-groups'] });
+    }, 100);
   };
 
   if (subscribers && subscribers.length > 0) {

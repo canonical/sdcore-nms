@@ -70,32 +70,35 @@ export const createDeviceGroup = async ({
   };
 
   try {
-    var response = await apiGetDeviceGroup(name, token);
-    if (response.ok) {
+    const getDeviceGroupResponse = await apiGetDeviceGroup(name, token);
+    if (getDeviceGroupResponse.ok) {
       throw new OperationError("Device group already exists");
     }
-    if (response.status !== 404) {
-      throw new WebconsoleApiError(response.status, HTTPStatus(response.status));
+    if (getDeviceGroupResponse.status !== 404) {
+      const deviceGroupData = await getDeviceGroupResponse.json();
+      throw new WebconsoleApiError(getDeviceGroupResponse.status, deviceGroupData.error);
     }
 
-    response = await apiPostDeviceGroup(name, deviceGroupData, token);
-    if (!response.ok) {
-      throw new WebconsoleApiError(response.status, HTTPStatus(response.status));
+    const postDeviceGroupResponse = await apiPostDeviceGroup(name, deviceGroupData, token);
+    if (!postDeviceGroupResponse.ok) {
+      const postDeviceGroupData = await postDeviceGroupResponse.json();
+      throw new WebconsoleApiError(postDeviceGroupResponse.status, postDeviceGroupData.error);
     }
 
-    response = await apiGetNetworkSlice(networkSliceName, token);
-    if (!response.ok) {
-      throw new WebconsoleApiError(response.status, HTTPStatus(response.status));
+    const getNetworkSliceResponse = await apiGetNetworkSlice(networkSliceName, token);
+    var existingSliceData = await getNetworkSliceResponse.json();
+    if (!getNetworkSliceResponse.ok) {
+      throw new WebconsoleApiError(getNetworkSliceResponse.status, existingSliceData.error);
     }
-    var existingSliceData = await response.json();
     if (!existingSliceData["site-device-group"]) {
       existingSliceData["site-device-group"] = [];
     }
     existingSliceData["site-device-group"].push(name);
 
-    response = await apiPostNetworkSlice(networkSliceName, existingSliceData, token);
-    if (!response.ok) {
-      throw new WebconsoleApiError(response.status, HTTPStatus(response.status));
+    const postNetworkSliceResponse = await apiPostNetworkSlice(networkSliceName, existingSliceData, token);
+    if (!postNetworkSliceResponse.ok) {
+      const postNetworkSliceData = await postNetworkSliceResponse.json();
+      throw new WebconsoleApiError(postNetworkSliceResponse.status, postNetworkSliceData.error);
     }
   } catch (error: unknown) {
     console.error(`Failed to create device group ${name} : ${error}`);
@@ -163,7 +166,8 @@ export const editDeviceGroup = async ({
 
     const response = await apiPostDeviceGroup(name, deviceGroupData, token);
     if (!response.ok) {
-        throw new WebconsoleApiError(response.status, HTTPStatus(response.status));
+      const responseData = await response.json();
+      throw new WebconsoleApiError(response.status, responseData.error);
     }
   } catch (error: unknown) {
     console.error(`Failed to edit device group ${name} : ${error}`);

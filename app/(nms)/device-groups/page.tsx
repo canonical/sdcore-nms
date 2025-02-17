@@ -1,6 +1,6 @@
 "use client"
 
-import { Button, MainTable } from "@canonical/react-components"
+import { Button, MainTable, Notification } from "@canonical/react-components"
 import { CreateDeviceGroupModal, EditDeviceGroupModal, DeleteDeviceGroupButton } from "@/app/(nms)/device-groups/modals";
 import { DeviceGroup } from "@/components/types";
 import { getDeviceGroups } from "@/utils/getDeviceGroup";
@@ -9,7 +9,8 @@ import { useAuth } from "@/utils/auth"
 import { useQuery } from "@tanstack/react-query"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
-import { Col, Row } from "@canonical/react-components";
+import { WebconsoleApiError }  from "@/utils/errors";
+
 import Loader from "@/components/Loader"
 import PageContent from "@/components/PageContent"
 import PageHeader from "@/components/PageHeader"
@@ -26,27 +27,29 @@ type modalData = {
 export default function DeviceGroups() {
   const [modalData, setModalData] = useState<modalData | null>(null);
   const auth = useAuth()
-  const router = useRouter()
   const deviceGroupQuery = useQuery<DeviceGroup[], Error>({
-    queryKey: ['device-groups', auth.user?.authToken],
+    queryKey: ['device-groups'],
     queryFn: () => getDeviceGroups(auth.user?.authToken ?? ""),
     enabled: auth.user ? true : false,
     retry: (failureCount, error): boolean => {
-      if (error.message.includes("401") || error.message.includes("403")) {
+      if (error instanceof WebconsoleApiError && error.status === 401) {
         return false
       }
-      return true
+      return failureCount < 3
     },
   })
   if (deviceGroupQuery.status == "pending") { return <Loader text="loading..." /> }
   if (deviceGroupQuery.status == "error") {
-    if (deviceGroupQuery.error.message.includes("401")) {
-      auth.logout()
-    }
-    if (deviceGroupQuery.error.message.includes("403")) {
-      router.push("/")
-    }
-    return <p>{deviceGroupQuery.error.message}</p>
+    if (deviceGroupQuery.error instanceof WebconsoleApiError && deviceGroupQuery.error.status === 401) {
+        auth.logout();
+    } 
+    return (
+      <>
+        <Notification severity="negative" title="Error">
+          Failed to retrieve device groups.
+        </Notification>
+      </>
+    )
   }
 
   const deviceGroups = Array.from(deviceGroupQuery.data ? deviceGroupQuery.data : [])
