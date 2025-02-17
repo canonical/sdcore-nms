@@ -37,4 +37,3 @@ export const HTTPStatus = (code: number): string => {
     }
     return map[code]
 }
-
