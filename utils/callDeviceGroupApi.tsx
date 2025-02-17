@@ -1,6 +1,3 @@
-import { DeviceGroup } from "@/components/types";
-import { HTTPStatus } from "@/utils/utils";
-
 function isValidDeviceGroupName(name: string): boolean {
   return /^[a-zA-Z0-9-_]+$/.test(name);
 }
@@ -20,7 +17,7 @@ export const apiGetAllDeviceGroups = async (token: string) => {
   }
 };
 
-export async function apiGetDeviceGroup(name: string, token: string): Promise<Response> {
+export const apiGetDeviceGroup = async (name: string, token: string) => {
   if (!isValidDeviceGroupName(name)) {
     throw new Error(`Error getting device group: Invalid name provided ${name}.`);
   }
@@ -33,8 +30,8 @@ export async function apiGetDeviceGroup(name: string, token: string): Promise<Re
       },
     });
   } catch (error) {
-      console.error("Unexpected error:", error);
-      throw new Error(`Unexpected error occurred: ${error}`);
+    console.error(error);
+    throw error;
   }
 };
 

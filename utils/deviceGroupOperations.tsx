@@ -2,7 +2,7 @@ import { apiGetNetworkSlice, apiPostNetworkSlice } from "@/utils/callNetworkSlic
 import { apiGetDeviceGroup, apiPostDeviceGroup } from "@/utils/callDeviceGroupApi";
 import { getDeviceGroup } from "@/utils/getDeviceGroup";
 import { HTTPStatus } from "@/utils/utils";
-import  { WebconsoleApiError, OperationError}  from "@/utils/errorDefinition";
+import  { WebconsoleApiError, OperationError}  from "@/utils/errors";
 
 const QCI_MAP = new Map<number, { pdb: number; pelr: number }>([
   [1, { pdb: 100, pelr: 2 }],

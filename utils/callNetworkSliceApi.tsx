@@ -1,18 +1,26 @@
+import { HTTPStatus } from "@/utils/utils";
+import  { WebconsoleApiError, OperationError}  from "@/utils/errors";
+
 function isValidNetworkSliceName(name: string): boolean {
   return /^[a-zA-Z0-9-_]+$/.test(name);
 }
 
-export const apiGetAllNetworkSlices = async (token: string) => {
+export const apiGetAllNetworkSlices = async (token: string): Promise<string[]> => {
   try {
-    return await fetch(`/config/v1/network-slice`, {
+    const response = await fetch(`/config/v1/network-slice`, {
       method: "GET",
       headers: {
         "Authorization": "Bearer " + token,
         "Content-Type": "application/json",
       },
     });
+    const respData = await response.json();
+    if (!response.ok) {
+      throw new WebconsoleApiError(response.status, `${HTTPStatus(response.status)}. ${respData.error}`);
+    }
+    return respData;
   } catch (error) {
-    console.error(error);
+    console.error(`Error retrieving network slices ${error}`);
     throw error;
   }
 };

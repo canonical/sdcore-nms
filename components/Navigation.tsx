@@ -98,9 +98,7 @@ const Navigation: FC = () => {
                       href="/device-groups"
                       title="Device groups"
                       aria-current={
-                        pathname === "/device-groups"
-                          ? "page"
-                          : undefined
+                        pathname === "/device-groups" ? "page" : undefined
                       }
                     >
                       <DisplaySettingsOutlinedIcon

@@ -2,7 +2,7 @@ import { NetworkSlice, DeviceGroup } from "@/components/types";
 import { apiGetDeviceGroup, apiGetAllDeviceGroups } from "@/utils/callDeviceGroupApi";
 import { getNetworkSlices } from "@/utils/getNetworkSlices";
 import { HTTPStatus } from "@/utils/utils";
-import  { WebconsoleApiError }  from "@/utils/errorDefinition";
+import  { WebconsoleApiError }  from "@/utils/errors";
 
 export const getDeviceGroups = async (token: string): Promise<DeviceGroup[]> => {
   try {

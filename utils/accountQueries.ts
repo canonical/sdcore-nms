@@ -1,6 +1,5 @@
 import { HTTPStatus } from "@/utils/utils";
 import { UserEntry } from "@/components/types";
-import { HTTPStatus } from "@/utils/utils";
 
 export async function listUsers(params: { authToken: string }): Promise<UserEntry[]> {
     const response = await fetch("/config/v1/account", {

@@ -2,13 +2,13 @@ import { Button, Form, Input, ConfirmationButton, Modal, Notification, Select } 
 import { createDeviceGroup, editDeviceGroup } from "@/utils/deviceGroupOperations";
 import { deleteDeviceGroup } from "@/utils/deleteDeviceGroup";
 import { DeviceGroup } from "@/components/types";
-import { getNetworkSliceNames } from "@/utils/getNetworkSlices"
+import { apiGetAllNetworkSlices } from "@/utils/callNetworkSliceApi"
 import { useAuth } from "@/utils/auth"
 import { useFormik } from "formik";
 import { useQueryClient } from "@tanstack/react-query"
 import { useQuery } from "@tanstack/react-query"
 import { useState } from "react"
-import  { WebconsoleApiError, OperationError}  from "@/utils/errorDefinition";
+import  { WebconsoleApiError, OperationError}  from "@/utils/errors";
 
 import * as Yup from "yup";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
@@ -130,7 +130,7 @@ export function CreateDeviceGroupModal({ closeFn }: createNewDeviceGroupModalPro
 
   const networkSlicesQuery = useQuery<string[], Error>({
     queryKey: ['network-slice', auth.user?.authToken],
-    queryFn: () => getNetworkSliceNames(auth.user?.authToken ?? ""),
+    queryFn: () => apiGetAllNetworkSlices(auth.user?.authToken ?? ""),
     enabled: auth.user ? true : false,
   })
   const networkSliceItems = (networkSlicesQuery.data as string[]) || [];

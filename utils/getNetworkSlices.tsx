@@ -3,12 +3,7 @@ import { apiGetNetworkSlice, apiGetAllNetworkSlices } from "@/utils/callNetworkS
 
 export const getNetworkSlices = async (token: string): Promise<NetworkSlice[]> => {
   try {
-    const response = await apiGetAllNetworkSlices(token);
-    if (!response.ok) {
-      throw new Error("Failed to fetch network slices");
-    }
-    const sliceNames = await response.json();
-
+    const sliceNames = await apiGetAllNetworkSlices(token);
     const sliceDetailsPromises = sliceNames.map(async (sliceName: string) => {
       const detailResponse = await apiGetNetworkSlice(sliceName, token);
       if (!detailResponse.ok) {
@@ -23,12 +18,3 @@ export const getNetworkSlices = async (token: string): Promise<NetworkSlice[]> =
     throw error;
   }
 };
-
-export const getNetworkSliceNames = async (token: string): Promise<string[]> => {
-    const response = await apiGetAllNetworkSlices(token);
-    const respData = await response.json();
-    if (!response.ok) {
-        throw new Error(`${response.status}: ${respData.error}`)
-    }
-    return respData
-}
