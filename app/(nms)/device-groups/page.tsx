@@ -9,8 +9,7 @@ import { useAuth } from "@/utils/auth"
 import { useQuery } from "@tanstack/react-query"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
-
-import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import { Col, Row } from "@canonical/react-components";
 import Loader from "@/components/Loader"
 import PageContent from "@/components/PageContent"
 import PageHeader from "@/components/PageHeader"
@@ -50,7 +49,6 @@ export default function DeviceGroups() {
     return <p>{deviceGroupQuery.error.message}</p>
   }
 
-  const editIcon = <EditOutlinedIcon className="device-group-action-button"/>
   const deviceGroups = Array.from(deviceGroupQuery.data ? deviceGroupQuery.data : [])
   const tableContent: MainTableRow[] = deviceGroups.map((deviceGroup) => {
     return {
@@ -61,35 +59,35 @@ export default function DeviceGroups() {
         { content: deviceGroup["ip-domain-expanded"]?.["ue-ip-pool"] },
         { content: deviceGroup["ip-domain-expanded"]?.["dns-primary"] },
         { content: deviceGroup["ip-domain-expanded"]?.mtu },
-        { content: deviceGroup["ip-domain-expanded"]?.["ue-dnn-qos"]?.["dnn-mbr-downlink"] },
-        { content: deviceGroup["ip-domain-expanded"]?.["ue-dnn-qos"]?.["dnn-mbr-uplink"] },
+        { content: deviceGroup["ip-domain-expanded"]?.["ue-dnn-qos"]?.["dnn-mbr-downlink"] / 1_000_000 },
+        { content: deviceGroup["ip-domain-expanded"]?.["ue-dnn-qos"]?.["dnn-mbr-uplink"] / 1_000_000 },
         { content: deviceGroup["ip-domain-expanded"]?.["ue-dnn-qos"]?.["traffic-class"]?.qci },
         { content: deviceGroup["ip-domain-expanded"]?.["ue-dnn-qos"]?.["traffic-class"]?.arp },
         { content:
             <Button
-              className="u-no-margin--bottom is-small"
-              small
-              hasIcon
-              appearance={"base"}
+              appearance=""
+              className="u-no-margin--bottom"
               onClick={() => setModalData({ deviceGroup: deviceGroup, action: EDIT })}
               title="Edit"
             >
-              {editIcon}
-            </Button> 
+              Edit
+            </Button>
         },
-        {
-          content: DeleteDeviceGroupButton({ 
-            deviceGroupName: deviceGroup["group-name"], 
-            networkSliceName: deviceGroup["network-slice"] || "",
-            subscribers: deviceGroup["imsis"]
-          })
-        }],
+        { content:
+          <DeleteDeviceGroupButton 
+            deviceGroupName={deviceGroup["group-name"]}
+            networkSliceName={deviceGroup["network-slice"] || ""}
+            subscribers={deviceGroup["imsis"]}
+          >
+          </DeleteDeviceGroupButton>
+        },
+      ],
     };
   });
 
   return (
     <>
-      <PageHeader title={`Device Groups (${deviceGroups.length})`}>
+      <PageHeader title={`Device Groups (${deviceGroups.length})`} colSize={12}>
         <Button
           hasIcon
           appearance="base"
@@ -102,7 +100,7 @@ export default function DeviceGroups() {
           Create
         </Button>
       </PageHeader>
-      <PageContent>
+      <PageContent colSize={12}>
         <MainTable
           defaultSort='"abcd"'
           defaultSortDirection="ascending"
@@ -116,8 +114,8 @@ export default function DeviceGroups() {
             { content: "MBR Upstream" },
             { content: "5QI" },
             { content: "ARP" },
-            { content: "Actions", className: "u-align--right" },
-            { content: "Actions", className: "u-align--right" },
+            { content: "Actions"},
+            { content: ""},
           ]}
           rows={tableContent}
         />

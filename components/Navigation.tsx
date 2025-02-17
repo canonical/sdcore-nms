@@ -3,11 +3,9 @@ import { Button, Icon } from "@canonical/react-components";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/utils/auth";
 import classnames from "classnames";
+import TuneOutlinedIcon from '@mui/icons-material/TuneOutlined';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import Logo from "@/components/Logo"
-
-
-import DisplaySettingsOutlinedIcon from '@mui/icons-material/DisplaySettingsOutlined';
 
 const Navigation: FC = () => {
   const pathname = usePathname();
@@ -101,7 +99,7 @@ const Navigation: FC = () => {
                         pathname === "/device-groups" ? "page" : undefined
                       }
                     >
-                      <DisplaySettingsOutlinedIcon
+                      <TuneOutlinedIcon
                         className="is-light p-side-navigation__icon"
                         fontSize="inherit"
                         style={{ color: "#fff" }}
