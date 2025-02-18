@@ -11,7 +11,7 @@ const QCI_MAP = new Map<number, { pdb: number; pelr: number }>([
   [9, { pdb: 300, pelr: 6 }],
 ]);
 
-const getQCIValues = (qci: number): { pdb: number; pelr: number } | null => {
+export const getQCIValues = (qci: number): { pdb: number; pelr: number } | null => {
   return QCI_MAP.get(qci) || null;
 };
 
@@ -41,7 +41,7 @@ export async function createDeviceGroup({
   token
 }: CreateDeviceGroupArgs): Promise<void> {
 
-  const cqiValues = getQCIValues(qos5qi)
+  const cqiValues = getQCIValues(qos5qi);
   if (!cqiValues) {
     console.error(`invalid QOS 5QI ${qos5qi}`);
     throw new OperationError("Failed to create device group: invalid QOS");
@@ -129,7 +129,7 @@ export async function editDeviceGroup({
   qosArp,
   token
 }: EditDeviceGroupArgs): Promise<void> {
-    const cqiValues = getQCIValues(qos5qi)
+    const cqiValues = getQCIValues(qos5qi);
     if (!cqiValues) {
       console.error(`invalid QOS 5QI ${qos5qi}`);
       throw new OperationError("Failed to create device group: invalid QOS");

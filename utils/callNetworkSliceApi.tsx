@@ -1,5 +1,4 @@
-import { HTTPStatus } from "@/utils/utils";
-import  { WebconsoleApiError, OperationError}  from "@/utils/errors";
+import  { WebconsoleApiError }  from "@/utils/errors";
 
 function isValidNetworkSliceName(name: string): boolean {
   return /^[a-zA-Z0-9-_]+$/.test(name);

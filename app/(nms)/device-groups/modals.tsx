@@ -284,7 +284,7 @@ export const DeviceGroupModal: React.FC<DeviceGroupModalProps> = ({
           />
         </fieldset>
         <fieldset>
-          <legend>QOS</legend>
+          <legend>QoS</legend>
           <Select
               id="5qi"
               label="5QI"
