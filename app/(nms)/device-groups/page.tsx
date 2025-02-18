@@ -58,14 +58,36 @@ export default function DeviceGroups() {
       columns: [
         { content: deviceGroup["group-name"] },
         { content: deviceGroup["network-slice"] },
-        { content: deviceGroup["ip-domain-expanded"]?.["ue-ip-pool"] },
-        { content: deviceGroup["ip-domain-expanded"]?.["dns-primary"] },
-        { content: deviceGroup["ip-domain-expanded"]?.mtu },
-        { content: deviceGroup["ip-domain-expanded"]?.["ue-dnn-qos"]?.["dnn-mbr-downlink"] / 1_000_000 },
-        { content: deviceGroup["ip-domain-expanded"]?.["ue-dnn-qos"]?.["dnn-mbr-uplink"] / 1_000_000 },
-        { content: deviceGroup["ip-domain-expanded"]?.["ue-dnn-qos"]?.["traffic-class"]?.qci },
-        { content: deviceGroup["ip-domain-expanded"]?.["ue-dnn-qos"]?.["traffic-class"]?.arp },
-        { content:
+        {
+          content: deviceGroup["ip-domain-expanded"]?.["ue-ip-pool"],
+          hasOverflow: true,
+        },
+        {
+          content: deviceGroup["ip-domain-expanded"]?.["dns-primary"],
+          className:"u-align--right",
+        },
+        {
+          content: deviceGroup["ip-domain-expanded"]?.mtu,
+          className:"u-align--right",
+        },
+        {
+          content: deviceGroup["ip-domain-expanded"]?.["ue-dnn-qos"]?.["dnn-mbr-downlink"] / 1_000_000,
+          className:"u-align--right",
+        },
+        {
+          content: deviceGroup["ip-domain-expanded"]?.["ue-dnn-qos"]?.["dnn-mbr-uplink"] / 1_000_000,
+          className:"u-align--right",
+        },
+        {
+          content: deviceGroup["ip-domain-expanded"]?.["ue-dnn-qos"]?.["traffic-class"]?.qci,
+          className:"u-align--right",
+        },
+        {
+          content: deviceGroup["ip-domain-expanded"]?.["ue-dnn-qos"]?.["traffic-class"]?.arp,
+          className:"u-align--right",
+        },
+        {
+          content:
             <Button
               appearance=""
               className="u-no-margin--bottom"
@@ -73,7 +95,8 @@ export default function DeviceGroups() {
               title="Edit"
             >
               Edit
-            </Button>
+            </Button>,
+          className:"u-align--right",
         },
         { content:
           <DeleteDeviceGroupButton 
@@ -102,22 +125,41 @@ export default function DeviceGroups() {
           Create
         </Button>
       </PageHeader>
-      <PageContent colSize={12}>
+      <PageContent colSize={11}>
         <MainTable
-          defaultSort='"abcd"'
-          defaultSortDirection="ascending"
           headers={[
             { content: "Name" },
             { content: "Network Slice" },
             { content: "Subscriber IP Pool" },
-            { content: "DNS" },
-            { content: "MTU" },
-            { content: "MBR Downstream" },
-            { content: "MBR Upstream" },
-            { content: "5QI" },
-            { content: "ARP" },
-            { content: "Actions"},
+            {
+              content: "DNS",
+              className:"u-align--right",
+            },
+            {
+              content: "MTU",
+              className:"u-align--right",
+            },
+            {
+              content: "MBR Downstream",
+              className:"u-align--right",
+            },
+            {
+              content: "MBR Upstream",
+              className:"u-align--right",
+            },
+            {
+              content: "5QI",
+              className:"u-align--right",
+            },
+            {
+              content: "ARP",
+              className:"u-align--right",
+            },
             { content: ""},
+            {
+              content: "Actions",
+              className:"u-align--right",
+            },
           ]}
           rows={tableContent}
         />
