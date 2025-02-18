@@ -1,6 +1,5 @@
 import { Button, Form, Input, ConfirmationButton, Modal, Notification, Select } from "@canonical/react-components"
-import { createDeviceGroup, editDeviceGroup } from "@/utils/deviceGroupOperations";
-import { deleteDeviceGroup } from "@/utils/deleteDeviceGroup";
+import { createDeviceGroup, editDeviceGroup, deleteDeviceGroup } from "@/utils/deviceGroupOperations";
 import { DeviceGroup } from "@/components/types";
 import { apiGetAllNetworkSlices } from "@/utils/callNetworkSliceApi"
 import { useAuth } from "@/utils/auth"
@@ -362,8 +361,8 @@ export function CreateDeviceGroupModal({ closeFn }: createNewDeviceGroupModalPro
       MBRUpstreamBps: MBRUpstreamBps,
       MBRDownstreamBps: MBRDownstreamBps,
       networkSliceName: values.networkSlice,
-      qos5qi: Number(values.qos5qi),
-      qosArp: Number(values.qosArp),
+      qos5qi: values.qos5qi,
+      qosArp: values.qosArp,
       token: auth.user ? auth.user.authToken : ""
     });
   };
@@ -409,8 +408,8 @@ export function EditDeviceGroupModal({ deviceGroup, closeFn }: editDeviceGroupAc
       mtu: values.mtu,
       MBRUpstreamBps: MBRUpstreamBps,
       MBRDownstreamBps: MBRDownstreamBps,
-      qos5qi: Number(values.qos5qi),
-      qosArp: Number(values.qosArp),
+      qos5qi: values.qos5qi,
+      qosArp: values.qosArp,
       token: auth.user ? auth.user.authToken : ""
     });
   };
@@ -460,7 +459,7 @@ export const DeleteDeviceGroupButton: React.FC<deleteDeviceGroupActionModalProps
       token: auth.user ? auth.user.authToken : ""
     });
 
-    setTimeout(async () => { // Wait 100 ms befor invalidating due to a race condition
+    setTimeout(async () => { // Wait 100 ms before invalidating due to a race condition
       await queryClient.invalidateQueries({ queryKey: ['network-slices'] });
       await queryClient.invalidateQueries({ queryKey: ['device-groups'] });
     }, 100);

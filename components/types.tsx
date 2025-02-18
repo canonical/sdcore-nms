@@ -33,6 +33,7 @@ export type DeviceGroup = {
     dnn: string;
     "ue-ip-pool": string;
     "dns-primary": string;
+    "dns-secondary"?: string,
     mtu: number;
     "ue-dnn-qos": {
       "dnn-mbr-uplink": number;

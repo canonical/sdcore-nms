@@ -1,8 +1,9 @@
 import { apiGetNetworkSlice, apiPostNetworkSlice } from "@/utils/callNetworkSliceApi";
-import { apiGetDeviceGroup, apiPostDeviceGroup } from "@/utils/callDeviceGroupApi";
-import { getDeviceGroup } from "@/utils/getDeviceGroup";
-import { HTTPStatus } from "@/utils/utils";
-import  { WebconsoleApiError, OperationError}  from "@/utils/errors";
+import { apiGetAllDeviceGroups, apiDeleteDeviceGroup, apiGetDeviceGroup, apiPostDeviceGroup } from "@/utils/callDeviceGroupApi";
+import { getNetworkSlices } from "@/utils/getNetworkSlices";
+import { NetworkSlice, DeviceGroup } from "@/components/types";
+import { WebconsoleApiError, OperationError } from "@/utils/errors";
+
 
 const QCI_MAP = new Map<number, { pdb: number; pelr: number }>([
   [1, { pdb: 100, pelr: 2 }],
@@ -13,7 +14,6 @@ const QCI_MAP = new Map<number, { pdb: number; pelr: number }>([
 const getQCIValues = (qci: number): { pdb: number; pelr: number } | null => {
   return QCI_MAP.get(qci) || null;
 };
-
 
 interface CreateDeviceGroupArgs {
   name: string;
@@ -28,7 +28,7 @@ interface CreateDeviceGroupArgs {
   token: string;
 }
 
-export const createDeviceGroup = async ({
+export async function createDeviceGroup({
   name,
   ueIpPool,
   dns,
@@ -39,7 +39,7 @@ export const createDeviceGroup = async ({
   qos5qi,
   qosArp,
   token
-}: CreateDeviceGroupArgs) => {
+}: CreateDeviceGroupArgs): Promise<void> {
 
   const cqiValues = getQCIValues(qos5qi)
   if (!cqiValues) {
@@ -106,8 +106,6 @@ export const createDeviceGroup = async ({
   }
 };
 
-
-
 interface EditDeviceGroupArgs {
   name: string;
   ueIpPool: string;
@@ -120,7 +118,7 @@ interface EditDeviceGroupArgs {
   token: string;
 }
 
-export const editDeviceGroup = async ({
+export async function editDeviceGroup({
   name,
   ueIpPool,
   dns,
@@ -130,7 +128,7 @@ export const editDeviceGroup = async ({
   qos5qi,
   qosArp,
   token
-}: EditDeviceGroupArgs) => {
+}: EditDeviceGroupArgs): Promise<void> {
     const cqiValues = getQCIValues(qos5qi)
     if (!cqiValues) {
       console.error(`invalid QOS 5QI ${qos5qi}`);
@@ -175,3 +173,92 @@ export const editDeviceGroup = async ({
   }
 };
 
+export async function getDeviceGroups(token: string): Promise<DeviceGroup[]> {
+  try {
+    const deviceGroupResponse = await apiGetAllDeviceGroups(token);
+    const deviceGroupNames = await deviceGroupResponse.json();
+    if (!deviceGroupResponse.ok) {
+      throw new WebconsoleApiError(deviceGroupResponse.status, deviceGroupNames.error);
+    }
+    const networkSlices = await getNetworkSlices(token);
+    const deviceGroups = await Promise.all(
+      deviceGroupNames.map(async (deviceGroupName: string) => {
+        const deviceGroup = await getDeviceGroup(deviceGroupName, token);
+        const networkSliceName = findDeviceGroupNetworkSlice(deviceGroupName, networkSlices);
+        return { ...deviceGroup, "network-slice": networkSliceName };
+      })
+    );
+    return deviceGroups
+  } catch (error) {
+    console.error(`Failed to get device groups: ${error}`);
+    throw error;
+  }
+};
+
+async function getDeviceGroup(deviceGroupName: string, token: string): Promise<DeviceGroup> {
+  try {
+    const response = await apiGetDeviceGroup(deviceGroupName, token);
+    const deviceGroup = await response.json();
+    if (!response.ok) {
+      throw new WebconsoleApiError(response.status, deviceGroup.error);
+    }
+    return deviceGroup as DeviceGroup;
+
+  } catch (error) {
+    console.error(`Failed to get device group ${deviceGroupName} : ${error}`);
+    throw error;
+  }
+};
+
+const findDeviceGroupNetworkSlice = (deviceGroupName: string, networkSlices: NetworkSlice[]): string => {
+  for (const networkSlice of networkSlices) {
+    if (networkSlice["site-device-group"] && networkSlice["site-device-group"].includes(deviceGroupName)) {
+      return networkSlice["slice-name"];
+    }
+  }
+  return "";
+}
+
+
+interface DeleteDeviceGroupArgs {
+  name: string;
+  networkSliceName: string;
+  token: string;
+}
+
+export async function deleteDeviceGroup({
+  name,
+  networkSliceName,
+  token
+}: DeleteDeviceGroupArgs): Promise<void> {
+  try {
+    if (networkSliceName !== "") {
+      const existingSliceResponse = await apiGetNetworkSlice(networkSliceName, token);
+      var existingSliceData = await existingSliceResponse.json();
+      if (!existingSliceResponse.ok) {
+        throw new WebconsoleApiError(existingSliceResponse.status, existingSliceData.error);
+      }
+
+      if (existingSliceData["site-device-group"]) {
+        const index = existingSliceData["site-device-group"].indexOf(name);
+        if (index > -1) {
+          existingSliceData["site-device-group"].splice(index, 1);
+
+          const updateSliceResponse = await apiPostNetworkSlice(networkSliceName, existingSliceData, token);
+          if (!updateSliceResponse.ok) {
+            const updateSliceData = await updateSliceResponse.json();
+            throw new WebconsoleApiError(updateSliceResponse.status, updateSliceData.error);
+          }
+        }
+      }
+    }
+    const deleteResponse = await apiDeleteDeviceGroup(name, token);
+    if (!deleteResponse.ok) {
+      const deleteData = await deleteResponse.json();
+      throw new WebconsoleApiError(deleteResponse.status, deleteData.error);
+    }
+  } catch (error) {
+    console.error(`Failed to delete device group ${name} : ${error}`);
+    throw error;
+  }
+};

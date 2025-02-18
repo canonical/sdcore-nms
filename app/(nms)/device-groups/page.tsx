@@ -3,11 +3,10 @@
 import { Button, MainTable, Notification } from "@canonical/react-components"
 import { CreateDeviceGroupModal, EditDeviceGroupModal, DeleteDeviceGroupButton } from "@/app/(nms)/device-groups/modals";
 import { DeviceGroup } from "@/components/types";
-import { getDeviceGroups } from "@/utils/getDeviceGroup";
+import { getDeviceGroups } from "@/utils/deviceGroupOperations";
 import { MainTableRow } from "@canonical/react-components/dist/components/MainTable/MainTable"
 import { useAuth } from "@/utils/auth"
 import { useQuery } from "@tanstack/react-query"
-import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { WebconsoleApiError }  from "@/utils/errors";
 
