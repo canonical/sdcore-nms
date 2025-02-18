@@ -81,6 +81,7 @@ const regexIp =
 const regexpCIDR =
   /^((25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\/([1-9]|[1-2][0-9]|3[0-2])$/;
 
+const validQCIValues = [1, 2, 9];
 
 const DeviceGroupSchema = Yup.object().shape({
   name: Yup.string()
@@ -109,7 +110,7 @@ const DeviceGroupSchema = Yup.object().shape({
       .max(1000000)
       .required("Value should be between 0 and 1,000,000."),
   qos5qi: Yup.number()
-      .oneOf([1, 2, 9], "5QI must be either 1, 2, or 9")
+      .oneOf(validQCIValues, "5QI must be either 1, 2, or 9")
       .required("5QI is required"),
   qosArp: Yup.number()
       .min(1)
@@ -182,7 +183,6 @@ export const DeviceGroupModal: React.FC<DeviceGroupModalProps> = ({
         <>
         <Button
           appearance="positive"
-          //className="u-no-margin--bottom mt-8"
           onClick={formik.submitForm}
           disabled={!(formik.isValid && formik.dirty)}
           loading={formik.isSubmitting}
@@ -413,6 +413,10 @@ export function EditDeviceGroupModal({ deviceGroup, closeFn }: editDeviceGroupAc
       token: auth.user ? auth.user.authToken : ""
     });
   };
+  const qos5qiValue = deviceGroup["ip-domain-expanded"]?.["ue-dnn-qos"]?.["traffic-class"]?.qci;
+  const initialQos5qi = validQCIValues.includes(qos5qiValue) ? qos5qiValue : 0;
+  const arpValue = deviceGroup["ip-domain-expanded"]?.["ue-dnn-qos"]?.["traffic-class"]?.arp;
+  const initialQosArp = arpValue >= 1 && arpValue <= 15 ? arpValue : 0;
 
   const initialValues: DeviceGroupFormValues = {
     name: deviceGroup["group-name"] || "",
@@ -422,8 +426,8 @@ export function EditDeviceGroupModal({ deviceGroup, closeFn }: editDeviceGroupAc
     mtu: deviceGroup["ip-domain-expanded"]?.["mtu"] || 1456,
     MBRDownstreamMbps: deviceGroup["ip-domain-expanded"]?.["ue-dnn-qos"]?.["dnn-mbr-downlink"] / 1_000_000 || null,
     MBRUpstreamMbps: deviceGroup["ip-domain-expanded"]?.["ue-dnn-qos"]?.["dnn-mbr-uplink"] / 1_000_000 || null,
-    qos5qi: deviceGroup["ip-domain-expanded"]?.["ue-dnn-qos"]?.["traffic-class"]?.qci || 0,
-    qosArp: deviceGroup["ip-domain-expanded"]?.["ue-dnn-qos"]?.["traffic-class"]?.arp || 0,
+    qos5qi: initialQos5qi,
+    qosArp: initialQosArp,
   };
 
   return (

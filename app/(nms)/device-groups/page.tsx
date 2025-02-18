@@ -15,12 +15,12 @@ import PageContent from "@/components/PageContent"
 import PageHeader from "@/components/PageHeader"
 import SyncOutlinedIcon from "@mui/icons-material/SyncOutlined";
 
-const CREATE = "create"
-const EDIT = "edit"
+const CREATE = "create" as const;
+const EDIT = "edit" as const;
 
 type modalData = {
   deviceGroup: DeviceGroup
-  action: "edit" | "create"
+  action: typeof CREATE | typeof EDIT;
 }
 
 export default function DeviceGroups() {
