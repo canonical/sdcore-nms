@@ -71,11 +71,11 @@ export default function DeviceGroups() {
           className:"u-align--right",
         },
         {
-          content: deviceGroup["ip-domain-expanded"]?.["ue-dnn-qos"]?.["dnn-mbr-downlink"] / 1_000_000,
+          content: deviceGroup["ip-domain-expanded"]?.["ue-dnn-qos"]?.["dnn-mbr-downlink"] / 1_000_000 + " Mbps",
           className:"u-align--right",
         },
         {
-          content: deviceGroup["ip-domain-expanded"]?.["ue-dnn-qos"]?.["dnn-mbr-uplink"] / 1_000_000,
+          content: deviceGroup["ip-domain-expanded"]?.["ue-dnn-qos"]?.["dnn-mbr-uplink"] / 1_000_000 + " Mbps",
           className:"u-align--right",
         },
         {
@@ -98,13 +98,14 @@ export default function DeviceGroups() {
             </Button>,
           className:"u-align--right",
         },
-        { content:
-          <DeleteDeviceGroupButton 
-            deviceGroupName={deviceGroup["group-name"]}
-            networkSliceName={deviceGroup["network-slice"] || ""}
-            subscribers={deviceGroup["imsis"]}
-          >
-          </DeleteDeviceGroupButton>
+        {
+          content:
+            <DeleteDeviceGro
+              deviceGroupName={deviceGroup["group-name"]}
+              networkSliceName={deviceGroup["network-slice"] || ""}
+              subscribers={deviceGroup["imsis"]}
+            >
+            </DeleteDeviceGroupButton>
         },
       ],
     };
@@ -136,16 +137,19 @@ export default function DeviceGroups() {
               className:"u-align--right",
             },
             {
-              content: "MTU",
+              content: <span>
+                        MTU<br />(bytes)
+                      </span>,
               className:"u-align--right",
+              style: { textTransform: "none" },
             },
             {
-              content: "MBR Downstream",
-              className:"u-align--right",
+              content: "Downstream Bitrate",
+              className:"u-align--right has-overflow",
             },
             {
-              content: "MBR Upstream",
-              className:"u-align--right",
+              content: "Upstream Bitrate",
+              className:"u-align--right has-overflow",
             },
             {
               content: "5QI",

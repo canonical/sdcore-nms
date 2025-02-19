@@ -1,6 +1,6 @@
 import { apiGetNetworkSlice, apiPostNetworkSlice } from "@/utils/callNetworkSliceApi";
 import { apiPostDeviceGroup } from "@/utils/callDeviceGroupApi";
-import { getQCIValues } from "@/utils/deviceGroupOperations";
+import { getQosCharacteristics } from "@/utils/deviceGroupOperations";
 
 interface GnbItem {
   name: string;
@@ -47,7 +47,7 @@ export const createNetworkSlice = async ({
     },
   };
   const qos5qi = 9;
-  const cqiValues = getQCIValues(qos5qi);
+  const qosCharacteristics = getQosCharacteristics(qos5qi);
   const deviceGroupData = {
     "site-info": "demo",
     "ip-domain-name": "pool1",
@@ -63,8 +63,8 @@ export const createNetworkSlice = async ({
         "traffic-class": {
           name: "platinum",
           arp: 6,
-          pdb: cqiValues?.pdb,
-          pelr: cqiValues?.pelr,
+          pdb: qosCharacteristics?.pdb,
+          pelr: qosCharacteristics?.pelr,
           qci: qos5qi,
         },
       },

@@ -5,14 +5,14 @@ import { NetworkSlice, DeviceGroup } from "@/components/types";
 import { WebconsoleApiError, OperationError } from "@/utils/errors";
 
 
-const QCI_MAP = new Map<number, { pdb: number; pelr: number }>([
+const FIVEQI_MAP = new Map<number, { pdb: number; pelr: number }>([
   [1, { pdb: 100, pelr: 2 }],
   [2, { pdb: 150, pelr: 3 }],
   [9, { pdb: 300, pelr: 6 }],
 ]);
 
-export const getQCIValues = (qci: number): { pdb: number; pelr: number } | null => {
-  return QCI_MAP.get(qci) || null;
+export const getQosCharacteristics = (qci: number): { pdb: number; pelr: number } | null => {
+  return FIVEQI_MAP.get(qci) || null;
 };
 
 interface CreateDeviceGroupArgs {
@@ -41,10 +41,10 @@ export async function createDeviceGroup({
   token
 }: CreateDeviceGroupArgs): Promise<void> {
 
-  const cqiValues = getQCIValues(qos5qi);
-  if (!cqiValues) {
-    console.error(`invalid QOS 5QI ${qos5qi}`);
-    throw new OperationError("Failed to create device group: invalid QOS");
+  const qosCharacteristics = getQosCharacteristics(qos5qi);
+  if (!qosCharacteristics) {
+    console.error(`invalid QoS 5QI ${qos5qi}`);
+    throw new OperationError("Failed to create device group: invalid QoS 5QI");
   }
   const deviceGroupData = {
     "site-info": "demo",
@@ -61,8 +61,8 @@ export async function createDeviceGroup({
         "traffic-class": {
           name: "platinum",
           arp: qosArp,
-          pdb: cqiValues?.pdb,
-          pelr: cqiValues?.pelr,
+          pdb: qosCharacteristics?.pdb,
+          pelr: qosCharacteristics?.pelr,
           qci: qos5qi,
         },
       },
@@ -129,10 +129,10 @@ export async function editDeviceGroup({
   qosArp,
   token
 }: EditDeviceGroupArgs): Promise<void> {
-    const cqiValues = getQCIValues(qos5qi);
-    if (!cqiValues) {
-      console.error(`invalid QOS 5QI ${qos5qi}`);
-      throw new OperationError("Failed to create device group: invalid QOS");
+    const qosCharacteristics = getQosCharacteristics(qos5qi);
+    if (!qosCharacteristics) {
+      console.error(`invalid QoS 5QI ${qos5qi}`);
+      throw new OperationError("Failed to create device group: invalid QoS 5QI");
     }
   try {
     const currentConfig = await getDeviceGroup(name, token)
@@ -154,8 +154,8 @@ export async function editDeviceGroup({
           "traffic-class": {
             name: "platinum",
             arp: qosArp,
-            pdb: cqiValues?.pdb,
-            pelr: cqiValues?.pelr,
+            pdb: qosCharacteristics?.pdb,
+            pelr: qosCharacteristics?.pelr,
             qci: qos5qi,
           },
         },

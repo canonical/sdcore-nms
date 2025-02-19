@@ -81,7 +81,7 @@ const regexIp =
 const regexpCIDR =
   /^((25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\/([1-9]|[1-2][0-9]|3[0-2])$/;
 
-const validQCIValues = [1, 2, 9];
+const valid5QIValues = [1, 2, 9];
 
 const DeviceGroupSchema = Yup.object().shape({
   name: Yup.string()
@@ -95,27 +95,27 @@ const DeviceGroupSchema = Yup.object().shape({
       .min(1)
       .required("Network slice is required."),
   ueIpPool: Yup.string()
-      .required("IP is required")
-      .matches(regexpCIDR, "Invalid IP Address Pool."),
+      .required("IP pool is required")
+      .matches(regexpCIDR, "Invalid IP address pool."),
   dns: Yup.string()
       .required("IP is required")
       .matches(regexIp, "Invalid IP Address."),
   mtu: Yup.number().min(1200).max(65535).required("Invalid MTU."),
   MBRDownstreamMbps: Yup.number()
-      .min(0)
-      .max(1000000)
+      .min(0, "Value must be greater than or equal to 0.")
+      .max(1000000, "Value must be less than or equal to 1,000,000.")
       .required("Value should be between 0 and 1,000,000."),
   MBRUpstreamMbps: Yup.number()
-      .min(0)
-      .max(1000000)
-      .required("Value should be between 0 and 1,000,000."),
+      .min(0, "Value must be greater than or equal to 0.")
+      .max(1000000, "Value must be less than or equal to 1,000,000.")
+      .required("Value must be between 0 and 1,000,000."),
   qos5qi: Yup.number()
-      .oneOf(validQCIValues, "5QI must be either 1, 2, or 9")
-      .required("5QI is required"),
+      .oneOf(valid5QIValues, "5QI must be either 1, 2, or 9.")
+      .required("5QI is required."),
   qosArp: Yup.number()
       .min(1)
       .max(15)
-      .required("ARP is required"),
+      .required("ARP is required."),
 });
 
 interface DeviceGroupModalProps {
@@ -244,7 +244,7 @@ export const DeviceGroupModal: React.FC<DeviceGroupModalProps> = ({
         />
         <Input
           id="mtu"
-          label="MTU"
+          label="MTU (bytes)"
           type="number"
           required
           stacked
@@ -414,7 +414,7 @@ export function EditDeviceGroupModal({ deviceGroup, closeFn }: editDeviceGroupAc
     });
   };
   const qos5qiValue = deviceGroup["ip-domain-expanded"]?.["ue-dnn-qos"]?.["traffic-class"]?.qci;
-  const initialQos5qi = validQCIValues.includes(qos5qiValue) ? qos5qiValue : 0;
+  const initialQos5qi = valid5QIValues.includes(qos5qiValue) ? qos5qiValue : 0;
   const arpValue = deviceGroup["ip-domain-expanded"]?.["ue-dnn-qos"]?.["traffic-class"]?.arp;
   const initialQosArp = arpValue >= 1 && arpValue <= 15 ? arpValue : 0;
 
