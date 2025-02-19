@@ -163,7 +163,7 @@ export const DeviceGroupModal: React.FC<DeviceGroupModalProps> = ({
   });
 
   const networkSlicesQuery = useQuery<string[], Error>({
-    queryKey: ['network-slice', auth.user?.authToken],
+    queryKey: ['network-slices'],
     queryFn: () => apiGetAllNetworkSlices(auth.user?.authToken ?? ""),
     enabled: !isEdit && auth.user ? true : false,
   })
@@ -375,14 +375,14 @@ export function CreateDeviceGroupModal({ closeFn }: createNewDeviceGroupModalPro
     mtu: 1456,
     MBRDownstreamMbps: null,
     MBRUpstreamMbps: null,
-    qos5qi: 0,
+    qos5qi: 1,
     qosArp: 6,
   };
 
   return (
     <>
       <DeviceGroupModal
-        title="Create Device Group"
+        title="Create device group"
         initialValues={initialValues}
         onSubmit={handleSubmit}
         closeFn={closeFn}

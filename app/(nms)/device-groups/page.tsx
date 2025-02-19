@@ -1,12 +1,14 @@
 "use client"
 
-import { Button, MainTable, Notification } from "@canonical/react-components"
+import { apiGetAllNetworkSlices } from "@/utils/callNetworkSliceApi";
+import { Button, EmptyState, MainTable, Notification } from "@canonical/react-components"
 import { CreateDeviceGroupModal, EditDeviceGroupModal, DeleteDeviceGroupButton } from "@/app/(nms)/device-groups/modals";
 import { DeviceGroup } from "@/components/types";
 import { getDeviceGroups } from "@/utils/deviceGroupOperations";
 import { MainTableRow } from "@canonical/react-components/dist/components/MainTable/MainTable"
 import { useAuth } from "@/utils/auth"
 import { useQuery } from "@tanstack/react-query"
+import { useRouter } from "next/navigation";
 import { useState } from "react"
 import { WebconsoleApiError }  from "@/utils/errors";
 
@@ -26,6 +28,20 @@ type modalData = {
 export default function DeviceGroups() {
   const [modalData, setModalData] = useState<modalData | null>(null);
   const auth = useAuth()
+  const router = useRouter();
+
+  const networkSlicesQuery = useQuery<string[], Error>({
+    queryKey: ['network-slices'],
+    queryFn: () => apiGetAllNetworkSlices(auth.user?.authToken ?? ""),
+    enabled: auth.user ? true : false,
+    retry: (failureCount, error): boolean => {
+      if (error instanceof WebconsoleApiError && error.status === 401) {
+        return false
+      }
+      return failureCount < 3
+    },
+  })
+
   const deviceGroupQuery = useQuery<DeviceGroup[], Error>({
     queryKey: ['device-groups'],
     queryFn: () => getDeviceGroups(auth.user?.authToken ?? ""),
@@ -37,9 +53,12 @@ export default function DeviceGroups() {
       return failureCount < 3
     },
   })
-  if (deviceGroupQuery.status == "pending") { return <Loader text="loading..." /> }
-  if (deviceGroupQuery.status == "error") {
-    if (deviceGroupQuery.error instanceof WebconsoleApiError && deviceGroupQuery.error.status === 401) {
+  if (deviceGroupQuery.status == "pending" || networkSlicesQuery.status == "pending") {
+    return <Loader text="loading..." />
+  }
+  if (deviceGroupQuery.status == "error" || networkSlicesQuery.status == "error") {
+    if ((deviceGroupQuery.error instanceof WebconsoleApiError && deviceGroupQuery.error.status === 401) ||
+        (networkSlicesQuery.error instanceof WebconsoleApiError && networkSlicesQuery.error.status === 401)) {
         auth.logout();
     } 
     return (
@@ -48,10 +67,51 @@ export default function DeviceGroups() {
           Failed to retrieve device groups.
         </Notification>
       </>
-    )
+    );
   }
 
-  const deviceGroups = Array.from(deviceGroupQuery.data ? deviceGroupQuery.data : [])
+  const networkSlices = networkSlicesQuery.data || [];
+  if (networkSlices.length === 0) {
+    return (
+      <>
+      <PageHeader title={""}>
+        <br></br>
+      </PageHeader>
+      <PageContent colSize={8}>
+        <EmptyState image={""} title="No device groups available">
+          <br></br>
+          <p>
+            To create a device group, first create a network slice.
+          </p>
+          <Button appearance="positive" onClick={() => router.push("/network-configuration")}>
+            Go to network slices page
+          </Button>
+        </EmptyState>
+      </PageContent>
+      {modalData?.action == CREATE && <CreateDeviceGroupModal closeFn={() => setModalData(null)} />}
+      </>
+    );
+  }
+
+  const deviceGroups = deviceGroupQuery.data || [];
+  if (deviceGroups.length === 0) {
+    return (
+      <>
+      <PageHeader title={""}>
+        <br></br>
+      </PageHeader>
+      <PageContent colSize={8}>
+        <EmptyState image={""} title="No device groups available">
+          <br></br>
+          <Button appearance="positive" onClick={() => setModalData({ deviceGroup: {} as DeviceGroup, action: CREATE })}>
+            Create
+          </Button>
+        </EmptyState>
+      </PageContent>
+      {modalData?.action == CREATE && <CreateDeviceGroupModal closeFn={() => setModalData(null)} />}
+      </>
+    );
+  }
   const tableContent: MainTableRow[] = deviceGroups.map((deviceGroup) => {
     return {
       key: deviceGroup["group-name"],
@@ -71,11 +131,11 @@ export default function DeviceGroups() {
           className:"u-align--right",
         },
         {
-          content: deviceGroup["ip-domain-expanded"]?.["ue-dnn-qos"]?.["dnn-mbr-downlink"] / 1_000_000 + " Mbps",
+          content: deviceGroup["ip-domain-expanded"]?.["ue-dnn-qos"]?.["dnn-mbr-downlink"] / 1_000_000,
           className:"u-align--right",
         },
         {
-          content: deviceGroup["ip-domain-expanded"]?.["ue-dnn-qos"]?.["dnn-mbr-uplink"] / 1_000_000 + " Mbps",
+          content: deviceGroup["ip-domain-expanded"]?.["ue-dnn-qos"]?.["dnn-mbr-uplink"] / 1_000_000,
           className:"u-align--right",
         },
         {
@@ -144,12 +204,14 @@ export default function DeviceGroups() {
               style: { textTransform: "none" },
             },
             {
-              content: "Downstream Bitrate",
+              content: "Downstream Bitrate\u00A0(Mbps)",
               className:"u-align--right has-overflow",
+              style: { textTransform: "none" },
             },
             {
-              content: "Upstream Bitrate",
+              content: "Upstream Bitrate\u00A0(Mbps)",
               className:"u-align--right has-overflow",
+              style: { textTransform: "none" },
             },
             {
               content: "5QI",
