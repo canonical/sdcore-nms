@@ -100,7 +100,7 @@ export default function DeviceGroups() {
         },
         {
           content:
-            <DeleteDeviceGro
+            <DeleteDeviceGroupButton
               deviceGroupName={deviceGroup["group-name"]}
               networkSliceName={deviceGroup["network-slice"] || ""}
               subscribers={deviceGroup["imsis"]}
