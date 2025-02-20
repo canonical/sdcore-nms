@@ -1,12 +1,13 @@
 "use client"
 
 import { Button, MainTable, Notification  } from "@canonical/react-components"
-import { getUpfList, UpfItem } from "@/utils/getUpfList";
+import { getUpfList } from "@/utils/getUpfList";
 import { MainTableRow } from "@canonical/react-components/dist/components/MainTable/MainTable"
+import { UpfItem } from "@/components/types";
 import { useAuth } from "@/utils/auth"
 import { useQuery } from "@tanstack/react-query"
-import { useRouter } from "next/navigation"
 import { useState } from "react";
+import { WebconsoleApiError } from "@/utils/errors";
 
 import Loader from "@/components/Loader"
 import SyncOutlinedIcon from "@mui/icons-material/SyncOutlined";
@@ -15,7 +16,6 @@ import PageHeader from "@/components/PageHeader"
 
 export default function UpfTable() {
   const auth = useAuth()
-  const router = useRouter()
   const [showNotification, setShowNotification] = useState(true);
 
   const query = useQuery<UpfItem[], Error>({
@@ -31,11 +31,8 @@ export default function UpfTable() {
   })
   if (query.status == "pending") { return <Loader text="loading..." /> }
   if (query.status == "error") {
-    if (query.error.message.includes("401")) {
-      auth.logout()
-    }
-    if (query.error.message.includes("403")) {
-      router.push("/")
+    if (query.error instanceof WebconsoleApiError && query.error.status === 401) {
+        auth.logout();
     }
     return (
       <>
@@ -45,7 +42,7 @@ export default function UpfTable() {
       </>
     )
   }
-  const upfs = query.data || []
+  const upfs = query.data || [];
   const tableContent: MainTableRow[] = upfs.map((upf) => {
     return {
       key: upf.hostname,

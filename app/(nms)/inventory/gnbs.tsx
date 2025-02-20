@@ -1,12 +1,13 @@
 "use client"
 
 import { Button, MainTable, Notification } from "@canonical/react-components"
-import { getGnbList, GnbItem } from "@/utils/getGnbList";
+import { getGnbList } from "@/utils/getGnbList";
+import { GnbItem } from "@/components/types";
 import { MainTableRow } from "@canonical/react-components/dist/components/MainTable/MainTable"
 import { useAuth } from "@/utils/auth"
 import { useQuery } from "@tanstack/react-query"
-import { useRouter } from "next/navigation"
 import { useState } from "react";
+import { WebconsoleApiError }  from "@/utils/errors";
 
 import Loader from "@/components/Loader"
 import PageHeader from "@/components/PageHeader"
@@ -14,7 +15,6 @@ import SyncOutlinedIcon from "@mui/icons-material/SyncOutlined";
 
 export default function GnbTable() {
   const auth = useAuth()
-  const router = useRouter()
   const [showNotification, setShowNotification] = useState(true);
 
   const query = useQuery<GnbItem[], Error>({
@@ -30,11 +30,8 @@ export default function GnbTable() {
   })
   if (query.status == "pending") { return <Loader text="loading..." /> }
   if (query.status == "error") {
-    if (query.error.message.includes("401")) {
-      auth.logout()
-    }
-    if (query.error.message.includes("403")) {
-      router.push("/")
+    if (query.error instanceof WebconsoleApiError && query.error.status === 401) {
+        auth.logout();
     }
     return (
       <>
@@ -44,7 +41,7 @@ export default function GnbTable() {
       </>
     )
   }
-  const gnbs = query.data || []
+  const gnbs = query.data || [];
   const tableContent: MainTableRow[] = gnbs.map((gnb) => {
     return {
       key: gnb.name,

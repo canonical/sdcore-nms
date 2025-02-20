@@ -9,7 +9,7 @@ import {
 import SubscriberModal from "@/components/SubscriberModal";
 import { getSubscribers } from "@/utils/getSubscribers";
 import { getDeviceGroups } from "@/utils/deviceGroupOperations";
-import { getNetworkSlices } from "@/utils/getNetworkSlices";
+import { getNetworkSlices } from "@/utils/networkSliceOperations";
 import SyncOutlinedIcon from "@mui/icons-material/SyncOutlined";
 import { deleteSubscriber } from "@/utils/deleteSubscriber";
 import Loader from "@/components/Loader";

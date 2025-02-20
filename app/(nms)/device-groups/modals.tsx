@@ -1,7 +1,7 @@
 import { Button, Form, Input, ConfirmationButton, Modal, Notification, Select } from "@canonical/react-components"
 import { createDeviceGroup, editDeviceGroup, deleteDeviceGroup } from "@/utils/deviceGroupOperations";
 import { DeviceGroup } from "@/components/types";
-import { apiGetAllNetworkSlices } from "@/utils/callNetworkSliceApi"
+import { apiGetAllNetworkSlices } from "@/utils/networkSliceOperations"
 import { useAuth } from "@/utils/auth"
 import { useFormik } from "formik";
 import { useQueryClient } from "@tanstack/react-query"

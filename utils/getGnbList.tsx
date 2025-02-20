@@ -1,11 +1,8 @@
-import { HTTPStatus } from "@/utils/utils";
+import { GnbItem } from "@/components/types";
+import { WebconsoleApiError } from "@/utils/errors";
 
-export interface GnbItem {
-  name: string;
-  tac: number;
-}
 
-export const getGnbList = async (token: string): Promise<GnbItem[]> => {
+export async function getGnbList(token: string): Promise<GnbItem[]> {
   try {
     const response = await fetch("/config/v1/inventory/gnb", {
       method: "GET",
@@ -16,15 +13,14 @@ export const getGnbList = async (token: string): Promise<GnbItem[]> => {
     });
     const gnbList = await response.json();
     if (!response.ok) {
-      throw new Error(`${response.status}: ${HTTPStatus(response.status)}. ${gnbList.error}`)
+      throw new WebconsoleApiError(response.status, gnbList.error);
     }
-
     return gnbList.map((gnb: GnbItem) => ({
       ...gnb,
       tac: Number(gnb.tac),
     }));
   } catch (error) {
-    console.error(error);
+    console.error(`Error retrieving gNB list ${error}`);
     throw error;
   }
 };
