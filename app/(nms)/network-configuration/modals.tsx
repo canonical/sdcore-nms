@@ -6,11 +6,11 @@ import { useState } from "react"
 import { WebconsoleApiError, OperationError}  from "@/utils/errors";
 
 import * as Yup from "yup";
-import { apiGetAllNetworkSlices, createNetworkSlice, editNetworkSlice, deleteNetworkSlice } from "@/utils/networkSliceOperations";
+import { createNetworkSlice, editNetworkSlice, deleteNetworkSlice } from "@/utils/networkSliceOperations";
 
 import { GnbItem, NetworkSlice, UpfItem } from "@/components/types";
-import { getUpfList } from "@/utils/getUpfList";
-import { getGnbList } from "@/utils/getGnbList";
+import { getUpfList } from "@/utils/upfOperations";
+import { getGnbList } from "@/utils/gnbOperations";
 
 
 const ErrorNotification = ({ error }: { error: string | null; }) => {
@@ -25,6 +25,7 @@ interface NetworkSliceFormValues {
   name: string;
   mcc: string;
   mnc: string;
+  sst: string;
   upf: UpfItem;
   gnbList: GnbItem[];
 }
@@ -46,19 +47,21 @@ const NetworkSliceSchema = Yup.object().shape({
       .min(2)
       .max(3)
       .required("MNC is required."),
+    sst: Yup.string()
+      .required("SST is required."),
     upf: Yup.object()
       .shape({ hostname: Yup.string().required("A UPF hostname is required.") })
       .shape({ port: Yup.string().required("A UPF port is required.") })
       .required("Selecting a UPF is required."),
     gnbList: Yup.array()
-        .required("Selecting at least 1 gNodeB is required.")
-        .of(
-            Yup.object().shape({
-              name: Yup.string().required("gNodeB name is required."),
-              tac: Yup.string().required("gNodeB TAC is required."),
-            })
-        )
-        .min(1)
+      .required("Selecting at least 1 gNodeB is required.")
+      .of(
+          Yup.object().shape({
+            name: Yup.string().required("gNodeB name is required."),
+            tac: Yup.string().required("gNodeB TAC is required."),
+          })
+      )
+      .min(1)
   });
 
 interface NetworkSliceModalProps {
@@ -80,7 +83,6 @@ export const NetworkSliceModal: React.FC<NetworkSliceModalProps> = ({
   const [apiError, setApiError] = useState<string | null>(null);
   const [gnbApiError, setGnbApiError] = useState<string | null>(null);
   const [upfApiError, setUpfApiError] = useState<string | null>(null);
-  const [networkSliceError, setNetworkSliceError] = useState<string | null>(null);
   const queryClient = useQueryClient()
 
   const formik = useFormik<NetworkSliceFormValues>({
@@ -105,19 +107,6 @@ export const NetworkSliceModal: React.FC<NetworkSliceModalProps> = ({
     },
   });
 
-  const networkSlicesQuery = useQuery<string[], Error>({
-    queryKey: ['network-slice', auth.user?.authToken],
-    queryFn: () => apiGetAllNetworkSlices(auth.user?.authToken ?? ""),
-    enabled: !isEdit && auth.user ? true : false,
-  })
-  const networkSliceItems = (networkSlicesQuery.data as string[]) || [];
-  if (networkSlicesQuery.isError) {
-    setNetworkSliceError("Failed to retrieve network slices.");
-  }
-  if (!isEdit && !networkSlicesQuery.isLoading && networkSliceItems.length === 0 && !networkSliceError) {
-    setNetworkSliceError("No network slice available. Please create a network slice.");
-  }
-
   const upfQuery = useQuery<UpfItem[], Error>({
     queryKey: ['upfs'],
     queryFn: () => getUpfList(auth.user!.authToken),
@@ -130,20 +119,20 @@ export const NetworkSliceModal: React.FC<NetworkSliceModalProps> = ({
     enabled: auth.user ? true : false,
   })
 
-  const upfItems = upfQuery.data  || [];
-  const gnbItems = gnbsQuery.data || [];
+  const upfItems = upfQuery.data || [] as UpfItem[];
+  const gnbItems = gnbsQuery.data || [] as GnbItem[];
 
   if (upfQuery.isError) {
     setUpfApiError("Failed to retrieve UPFs.");
   }
-  else if (!upfQuery.isLoading && upfItems.length === 0) {
+  if (!upfQuery.isLoading && upfItems.length === 0 && !upfApiError) {
     setUpfApiError("No UPF available. Please register at least one UPF.");
   }
 
   if (gnbsQuery.isError) {
     setGnbApiError("Failed to retrieve gNodeBs.");
   }
-  else if (!gnbsQuery.isLoading && gnbItems.length === 0) {
+  if (!gnbsQuery.isLoading && gnbItems.length === 0 && !gnbApiError) {
     setGnbApiError("No gNodeB available. Please register at least one gNodeB.");
   }
 
@@ -152,19 +141,17 @@ export const NetworkSliceModal: React.FC<NetworkSliceModalProps> = ({
     void formik.setFieldValue("upf", upf);
   };
 
-  const handleGnbChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const gnb = gnbItems.find((item: GnbItem) => e.target.value === `${item.name}:${item.tac}`);
-    void formik.setFieldValue("gnbList", [...formik.values.gnbList, gnb]);
-  };
-
-  const getGnbListValueAsString = () => {
-    return (formik.values.gnbList.map((item) => {
-      return `${item.name}:${item.tac}`
-    }));
-  };
-
   const getUpfValueAsString = () => {
-    return formik.values.upf.hostname ? `${formik.values.upf.hostname}:${formik.values.upf.port}` : "";
+    return formik.values.upf?.hostname ? `${formik.values.upf.hostname}:${formik.values.upf.port}` : "";
+  };
+
+  const handleGnbChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedValues = Array.from(e.target.selectedOptions, (option) => option.value);
+    const selectedGnbItems = selectedValues.map((value) => {
+      const [name, tac] = value.split(":");
+      return { name, tac: Number(tac) };
+    });
+    formik.setFieldValue("gnbList", selectedGnbItems);
   };
 
   return (
@@ -225,6 +212,26 @@ export const NetworkSliceModal: React.FC<NetworkSliceModalProps> = ({
           error={formik.touched.mnc ? formik.errors.mnc : null}
         />
         <Select
+          id="sst"
+          label="SST"
+          required
+          stacked
+          disabled={true}
+          onChange={(event) => formik.setFieldValue("sst", event.target.value)}
+          value={formik.values.sst}
+          options={[
+            {
+              label: "Select an option",
+              disabled: true,
+              value: "",
+            },
+            {
+              label: "1: eMBB",
+              value: "1",
+            },
+          ]}
+        />
+                <Select
           id="upf"
           label="UPF"
           required
@@ -249,7 +256,7 @@ export const NetworkSliceModal: React.FC<NetworkSliceModalProps> = ({
           required
           stacked
           multiple
-          value={ getGnbListValueAsString() }
+          value={ formik.values.gnbList.map((gnb) => `${gnb.name}:${gnb.tac}`) }
           onChange={ handleGnbChange }
           options={[
             {
@@ -280,6 +287,7 @@ export function CreateNetworkSliceModal({ closeFn }: createNewNetworkSliceModalP
       name: values.name,
       mcc: values.mcc.toString(),
       mnc: values.mnc.toString(),
+      sst: values.sst,
       upf: values.upf,
       gnbList: values.gnbList,
       token: auth.user ? auth.user.authToken : ""
@@ -290,8 +298,9 @@ export function CreateNetworkSliceModal({ closeFn }: createNewNetworkSliceModalP
     name: "",
     mcc: "",
     mnc: "",
+    sst: "1",
     upf: {} as UpfItem,
-    gnbList: [],
+    gnbList: [] as GnbItem[],
   };
 
   return (
@@ -318,26 +327,24 @@ export function EditNetworkSliceModal({ networkSlice, closeFn }: editNetworkSlic
         name: values.name,
         mcc: values.mcc.toString(),
         mnc: values.mnc.toString(),
+        sst: values.sst,
         upf: values.upf,
         gnbList: values.gnbList,
         token: auth.user ? auth.user.authToken : ""
       });
   };
   const getUpfFromNetworkSlice = () => {
-    if (networkSlice) {
-      return {
-        hostname: networkSlice["site-info"]?.["upf"]?.["upf-name"] || "",
-        port: networkSlice["site-info"]?.["upf"]?.["upf-port"] || "",
-      };
-    } else {
-      return {} as UpfItem;
-    }
+    return {
+      hostname: networkSlice["site-info"]?.["upf"]?.["upf-name"] || "",
+      port: networkSlice["site-info"]?.["upf"]?.["upf-port"] || "",
+    };
   }
 
   const initialValues: NetworkSliceFormValues = {
     name: networkSlice?.["slice-name"] || "",
     mcc: networkSlice?.["site-info"]?.["plmn"]?.mcc || "",
     mnc: networkSlice?.["site-info"]?.["plmn"]?.mnc || "",
+    sst: networkSlice["slice-id"]?.sst || "1",
     upf: getUpfFromNetworkSlice(),
     gnbList: networkSlice?.["site-info"]?.gNodeBs || [],
   };

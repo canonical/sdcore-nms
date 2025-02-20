@@ -1,7 +1,7 @@
 "use client"
 
 import { Button, MainTable, Notification } from "@canonical/react-components"
-import { getGnbList } from "@/utils/getGnbList";
+import { getGnbList } from "@/utils/gnbOperations";
 import { GnbItem } from "@/components/types";
 import { MainTableRow } from "@canonical/react-components/dist/components/MainTable/MainTable"
 import { useAuth } from "@/utils/auth"

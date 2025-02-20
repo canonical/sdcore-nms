@@ -71,6 +71,7 @@ interface CreateNetworkSliceArgs {
   name: string;
   mcc: string;
   mnc: string;
+  sst: string;
   upf : UpfItem;
   gnbList: GnbItem[];
   token: string;
@@ -80,13 +81,14 @@ export async function createNetworkSlice({
   name,
   mcc,
   mnc,
+  sst,
   upf,
   gnbList,
   token
 }: CreateNetworkSliceArgs): Promise<void> {
   const sliceData = {
     "slice-id": {
-      sst: "1",
+      sst: sst,
       sd: "102030",
     },
     "site-device-group": [],
@@ -126,6 +128,7 @@ interface EditNetworkSliceArgs {
   name: string;
   mcc: string;
   mnc: string;
+  sst: string;
   upf: UpfItem;
   gnbList: GnbItem[];
   token: string
@@ -135,6 +138,7 @@ export async function editNetworkSlice({
   name,
   mcc,
   mnc,
+  sst,
   upf,
   gnbList,
   token
@@ -148,7 +152,7 @@ export async function editNetworkSlice({
     }
     const sliceUpdate = {
       "slice-id": {
-        sst: "1",
+        sst: sst,
         sd: "102030",
       },
       "site-device-group": sliceData["site-device-group"],
@@ -202,12 +206,10 @@ export async function deleteNetworkSlice(name: string, token: string): Promise<v
         "Content-Type": "application/json",
       },
     });
-
-    const respData = await response.json();
     if (!response.ok) {
+      const respData = await response.json();
       throw new WebconsoleApiError(response.status, respData.error);
     }
-
   } catch (error) {
     console.error(`Error deleting network slice ${name} ${error}`);
     throw error;

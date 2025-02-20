@@ -1,7 +1,7 @@
 "use client"
 
 import { Button, MainTable, Notification  } from "@canonical/react-components"
-import { getUpfList } from "@/utils/getUpfList";
+import { getUpfList } from "@/utils/upfOperations";
 import { MainTableRow } from "@canonical/react-components/dist/components/MainTable/MainTable"
 import { UpfItem } from "@/components/types";
 import { useAuth } from "@/utils/auth"

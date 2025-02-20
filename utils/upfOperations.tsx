@@ -17,7 +17,7 @@ export const getUpfList = async (token: string): Promise<UpfItem[]> => {
     }
     return upfList;
   } catch (error) {
-    console.error(error);
+    console.error(`Error retrieving UPF list ${error}`);
     throw error;
   }
 };

@@ -6,7 +6,7 @@ import { EmptyState } from "@canonical/react-components"
 interface Props {
   title: string;
   image?: string;
-  message?: string;
+  message?: ReactNode;
   actionButton: ReactNode;
 }
 
