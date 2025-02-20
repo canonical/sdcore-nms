@@ -84,7 +84,7 @@ export default function DeviceGroups() {
             To create a device group, first create a network slice.
           </p>
           <Button appearance="positive" onClick={() => router.push("/network-configuration")}>
-            Go to network slices page
+            Go to the &quot;Network Slices&quot; page
           </Button>
         </EmptyState>
       </PageContent>
@@ -101,7 +101,7 @@ export default function DeviceGroups() {
         <br></br>
       </PageHeader>
       <PageContent colSize={8}>
-        <EmptyState image={""} title="No device groups available">
+        <EmptyState image={""} title="No device group available">
           <br></br>
           <Button appearance="positive" onClick={() => setModalData({ deviceGroup: {} as DeviceGroup, action: CREATE })}>
             Create

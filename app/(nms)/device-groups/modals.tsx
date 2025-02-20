@@ -9,6 +9,8 @@ import { useQuery } from "@tanstack/react-query"
 import { useState } from "react"
 import { WebconsoleApiError, OperationError}  from "@/utils/errors";
 
+import isCidr from "is-cidr";
+import ipRegex from "ip-regex";
 import * as Yup from "yup";
 
 interface NetworkSliceFieldProps {
@@ -75,12 +77,8 @@ interface DeviceGroupFormValues {
   qosArp: number;
 }
 
-const regexIp =
-  /^(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)$/;
-
-const regexpCIDR =
-  /^((25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\/([1-9]|[1-2][0-9]|3[0-2])$/;
-
+const validateIp = (ip: string): boolean => ipRegex({ exact: true }).test(ip);
+const validateCidr = (cidr: string): boolean => isCidr(cidr) !== 0;
 const valid5QIValues = [1, 2, 9];
 
 const DeviceGroupSchema = Yup.object().shape({
@@ -96,10 +94,10 @@ const DeviceGroupSchema = Yup.object().shape({
       .required("Network slice is required."),
   ueIpPool: Yup.string()
       .required("IP pool is required")
-      .matches(regexpCIDR, "Invalid IP address pool."),
+      .test("is-cidr", "Invalid IP address pool.", (value) => value ? validateCidr(value) : false),
   dns: Yup.string()
       .required("IP is required")
-      .matches(regexIp, "Invalid IP Address."),
+      .test("is-ip", "Invalid IP Address.", (value) => value ? validateIp(value) : false),
   mtu: Yup.number().min(1200).max(65535).required("Invalid MTU."),
   MBRDownstreamMbps: Yup.number()
       .min(0, "Value must be greater than or equal to 0.")
@@ -145,8 +143,10 @@ export const DeviceGroupModal: React.FC<DeviceGroupModalProps> = ({
       try {
         await onSubmit({...values,});
         closeFn();
-        await queryClient.invalidateQueries({ queryKey: ['device-groups'] });
-        await queryClient.invalidateQueries({ queryKey: ['network-slices'] });
+        setTimeout(async () => { // Wait 100 ms before invalidating due to a race condition
+          await queryClient.invalidateQueries({ queryKey: ['network-slices'] });
+          await queryClient.invalidateQueries({ queryKey: ['device-groups'] });
+        }, 100);
       } catch (error) {
         if (error instanceof WebconsoleApiError) {
           if (error.status === 401) {
