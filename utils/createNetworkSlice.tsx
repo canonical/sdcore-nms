@@ -1,5 +1,4 @@
 import { apiGetNetworkSlice, apiPostNetworkSlice } from "@/utils/callNetworkSliceApi";
-import { apiPostDeviceGroup } from "@/utils/callDeviceGroupApi";
 
 interface GnbItem {
   name: string;
@@ -25,13 +24,12 @@ export const createNetworkSlice = async ({
   gnbList,
   token
 }: CreateNetworkSliceArgs) => {
-  const deviceGroupName = `${name}-default`;
   const sliceData = {
     "slice-id": {
       sst: "1",
       sd: "102030",
     },
-    "site-device-group": [deviceGroupName],
+    "site-device-group": [],
     "site-info": {
       "site-name": "demo",
       plmn: {
@@ -46,40 +44,10 @@ export const createNetworkSlice = async ({
     },
   };
 
-  const deviceGroupData = {
-    "site-info": "demo",
-    "ip-domain-name": "pool1",
-    "ip-domain-expanded": {
-      dnn: "internet",
-      "ue-ip-pool": "172.250.1.0/16",
-      "dns-primary": "8.8.8.8",
-      mtu: 1456,
-      "ue-dnn-qos": {
-        "dnn-mbr-uplink": 20 * 1000000,
-        "dnn-mbr-downlink": 200 * 1000000,
-        "bitrate-unit": "bps",
-        "traffic-class": {
-          name: "platinum",
-          arp: 6,
-          pdb: 300,
-          pelr: 6,
-          qci: 8,
-        },
-      },
-    },
-  };
-
   try {
     const getNetworkSliceResponse = await apiGetNetworkSlice(name, token)
     if (getNetworkSliceResponse.ok) {
       throw new Error("Network slice already exists");
-    }
-
-    const devicegroupResponse = await apiPostDeviceGroup(deviceGroupName, deviceGroupData, token);
-    if (!devicegroupResponse.ok) {
-      throw new Error(
-        `Error creating device group. Error code: ${devicegroupResponse.status}`,
-      );
     }
 
     const updateNetworkSliceResponse = await apiPostNetworkSlice(name, sliceData, token);

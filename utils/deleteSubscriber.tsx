@@ -4,22 +4,14 @@ import { apiDeleteSubscriber } from "@/utils/callSubscriberApi";
 
 export const deleteSubscriber = async (imsi: string, token: string) => {
   try {
-    const networkSlicesResponse = await apiGetAllNetworkSlices(token);
-
-    if (!networkSlicesResponse.ok) {
-      throw new Error(
-        `Error fetching network slices. Error code: ${networkSlicesResponse.status}`,
-      );
-    }
-
-    const sliceNames = await networkSlicesResponse.json();
+    const sliceNames = await apiGetAllNetworkSlices(token);
 
     for (const sliceName of sliceNames) {
       const networkSliceResponse = await apiGetNetworkSlice(sliceName, token);
 
       if (!networkSliceResponse.ok) {
         throw new Error(
-          `Error fetching network slice. Error code: ${networkSlicesResponse.status}`,
+          `Error fetching network slice. Error code: ${networkSliceResponse.status}`,
         );
       }
 

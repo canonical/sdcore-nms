@@ -8,7 +8,7 @@ import {
 } from "@canonical/react-components";
 import SubscriberModal from "@/components/SubscriberModal";
 import { getSubscribers } from "@/utils/getSubscribers";
-import { getDeviceGroups } from "@/utils/getDeviceGroup";
+import { getDeviceGroups } from "@/utils/deviceGroupOperations";
 import { getNetworkSlices } from "@/utils/getNetworkSlices";
 import SyncOutlinedIcon from "@mui/icons-material/SyncOutlined";
 import { deleteSubscriber } from "@/utils/deleteSubscriber";

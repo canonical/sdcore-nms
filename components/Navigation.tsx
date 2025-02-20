@@ -3,6 +3,7 @@ import { Button, Icon } from "@canonical/react-components";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/utils/auth";
 import classnames from "classnames";
+import TuneOutlinedIcon from '@mui/icons-material/TuneOutlined';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import Logo from "@/components/Logo"
 
@@ -87,6 +88,23 @@ const Navigation: FC = () => {
                         name="connected"
                       />{" "}
                       Network slices
+                    </a>
+                  </li>
+                  <li className="p-side-navigation__item">
+                    <a
+                      className="p-side-navigation__link"
+                      href="/device-groups"
+                      title="Device groups"
+                      aria-current={
+                        pathname === "/device-groups" ? "page" : undefined
+                      }
+                    >
+                      <TuneOutlinedIcon
+                        className="is-light p-side-navigation__icon"
+                        fontSize="inherit"
+                        style={{ color: "#fff" }}
+                      />
+                      Device groups
                     </a>
                   </li>
                   <li className="p-side-navigation__item">

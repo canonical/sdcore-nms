@@ -8,7 +8,7 @@ import {
   Notification,
   Select,
 } from "@canonical/react-components";
-import { NetworkSlice } from "@/components/types";
+import { NetworkSlice, DeviceGroup } from "@/components/types";
 import { createSubscriber } from "@/utils/createSubscriber";
 import { editSubscriber } from "@/utils/editSubscriber";
 import { useQueryClient } from "@tanstack/react-query";
@@ -30,7 +30,7 @@ type Props = {
   toggleModal: () => void,
   subscriber?: any,
   slices: NetworkSlice[],
-  deviceGroups: any[],
+  deviceGroups: DeviceGroup[],
   onSubmit?: (newSubscriber: any) => Promise<void>
 };
 
