@@ -1,7 +1,7 @@
 "use client"
 
-import { apiGetAllNetworkSlices } from "@/utils/callNetworkSliceApi";
-import { Button, EmptyState, MainTable, Notification } from "@canonical/react-components"
+import { apiGetAllNetworkSlices } from "@/utils/networkSliceOperations";
+import { Button, MainTable, Notification } from "@canonical/react-components"
 import { CreateDeviceGroupModal, EditDeviceGroupModal, DeleteDeviceGroupButton } from "@/app/(nms)/device-groups/modals";
 import { DeviceGroup } from "@/components/types";
 import { getDeviceGroups } from "@/utils/deviceGroupOperations";
@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react"
 import { WebconsoleApiError }  from "@/utils/errors";
 
+import EmptyStatePage from "@/components/EmptyStatePage";
 import Loader from "@/components/Loader"
 import PageContent from "@/components/PageContent"
 import PageHeader from "@/components/PageHeader"
@@ -74,21 +75,15 @@ export default function DeviceGroups() {
   if (networkSlices.length === 0) {
     return (
       <>
-      <PageHeader title={""}>
-        <br></br>
-      </PageHeader>
-      <PageContent colSize={8}>
-        <EmptyState image={""} title="No device groups available">
-          <br></br>
-          <p>
-            To create a device group, first create a network slice.
-          </p>
-          <Button appearance="positive" onClick={() => router.push("/network-configuration")}>
-            Go to the &quot;Network Slices&quot; page
-          </Button>
-        </EmptyState>
-      </PageContent>
-      {modalData?.action == CREATE && <CreateDeviceGroupModal closeFn={() => setModalData(null)} />}
+        <EmptyStatePage
+          title="No device group available"
+          message="To create a device group, first create a network slice."
+          actionButton={
+            <Button appearance="positive" onClick={() => router.push("/network-configuration")}>
+              Go to the &quot;Network Slices&quot; page
+            </Button>
+          }
+        ></EmptyStatePage>
       </>
     );
   }
@@ -97,18 +92,15 @@ export default function DeviceGroups() {
   if (deviceGroups.length === 0) {
     return (
       <>
-      <PageHeader title={""}>
-        <br></br>
-      </PageHeader>
-      <PageContent colSize={8}>
-        <EmptyState image={""} title="No device group available">
-          <br></br>
-          <Button appearance="positive" onClick={() => setModalData({ deviceGroup: {} as DeviceGroup, action: CREATE })}>
-            Create
-          </Button>
-        </EmptyState>
-      </PageContent>
-      {modalData?.action == CREATE && <CreateDeviceGroupModal closeFn={() => setModalData(null)} />}
+        <EmptyStatePage
+          title="No device group available"
+          actionButton={
+            <Button appearance="positive" onClick={() => setModalData({ deviceGroup: {} as DeviceGroup, action: CREATE })}>
+              Create
+            </Button>
+          }
+        ></EmptyStatePage>
+        {modalData?.action == CREATE && <CreateDeviceGroupModal closeFn={() => setModalData(null)} />}
       </>
     );
   }

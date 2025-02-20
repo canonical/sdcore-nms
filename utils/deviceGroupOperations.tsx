@@ -1,6 +1,5 @@
-import { apiGetNetworkSlice, apiPostNetworkSlice } from "@/utils/callNetworkSliceApi";
 import { apiGetAllDeviceGroups, apiDeleteDeviceGroup, apiGetDeviceGroup, apiPostDeviceGroup } from "@/utils/callDeviceGroupApi";
-import { getNetworkSlices } from "@/utils/getNetworkSlices";
+import { apiGetNetworkSlice, apiPostNetworkSlice, getNetworkSlices } from "@/utils/networkSliceOperations";
 import { NetworkSlice, DeviceGroup } from "@/components/types";
 import { WebconsoleApiError, OperationError } from "@/utils/errors";
 
@@ -94,12 +93,8 @@ export async function createDeviceGroup({
       existingSliceData["site-device-group"] = [];
     }
     existingSliceData["site-device-group"].push(name);
+    await apiPostNetworkSlice(networkSliceName, existingSliceData, token);
 
-    const postNetworkSliceResponse = await apiPostNetworkSlice(networkSliceName, existingSliceData, token);
-    if (!postNetworkSliceResponse.ok) {
-      const postNetworkSliceData = await postNetworkSliceResponse.json();
-      throw new WebconsoleApiError(postNetworkSliceResponse.status, postNetworkSliceData.error);
-    }
   } catch (error: unknown) {
     console.error(`Failed to create device group ${name} : ${error}`);
     throw error;
@@ -243,12 +238,7 @@ export async function deleteDeviceGroup({
         const index = existingSliceData["site-device-group"].indexOf(name);
         if (index > -1) {
           existingSliceData["site-device-group"].splice(index, 1);
-
-          const updateSliceResponse = await apiPostNetworkSlice(networkSliceName, existingSliceData, token);
-          if (!updateSliceResponse.ok) {
-            const updateSliceData = await updateSliceResponse.json();
-            throw new WebconsoleApiError(updateSliceResponse.status, updateSliceData.error);
-          }
+          await apiPostNetworkSlice(networkSliceName, existingSliceData, token);
         }
       }
     }

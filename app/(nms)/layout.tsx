@@ -42,7 +42,7 @@ export default function RootLayout({
                 <footer className="l-footer--sticky p-strip--light">
                   <Row>
                     <p>
-                      © 2023 Canonical Ltd. <a href="#">Ubuntu</a> and{" "}
+                      © 2025 Canonical Ltd. <a href="#">Ubuntu</a> and{" "}
                       <a href="#">Canonical</a> are registered trademarks of
                       Canonical Ltd.
                     </p>
