@@ -2,7 +2,7 @@ import { UpfItem } from "@/components/types";
 import { WebconsoleApiError } from "@/utils/errors";
 
 
-export const getUpfList = async (token: string): Promise<UpfItem[]> => {
+export async function getUpfList(token: string): Promise<UpfItem[]> {
   try {
     const response = await fetch("/config/v1/inventory/upf", {
       method: "GET",

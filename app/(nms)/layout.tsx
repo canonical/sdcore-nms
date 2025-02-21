@@ -1,20 +1,22 @@
 "use client";
+
 import "../globals.scss";
+import { AuthProvider, useAuth } from "@/utils/auth";
 import { Inter } from "next/font/google";
-import React from "react";
+import { is401UnauthorizedError, is403ForbiddenError } from "@/utils/errors";
 import { List, Row } from "@canonical/react-components";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
 import Navigation from "@/components/Navigation";
-import { AuthProvider, useAuth } from "@/utils/auth";
-import { WebconsoleApiError } from "@/utils/errors";
+import React from "react";
+
 
 const inter = Inter({ subsets: ["latin"] });
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: (failureCount, error) => {
-        if ((error instanceof WebconsoleApiError && error.status === 401) ||
-          error instanceof WebconsoleApiError && error.status === 403) {
+        if (is401UnauthorizedError(error) || is403ForbiddenError(error)) {
           return false;
         }
         return failureCount < 3;

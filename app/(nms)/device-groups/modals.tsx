@@ -425,9 +425,7 @@ export const DeleteDeviceGroupButton: React.FC<deleteDeviceGroupActionModalProps
         token: auth.user ? auth.user.authToken : ""
       });
     } catch (error) {
-      if (is401UnauthorizedError(error)) {
-          auth.logout();
-      }
+      if (is401UnauthorizedError(error)) { auth.logout(); }
     }
     setTimeout(async () => { // Wait 100 ms before invalidating due to a race condition
       await queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
