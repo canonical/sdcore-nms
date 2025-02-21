@@ -3,7 +3,7 @@ import { useAuth } from "@/utils/auth"
 import { useFormik } from "formik";
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
-import { WebconsoleApiError, OperationError}  from "@/utils/errors";
+import { OperationError, is401UnauthorizedError}  from "@/utils/errors";
 
 import * as Yup from "yup";
 import { createNetworkSlice, editNetworkSlice, deleteNetworkSlice } from "@/utils/networkSliceOperations";
@@ -11,6 +11,7 @@ import { createNetworkSlice, editNetworkSlice, deleteNetworkSlice } from "@/util
 import { GnbItem, NetworkSlice, UpfItem } from "@/components/types";
 import { getUpfList } from "@/utils/upfOperations";
 import { getGnbList } from "@/utils/gnbOperations";
+import { queryKeys } from "@/utils/queryKeys";
 
 
 const ErrorNotification = ({ error }: { error: string | null; }) => {
@@ -93,10 +94,10 @@ export const NetworkSliceModal: React.FC<NetworkSliceModalProps> = ({
         await onSubmit({...values,});
         closeFn();
         setTimeout(async () => { // Wait 100 ms before invalidating due to a race condition
-          await queryClient.invalidateQueries({ queryKey: ['network-slices'] });
+          await queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
         }, 100);
       } catch (error) {
-        if (error instanceof WebconsoleApiError && error.status === 401) {
+        if (is401UnauthorizedError(error)) {
             auth.logout();
         } else if (error instanceof OperationError) {
           setApiError(error.message);
@@ -108,13 +109,13 @@ export const NetworkSliceModal: React.FC<NetworkSliceModalProps> = ({
   });
 
   const upfQuery = useQuery<UpfItem[], Error>({
-    queryKey: ['upfs'],
+    queryKey: [queryKeys.upfs, auth.user?.authToken],
     queryFn: () => getUpfList(auth.user!.authToken),
     enabled: auth.user ? true : false
   });
 
   const gnbsQuery = useQuery<GnbItem[], Error>({
-    queryKey: ['gnbs'],
+    queryKey: [queryKeys.gnbs, auth.user?.authToken],
     queryFn: () => getGnbList(auth.user?.authToken ?? ""),
     enabled: auth.user ? true : false,
   })
@@ -374,10 +375,15 @@ export const DeleteNetworkSliceButton: React.FC<deleteNetworkSliceModalProps> = 
   const auth = useAuth()
   const queryClient = useQueryClient()
   const handleConfirmDelete = async (name: string) => {
-    await deleteNetworkSlice(name, auth.user ? auth.user.authToken : "");
-
+    try {
+      await deleteNetworkSlice(name, auth.user ? auth.user.authToken : "");
+    } catch (error) {
+      if (is401UnauthorizedError(error)) {
+          auth.logout();
+      }
+    }
     setTimeout(async () => { // Wait 100 ms before invalidating due to a race condition
-      await queryClient.invalidateQueries({ queryKey: ['network-slices'] });
+      await queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
     }, 100);
   };
 

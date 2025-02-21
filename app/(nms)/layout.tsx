@@ -1,16 +1,27 @@
 "use client";
 import "../globals.scss";
 import { Inter } from "next/font/google";
-import React, { useState, useEffect } from "react";
-import { List, Notification, Row } from "@canonical/react-components";
+import React from "react";
+import { List, Row } from "@canonical/react-components";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Navigation from "@/components/Navigation";
-import PageContent from "@/components/PageContent";
-import Loader from "@/components/Loader";
 import { AuthProvider, useAuth } from "@/utils/auth";
+import { WebconsoleApiError } from "@/utils/errors";
 
 const inter = Inter({ subsets: ["latin"] });
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: (failureCount, error) => {
+        if ((error instanceof WebconsoleApiError && error.status === 401) ||
+          error instanceof WebconsoleApiError && error.status === 403) {
+          return false;
+        }
+        return failureCount < 3;
+      }
+    }
+  }
+});
 
 export default function RootLayout({
   children,
