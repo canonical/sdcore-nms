@@ -159,8 +159,12 @@ const NetworkSliceModal = ({ networkSlice, toggleModal, onSave }: NetworkSliceMo
   };
 
   const handleGnbChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const gnb = gnbItems.find((item: GnbItem) => e.target.value === `${item.name}:${item.tac}`);
-    void formik.setFieldValue("gnbList", [...formik.values.gnbList, gnb]);
+    const selectedValues = Array.from(e.target.selectedOptions, (option) => option.value);
+    const selectedGnbItems = selectedValues.map((value) => {
+      const [name, tac] = value.split(":");
+      return { name, tac: Number(tac) };
+    });
+    formik.setFieldValue("gnbList", selectedGnbItems);
   };
 
   const getGnbListValueAsString = () => {
