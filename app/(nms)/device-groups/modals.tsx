@@ -1,13 +1,14 @@
+import { apiGetAllNetworkSlices } from "@/utils/networkSliceOperations"
 import { Button, Form, Input, ConfirmationButton, Modal, Notification, Select } from "@canonical/react-components"
 import { createDeviceGroup, editDeviceGroup, deleteDeviceGroup } from "@/utils/deviceGroupOperations";
 import { DeviceGroup } from "@/components/types";
-import { apiGetAllNetworkSlices } from "@/utils/networkSliceOperations"
+import { queryKeys } from "@/utils/queryKeys";
 import { useAuth } from "@/utils/auth"
 import { useFormik } from "formik";
 import { useQueryClient } from "@tanstack/react-query"
 import { useQuery } from "@tanstack/react-query"
 import { useState } from "react"
-import { WebconsoleApiError, OperationError}  from "@/utils/errors";
+import { OperationError, is401UnauthorizedError}  from "@/utils/errors";
 
 import isCidr from "is-cidr";
 import ipRegex from "ip-regex";
@@ -93,15 +94,12 @@ export const DeviceGroupModal: React.FC<DeviceGroupModalProps> = ({
         await onSubmit({...values,});
         closeFn();
         setTimeout(async () => { // Wait 100 ms before invalidating due to a race condition
-          await queryClient.invalidateQueries({ queryKey: ['network-slices'] });
-          await queryClient.invalidateQueries({ queryKey: ['device-groups'] });
+          await queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
+          await queryClient.invalidateQueries({ queryKey: [queryKeys.deviceGroups] });
         }, 100);
       } catch (error) {
-        if (error instanceof WebconsoleApiError) {
-          if (error.status === 401) {
+        if (is401UnauthorizedError(error)) {
             auth.logout();
-          }
-          setApiError(error.statusText);
         } else if (error instanceof OperationError) {
           setApiError(error.message);
         } else {
@@ -112,7 +110,7 @@ export const DeviceGroupModal: React.FC<DeviceGroupModalProps> = ({
   });
 
   const networkSlicesQuery = useQuery<string[], Error>({
-    queryKey: ['network-slices'],
+    queryKey: [queryKeys.networkSlices, auth.user?.authToken],
     queryFn: () => apiGetAllNetworkSlices(auth.user?.authToken ?? ""),
     enabled: !isEdit && auth.user ? true : false,
   })
@@ -420,15 +418,18 @@ export const DeleteDeviceGroupButton: React.FC<deleteDeviceGroupActionModalProps
   const auth = useAuth()
   const queryClient = useQueryClient()
   const handleConfirmDelete = async (name: string, networkSliceName: string) => {
-    await deleteDeviceGroup({
-      name,
-      networkSliceName,
-      token: auth.user ? auth.user.authToken : ""
-    });
-
+    try {
+      await deleteDeviceGroup({
+        name,
+        networkSliceName,
+        token: auth.user ? auth.user.authToken : ""
+      });
+    } catch (error) {
+      if (is401UnauthorizedError(error)) { auth.logout(); }
+    }
     setTimeout(async () => { // Wait 100 ms before invalidating due to a race condition
-      await queryClient.invalidateQueries({ queryKey: ['network-slices'] });
-      await queryClient.invalidateQueries({ queryKey: ['device-groups'] });
+      await queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
+      await queryClient.invalidateQueries({ queryKey: [queryKeys.deviceGroups] });
     }, 100);
   };
 

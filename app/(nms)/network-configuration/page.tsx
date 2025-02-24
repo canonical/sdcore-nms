@@ -7,10 +7,11 @@ import { getGnbList } from "@/utils/gnbOperations";
 import { getNetworkSlices } from "@/utils/networkSliceOperations";
 import { getUpfList } from "@/utils/upfOperations";
 import { MainTableRow } from "@canonical/react-components/dist/components/MainTable/MainTable"
+import { queryKeys } from "@/utils/queryKeys";
 import { useAuth } from "@/utils/auth"
 import { useQuery } from "@tanstack/react-query"
 import { useState } from "react"
-import { WebconsoleApiError }  from "@/utils/errors";
+import { is401UnauthorizedError }  from "@/utils/errors";
 
 import EmptyStatePage from "@/components/EmptyStatePage";
 import Loader from "@/components/Loader"
@@ -31,39 +32,31 @@ export default function NetworkSlices() {
   const [modalData, setModalData] = useState<modalData | null>(null);
   const [showNotification, setShowNotification] = useState(true);
   const auth = useAuth()
+
   const networkSliceQuery = useQuery<NetworkSlice[], Error>({
-    queryKey: ['network-slices'],
+    queryKey: [queryKeys.networkSlices, auth.user?.authToken],
     queryFn: () => getNetworkSlices(auth.user?.authToken ?? ""),
     enabled: auth.user ? true : false,
-    retry: (failureCount, error): boolean => {
-      if (error instanceof WebconsoleApiError && error.status === 401) {
-        return false
-      }
-      return failureCount < 3
-    },
   })
 
   const upfQuery = useQuery<UpfItem[], Error>({
-    queryKey: ['upfs'],
+    queryKey: [queryKeys.upfs, auth.user?.authToken],
     queryFn: () => getUpfList(auth.user!.authToken),
     enabled: auth.user ? true : false
   });
 
   const gnbsQuery = useQuery<GnbItem[], Error>({
-    queryKey: ['gnbs'],
+    queryKey: [queryKeys.gnbs, auth.user?.authToken],
     queryFn: () => getGnbList(auth.user?.authToken ?? ""),
     enabled: auth.user ? true : false,
   })
 
-  if (networkSliceQuery.status == "pending" || upfQuery.status == "pending" || gnbsQuery.status == "pending" ) {
-    return <Loader text="loading..." />
-  }
-  if (networkSliceQuery.status == "error" || upfQuery.status == "error" || gnbsQuery.status == "error") {
-    if ((networkSliceQuery.error instanceof WebconsoleApiError && networkSliceQuery.error.status === 401) || 
-        (upfQuery.error instanceof WebconsoleApiError && upfQuery.error.status === 401) ||
-        (gnbsQuery.error instanceof WebconsoleApiError && gnbsQuery.error.status === 401)) {
-        auth.logout();
-    } 
+  const queries = [networkSliceQuery, upfQuery, gnbsQuery];
+  if (queries.some(q => q.status === "pending") ) { return <Loader/> }
+  if (queries.some(q => q.status === "error")) {
+    if (queries.some(q => is401UnauthorizedError(q.error))) {
+      auth.logout();
+    }
     return (
       <>
         <Notification severity="negative" title="Error">
@@ -76,44 +69,34 @@ export default function NetworkSlices() {
   const networkSlices = networkSliceQuery.data || [];
   const upfItems = upfQuery.data || [] as UpfItem[];
   const gnbItems = gnbsQuery.data || [] as GnbItem[];
-  const isInventoryCreated = (upfItems.length !== 0 && gnbItems.length !== 0);
-
-  if (networkSlices.length === 0 && !isInventoryCreated) {
-    const message = (
-      <>
-        <p>To create a network slice first:</p>
-        {upfItems.length === 0 && <p>- Integrate your UPF charm with the NMS charm.</p>}
-        {gnbItems.length === 0 && <p>- Integrate your gNodeB charm with the NMS charm.</p>}
-      </>
-    );
-    return ( 
-      <>
-        <EmptyStatePage
-          title="No network slice available"
-          message={message}
-          actionButton={
-            <Button
-              appearance="positive"
-              onClick={() => window.open("https://canonical-charmed-aether-sd-core.readthedocs-hosted.com/en/latest/", "_blank")}
-            >
-              Go to Documentation
-            </Button>
-          }
-        ></EmptyStatePage>
-      </>
-    );
-  }
+  const isInventoryCreated = (upfItems.length > 0 && gnbItems.length > 0);
 
   if (networkSlices.length === 0) {
+    if (!isInventoryCreated){
+      const message = (
+        <>
+          <p>To create a network slice first:</p>
+          {upfItems.length === 0 && <p>- Integrate your UPF charm with the NMS charm.</p>}
+          {gnbItems.length === 0 && <p>- Integrate your gNodeB charm with the NMS charm.</p>}
+        </>
+      );
+      return (
+        <>
+          <EmptyStatePage
+            title="No network slice available"
+            message={message}
+            onClick={() => window.open("https://canonical-charmed-aether-sd-core.readthedocs-hosted.com/en/latest/", "_blank")}
+            buttonText="Go to Documentation"
+          ></EmptyStatePage>
+        </>
+      );
+    }
     return (
       <>
         <EmptyStatePage
           title="No network slice available"
-          actionButton={
-            <Button appearance="positive" onClick={() => setModalData({ networkSlice: {} as NetworkSlice, action: CREATE })}>
-              Create
-            </Button>
-          }
+          onClick={() => setModalData({ networkSlice: {} as NetworkSlice, action: CREATE })}
+          buttonText="Create"
         ></EmptyStatePage>
         {modalData?.action == CREATE && <CreateNetworkSliceModal closeFn={() => setModalData(null)} />}
       </>

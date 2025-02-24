@@ -235,7 +235,7 @@ const Subscribers = () => {
   });
 
   if (isSubscribersLoading || isDeviceGroupsLoading || isSlicesLoading) {
-    return <Loader text="Loading..." />;
+    return <Loader/>;
   }
 
   return (

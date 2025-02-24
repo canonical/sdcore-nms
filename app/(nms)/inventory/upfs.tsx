@@ -3,11 +3,12 @@
 import { Button, MainTable, Notification  } from "@canonical/react-components"
 import { getUpfList } from "@/utils/upfOperations";
 import { MainTableRow } from "@canonical/react-components/dist/components/MainTable/MainTable"
+import { queryKeys } from "@/utils/queryKeys";
 import { UpfItem } from "@/components/types";
 import { useAuth } from "@/utils/auth"
 import { useQuery } from "@tanstack/react-query"
 import { useState } from "react";
-import { WebconsoleApiError } from "@/utils/errors";
+import { is401UnauthorizedError } from "@/utils/errors";
 
 import Loader from "@/components/Loader"
 import SyncOutlinedIcon from "@mui/icons-material/SyncOutlined";
@@ -19,19 +20,13 @@ export default function UpfTable() {
   const [showNotification, setShowNotification] = useState(true);
 
   const query = useQuery<UpfItem[], Error>({
-    queryKey: ['upfs', auth.user?.authToken],
+    queryKey: [ queryKeys.upfs, auth.user?.authToken],
     queryFn: () => getUpfList(auth.user?.authToken ?? ""),
     enabled: auth.user ? true : false,
-    retry: (failureCount, error): boolean => {
-      if (error.message.includes("401") || error.message.includes("403")) {
-        return false
-      }
-      return failureCount < 3
-    },
   })
-  if (query.status == "pending") { return <Loader text="loading..." /> }
+  if (query.status == "pending") { return <Loader/> }
   if (query.status == "error") {
-    if (query.error instanceof WebconsoleApiError && query.error.status === 401) {
+    if (is401UnauthorizedError(query.error)) {
         auth.logout();
     }
     return (
