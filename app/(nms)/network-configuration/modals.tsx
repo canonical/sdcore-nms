@@ -1,4 +1,9 @@
-import { Button, Form, Input, ConfirmationButton, Modal, Notification, Select } from "@canonical/react-components"
+import { Button, Form, Input, ConfirmationButton, Modal, Select } from "@canonical/react-components"
+import { createNetworkSlice, editNetworkSlice, deleteNetworkSlice } from "@/utils/networkSliceOperations";
+import { getGnbList } from "@/utils/gnbOperations";
+import { getUpfList } from "@/utils/upfOperations";
+import { GnbItem, NetworkSlice, UpfItem } from "@/components/types";
+import { queryKeys } from "@/utils/queryKeys";
 import { useAuth } from "@/utils/auth"
 import { useFormik } from "formik";
 import { useQuery, useQueryClient } from "@tanstack/react-query"
@@ -6,21 +11,8 @@ import { useState } from "react"
 import { OperationError, is401UnauthorizedError}  from "@/utils/errors";
 
 import * as Yup from "yup";
-import { createNetworkSlice, editNetworkSlice, deleteNetworkSlice } from "@/utils/networkSliceOperations";
+import ErrorNotification from "@/components/ErrorNotification";
 
-import { GnbItem, NetworkSlice, UpfItem } from "@/components/types";
-import { getUpfList } from "@/utils/upfOperations";
-import { getGnbList } from "@/utils/gnbOperations";
-import { queryKeys } from "@/utils/queryKeys";
-
-
-const ErrorNotification = ({ error }: { error: string | null; }) => {
-  return error ? (
-      <Notification severity="negative" title="Error">
-        {error}
-      </Notification>
-  ) : null;
-};
 
 interface NetworkSliceFormValues {
   name: string;

@@ -1,7 +1,7 @@
 "use client"
 
 import { apiGetAllNetworkSlices } from "@/utils/networkSliceOperations";
-import { Button, MainTable, Notification } from "@canonical/react-components"
+import { Button, MainTable } from "@canonical/react-components"
 import { CreateDeviceGroupModal, EditDeviceGroupModal, DeleteDeviceGroupButton } from "@/app/(nms)/device-groups/modals";
 import { DeviceGroup } from "@/components/types";
 import { getDeviceGroups } from "@/utils/deviceGroupOperations";
@@ -14,6 +14,7 @@ import { useState } from "react"
 import { is401UnauthorizedError }  from "@/utils/errors";
 
 import EmptyStatePage from "@/components/EmptyStatePage";
+import ErrorNotification from "@/components/ErrorNotification";
 import Loader from "@/components/Loader"
 import PageContent from "@/components/PageContent"
 import PageHeader from "@/components/PageHeader"
@@ -52,13 +53,7 @@ export default function DeviceGroups() {
     if (is401UnauthorizedError(deviceGroupQuery.error) || is401UnauthorizedError(networkSlicesQuery.error)) {
         auth.logout();
     }
-    return (
-      <>
-        <Notification severity="negative" title="Error">
-          Failed to retrieve device groups.
-        </Notification>
-      </>
-    );
+    return (<><ErrorNotification error={"Failed to retrieve device groups."} /></> );
   }
 
   const networkSlices = networkSlicesQuery.data || [];

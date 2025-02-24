@@ -1,5 +1,5 @@
 import { apiGetAllNetworkSlices } from "@/utils/networkSliceOperations"
-import { Button, Form, Input, ConfirmationButton, Modal, Notification, Select } from "@canonical/react-components"
+import { Button, Form, Input, ConfirmationButton, Modal, Select } from "@canonical/react-components"
 import { createDeviceGroup, editDeviceGroup, deleteDeviceGroup } from "@/utils/deviceGroupOperations";
 import { DeviceGroup } from "@/components/types";
 import { queryKeys } from "@/utils/queryKeys";
@@ -10,6 +10,7 @@ import { useQuery } from "@tanstack/react-query"
 import { useState } from "react"
 import { OperationError, is401UnauthorizedError}  from "@/utils/errors";
 
+import ErrorNotification from "@/components/ErrorNotification";
 import isCidr from "is-cidr";
 import ipRegex from "ip-regex";
 import * as Yup from "yup";
@@ -139,16 +140,8 @@ export const DeviceGroupModal: React.FC<DeviceGroupModalProps> = ({
         <Button onClick={closeFn}>Cancel</Button>
         </>
       }>
-      {apiError && (
-        <Notification severity="negative" title="Error">
-          {apiError}
-        </Notification>
-      )}
-      {networkSliceError && (
-        <Notification severity="negative" title="Error">
-          {networkSliceError}
-        </Notification>
-      )}
+      {apiError && <ErrorNotification error={apiError} />}
+      {networkSliceError && <ErrorNotification error={networkSliceError} />}
       <Form>
         <Input
           id="name"

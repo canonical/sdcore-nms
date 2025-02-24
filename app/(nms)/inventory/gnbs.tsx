@@ -10,6 +10,7 @@ import { useQuery } from "@tanstack/react-query"
 import { useState } from "react";
 import { is401UnauthorizedError }  from "@/utils/errors";
 
+import ErrorNotification from "@/components/ErrorNotification";
 import Loader from "@/components/Loader"
 import PageHeader from "@/components/PageHeader"
 import SyncOutlinedIcon from "@mui/icons-material/SyncOutlined";
@@ -29,13 +30,7 @@ export default function GnbTable() {
     if (is401UnauthorizedError(query.error)) {
       auth.logout();
     }
-    return (
-      <>
-        <Notification severity="negative" title="Error">
-          Failed to retrieve gNodeBs.
-        </Notification>
-      </>
-    )
+    return (<><ErrorNotification error={"Failed to retrieve gNodeBs."} /></>)
   }
   const gnbs = query.data || [];
   const tableContent: MainTableRow[] = gnbs.map((gnb) => {

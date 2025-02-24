@@ -13,6 +13,7 @@ import { is401UnauthorizedError } from "@/utils/errors";
 import Loader from "@/components/Loader"
 import SyncOutlinedIcon from "@mui/icons-material/SyncOutlined";
 import PageHeader from "@/components/PageHeader"
+import ErrorNotification from "@/components/ErrorNotification";
 
 
 export default function UpfTable() {
@@ -29,13 +30,7 @@ export default function UpfTable() {
     if (is401UnauthorizedError(query.error)) {
         auth.logout();
     }
-    return (
-      <>
-        <Notification severity="negative" title="Error">
-          Failed to retrieve UPFs.
-        </Notification>
-      </>
-    )
+    return (<><ErrorNotification error={"Failed to retrieve UPFs."} /></>)
   }
   const upfs = query.data || [];
   const tableContent: MainTableRow[] = upfs.map((upf) => {

@@ -14,6 +14,7 @@ import { useState } from "react"
 import { is401UnauthorizedError }  from "@/utils/errors";
 
 import EmptyStatePage from "@/components/EmptyStatePage";
+import ErrorNotification from "@/components/ErrorNotification";
 import Loader from "@/components/Loader"
 import PageContent from "@/components/PageContent"
 import PageHeader from "@/components/PageHeader"
@@ -57,13 +58,7 @@ export default function NetworkSlices() {
     if (queries.some(q => is401UnauthorizedError(q.error))) {
       auth.logout();
     }
-    return (
-      <>
-        <Notification severity="negative" title="Error">
-          Failed to retrieve network slices.
-        </Notification>
-      </>
-    )
+    return (<><ErrorNotification error={"Failed to retrieve network slices."} /></>);
   }
 
   const networkSlices = networkSliceQuery.data || [];
