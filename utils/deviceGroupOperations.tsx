@@ -1,4 +1,4 @@
-import { apiGetAllDeviceGroups, apiDeleteDeviceGroup, apiGetDeviceGroup, apiPostDeviceGroup } from "@/utils/callDeviceGroupApi";
+import { apiGetAllDeviceGroupNames, apiDeleteDeviceGroup, apiGetDeviceGroup, apiPostDeviceGroup } from "@/utils/callDeviceGroupApi";
 import { apiGetNetworkSlice, apiPostNetworkSlice, getNetworkSlices } from "@/utils/networkSliceOperations";
 import { NetworkSlice, DeviceGroup } from "@/components/types";
 import { WebconsoleApiError, OperationError } from "@/utils/errors";
@@ -170,11 +170,7 @@ export async function editDeviceGroup({
 
 export async function getDeviceGroups(token: string): Promise<DeviceGroup[]> {
   try {
-    const deviceGroupResponse = await apiGetAllDeviceGroups(token);
-    const deviceGroupNames = await deviceGroupResponse.json();
-    if (!deviceGroupResponse.ok) {
-      throw new WebconsoleApiError(deviceGroupResponse.status, deviceGroupNames.error);
-    }
+    const deviceGroupNames = await apiGetAllDeviceGroupNames(token);
     const networkSlices = await getNetworkSlices(token);
     const deviceGroups = await Promise.all(
       deviceGroupNames.map(async (deviceGroupName: string) => {

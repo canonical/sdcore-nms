@@ -51,7 +51,7 @@ export default function DeviceGroups() {
   }
   if (deviceGroupQuery.status == "error" || networkSlicesQuery.status == "error") {
     if (is401UnauthorizedError(deviceGroupQuery.error) || is401UnauthorizedError(networkSlicesQuery.error)) {
-        auth.logout();
+      auth.logout();
     }
     return (<><ErrorNotification error={"Failed to retrieve device groups."} /></> );
   }

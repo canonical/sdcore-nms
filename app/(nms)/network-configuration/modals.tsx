@@ -1,3 +1,4 @@
+import { apiGetAllDeviceGroupNames } from "@/utils/callDeviceGroupApi";
 import { Button, Form, Input, ConfirmationButton, Modal, Select } from "@canonical/react-components"
 import { createNetworkSlice, editNetworkSlice, deleteNetworkSlice } from "@/utils/networkSliceOperations";
 import { getGnbList } from "@/utils/gnbOperations";
@@ -377,7 +378,23 @@ export const DeleteNetworkSliceButton: React.FC<deleteNetworkSliceModalProps> = 
     }, 100);
   };
 
-  if (deviceGroups && deviceGroups.length > 0) {
+  const deviceGroupQuery = useQuery<string[], Error>({
+    queryKey: [queryKeys.deviceGroups, auth.user?.authToken],
+    queryFn: () => apiGetAllDeviceGroupNames(auth.user?.authToken ?? ""),
+    enabled: auth.user ? true : false,
+  })
+
+  if (deviceGroupQuery.status == "error" && is401UnauthorizedError(deviceGroupQuery.error)) {
+    auth.logout();
+  }
+
+  const existingDeviceGroups = deviceGroupQuery.data || [];
+  const filteredDeviceGroups = () => {
+    const deviceSet = new Set(existingDeviceGroups);
+    return deviceGroups.filter(deviceGroup => deviceSet.has(deviceGroup));
+  }
+
+  if (deviceGroups && filteredDeviceGroups().length > 0) {
     return (
       <ConfirmationButton
         appearance="negative"
@@ -394,7 +411,7 @@ export const DeleteNetworkSliceButton: React.FC<deleteNetworkSliceModalProps> = 
               <br />
               Please remove the following device groups first:
               <br />
-              {deviceGroups.join(", ")}.
+              {filteredDeviceGroups().join(", ")}.
             </p>
           ),
         }}
@@ -416,7 +433,7 @@ export const DeleteNetworkSliceButton: React.FC<deleteNetworkSliceModalProps> = 
         onConfirm: () => handleConfirmDelete(networkSliceName),
         children: (
           <p>
-            This will permanently delete the netowork slice <b>{networkSliceName}</b>.
+            This will permanently delete the network slice <b>{networkSliceName}</b>.
             <br />
             You cannot undo this action.
           </p>

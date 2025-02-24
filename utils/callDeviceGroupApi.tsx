@@ -1,18 +1,26 @@
+import { WebconsoleApiError } from "@/utils/errors";
+
+
 function isValidDeviceGroupName(name: string): boolean {
   return /^[a-zA-Z0-9-_]+$/.test(name);
 }
 
-export const apiGetAllDeviceGroups = async (token: string) => {
+export const apiGetAllDeviceGroupNames = async (token: string): Promise<string[]> => {
   try {
-    return await fetch(`/config/v1/device-group/`, {
+    const response = await fetch(`/config/v1/device-group/`, {
       method: "GET",
       headers: {
         "Authorization": "Bearer " + token,
         "Content-Type": "application/json",
       },
     });
+    const respData = await response.json();
+    if (!response.ok) {
+      throw new WebconsoleApiError(response.status, respData.error);
+    }
+    return respData
   } catch (error) {
-    console.error(error);
+    console.error(`Error retrieving device group list: ${error}`);
     throw error;
   }
 };
