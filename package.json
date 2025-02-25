@@ -9,17 +9,17 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@canonical/react-components": "^1.10.0",
+    "@canonical/react-components": "^2.1.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@mui/icons-material": "^6.4.5",
-    "@mui/material": "^6.0.1",
+    "@mui/material": "^6.4.5",
     "@tanstack/react-query": "^5.66.9",
     "@types/node": "22.13.5",
-    "@types/react": "18.3.13",
-    "@types/react-dom": "18.3.1",
-    "eslint": "8.57.1",
-    "eslint-config-next": "14.2.15",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "eslint": "^9.21.0",
+    "eslint-config-next": "^15.1.7",
     "formik": "2.4.6",
     "ip-regex": "^5.0.0",
     "is-cidr": "^5.1.1",
@@ -27,23 +27,47 @@
     "lodash": "^4.17.21",
     "next": "15.1.7",
     "next-swagger-doc": "^0.4.1",
-    "react": "18.3.1",
+    "react": "^19.0.0",
     "react-cookie": "^7.2.2",
-    "react-dom": "18.3.1",
+    "react-dom": "^19.0.0",
     "react-icons": "^5.5.0",
-    "sass": "^1.85.0",
-    "swagger-ui-react": "^5.19.0",
+    "sass": "^1.85.1",
     "typescript": "5.7.3",
     "vanilla-framework": "^4.21.0",
     "yup": "1.6.1"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.0.8",
+    "@tailwindcss/postcss": "^4.0.9",
     "@types/swagger-ui-react": "^5.18.0",
     "autoprefixer": "^10.4.20",
+    "eslint-plugin-react": "^7.37.4",
+    "eslint-plugin-react-hooks": "^5.1.0",
     "postcss": "^8.5.3",
     "prettier": "^3.5.2",
-    "prettier-plugin-tailwindcss": "^0.6.10",
-    "tailwindcss": "^4.0.1"
+    "prettier-plugin-tailwindcss": "^0.6.11",
+    "swagger-ui-react": "^5.19.0",
+    "tailwindcss": "^4.0.9"
+  },
+  "overrides": {
+    "react-copy-to-clipboard": {
+      "react": "^19.0.0"
+    },
+    "react-debounce-input": {
+      "react": "^19.0.0"
+    },
+    "react-inspector": {
+      "react": "^19.0.0"
+    },
+    "swagger-ui-react": {
+      "react": "^19.0.0",
+      "react-dom": "^19.0.0"
+    },
+    "picomatch": "2.3.1",
+    "immutable": "4.3.7",
+    "tree-sitter": "0.21.1"
+  },
+  "resolutions": {
+    "react-copy-to-clipboard/react": "^19.0.0",
+    "react-debounce-input/react": "^19.0.0"
   }
 }
