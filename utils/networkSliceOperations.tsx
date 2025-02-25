@@ -3,7 +3,7 @@ import { OperationError, WebconsoleApiError } from "@/utils/errors";
 
 
 function isValidNetworkSliceName(name: string): boolean {
-  return /^[a-zA-Z0-9-_]+$/.test(name);
+  return /^[a-zA-Z][a-zA-Z0-9-_]+$/.test(name);
 }
 
 export const apiGetAllNetworkSlices = async (token: string): Promise<string[]> => {

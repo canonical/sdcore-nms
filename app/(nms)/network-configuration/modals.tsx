@@ -28,9 +28,14 @@ const NetworkSliceSchema = Yup.object().shape({
     name: Yup.string()
       .min(1)
       .max(20, "Name must not exceed 20 characters")
-      .matches(/^[a-zA-Z0-9-_]+$/, {
-        message: "Only alphanumeric characters, dashes and underscores.",
-      })
+      .matches(/^[a-zA-Z][a-zA-Z0-9-_]+$/, {
+        message: (
+          <>
+            Name must start with a letter. <br />
+            Only alphanumeric characters, dashes, and underscores.
+          </>
+        ),
+        })
       .required("Name is required."),
     mcc: Yup.string()
       .matches(/^\d{3}$/, "MCC must be 3 digits.")

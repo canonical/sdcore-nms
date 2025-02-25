@@ -2,7 +2,7 @@ import { WebconsoleApiError } from "@/utils/errors";
 
 
 function isValidDeviceGroupName(name: string): boolean {
-  return /^[a-zA-Z0-9-_]+$/.test(name);
+  return /^[a-zA-Z][a-zA-Z0-9-_]+$/.test(name);
 }
 
 export const apiGetAllDeviceGroupNames = async (token: string): Promise<string[]> => {
