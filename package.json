@@ -61,7 +61,10 @@
     "swagger-ui-react": {
       "react": "^19.0.0",
       "react-dom": "^19.0.0"
-    }
+    },
+    "picomatch": "2.3.1",
+    "immutable": "4.3.7",
+    "tree-sitter": "0.21.1"
   },
   "resolutions": {
     "react-copy-to-clipboard/react": "^19.0.0",
