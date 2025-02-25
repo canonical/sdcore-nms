@@ -49,12 +49,22 @@
     "tailwindcss": "^4.0.9"
   },
   "overrides": {
-    "swagger-ui-react": {
-      "react-dom": "^19.0.0",
+    "react-copy-to-clipboard": {
       "react": "^19.0.0"
     },
-    "react-table": {
+    "react-debounce-input": {
       "react": "^19.0.0"
+    },
+    "react-inspector": {
+      "react": "^19.0.0"
+    },
+    "swagger-ui-react": {
+      "react": "^19.0.0",
+      "react-dom": "^19.0.0"
     }
+  },
+  "resolutions": {
+    "react-copy-to-clipboard/react": "^19.0.0",
+    "react-debounce-input/react": "^19.0.0"
   }
 }
