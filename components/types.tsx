@@ -66,3 +66,13 @@ export type UserEntry = {
 export type statusResponse = {
   initialized: boolean
 }
+
+export type GnbItem = {
+  name: string;
+  tac: number;
+}
+
+export type UpfItem = {
+  hostname: string;
+  port: string;
+}

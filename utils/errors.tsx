@@ -12,6 +12,14 @@ export class WebconsoleApiError extends Error {
   }
 }
 
+export function is401UnauthorizedError(error: Error | unknown): boolean {
+  return (error instanceof WebconsoleApiError && error.status === 401);
+}
+
+export function is403ForbiddenError(error: Error | unknown): boolean {
+  return (error instanceof WebconsoleApiError && error.status === 403);
+}
+
 export class OperationError extends Error {
 
   constructor(message: string) {

@@ -1,11 +1,8 @@
-import { HTTPStatus } from "@/utils/utils";
+import { UpfItem } from "@/components/types";
+import { WebconsoleApiError } from "@/utils/errors";
 
-export interface UpfItem {
-  hostname: string;
-  port: string;
-}
 
-export const getUpfList = async (token: string): Promise<UpfItem[]> => {
+export async function getUpfList(token: string): Promise<UpfItem[]> {
   try {
     const response = await fetch("/config/v1/inventory/upf", {
       method: "GET",
@@ -16,11 +13,11 @@ export const getUpfList = async (token: string): Promise<UpfItem[]> => {
     });
     const upfList = await response.json();
     if (!response.ok) {
-      throw new Error(`${response.status}: ${HTTPStatus(response.status)}. ${upfList.error}`)
+      throw new WebconsoleApiError(response.status, upfList.error);
     }
     return upfList;
   } catch (error) {
-    console.error(error);
+    console.error(`Error retrieving UPF list ${error}`);
     throw error;
   }
 };

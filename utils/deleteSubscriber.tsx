@@ -1,4 +1,4 @@
-import { apiGetNetworkSlice, apiGetAllNetworkSlices } from "@/utils/callNetworkSliceApi";
+import { apiGetNetworkSlice, apiGetAllNetworkSlices } from "@/utils/networkSliceOperations";
 import { apiGetDeviceGroup, apiPostDeviceGroup } from "@/utils/callDeviceGroupApi";
 import { apiDeleteSubscriber } from "@/utils/callSubscriberApi";
 
