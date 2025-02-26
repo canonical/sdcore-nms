@@ -1,216 +1,212 @@
-"use client";
-import React, { useState } from "react";
-import {
-  Button,
-  Card,
-  ConfirmationButton,
-} from "@canonical/react-components";
-import { deleteNetworkSlice } from "@/utils/deleteNetworkSlice";
-import { getNetworkSlices } from "@/utils/getNetworkSlices";
-import NetworkSliceModal from "@/components/NetworkSliceModal";
-import NetworkSliceEmptyState from "@/components/NetworkSliceEmptyState";
-import { NetworkSliceTable } from "@/components/NetworkSliceTable";
-import Loader from "@/components/Loader";
-import { queryKeys } from "@/utils/queryKeys";
-import PageHeader from "@/components/PageHeader";
-import PageContent from "@/components/PageContent";
-import { NetworkSlice } from "@/components/types";
-import { useAuth } from "@/utils/auth";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { apiPostNetworkSlice } from "@/utils/callNetworkSliceApi";
+"use client"
 
-const NetworkConfiguration = () => {
-  const queryClient = useQueryClient();
-  const [isCreateModalVisible, setCreateModalVisible] = useState(false);
-  const [isEditModalVisible, setEditModalVisible] = useState(false);
-  const [networkSlice, setNetworkSlice] = useState<NetworkSlice | undefined>(undefined);
+import { Button, List, MainTable, Notification } from "@canonical/react-components"
+import { CreateNetworkSliceModal, EditNetworkSliceModal, DeleteNetworkSliceButton } from "@/app/(nms)/network-configuration/modals";
+import { GnbItem, NetworkSlice, UpfItem } from "@/components/types";
+import { getGnbList } from "@/utils/gnbOperations";
+import { getNetworkSlices } from "@/utils/networkSliceOperations";
+import { getUpfList } from "@/utils/upfOperations";
+import { MainTableRow } from "@canonical/react-components/dist/components/MainTable/MainTable"
+import { queryKeys } from "@/utils/queryKeys";
+import { useAuth } from "@/utils/auth"
+import { useQuery } from "@tanstack/react-query"
+import { useState } from "react"
+import { is401UnauthorizedError }  from "@/utils/errors";
+
+import EmptyStatePage from "@/components/EmptyStatePage";
+import ErrorNotification from "@/components/ErrorNotification";
+import Loader from "@/components/Loader"
+import PageContent from "@/components/PageContent"
+import PageHeader from "@/components/PageHeader"
+import SyncOutlinedIcon from "@mui/icons-material/SyncOutlined";
+
+
+const CREATE = "create" as const;
+const EDIT = "edit" as const;
+
+type modalData = {
+  networkSlice: NetworkSlice
+  action: typeof CREATE | typeof EDIT;
+}
+
+export default function NetworkSlices() {
+  const [modalData, setModalData] = useState<modalData | null>(null);
+  const [showNotification, setShowNotification] = useState(true);
   const auth = useAuth()
 
-  const { data: networkSlices = [], isLoading: loading, status: networkSlicesQueryStatus, error: networkSlicesQueryError } = useQuery({
+  const networkSliceQuery = useQuery<NetworkSlice[], Error>({
     queryKey: [queryKeys.networkSlices, auth.user?.authToken],
-    queryFn: () => getNetworkSlices(auth.user ? auth.user.authToken : ""),
-    enabled: Boolean(auth.user),
-    retry: (failureCount, error) => !(error instanceof Error && error.message.includes("401"))
+    queryFn: () => getNetworkSlices(auth.user?.authToken ?? ""),
+    enabled: auth.user ? true : false,
+  })
+
+  const upfQuery = useQuery<UpfItem[], Error>({
+    queryKey: [queryKeys.upfs, auth.user?.authToken],
+    queryFn: () => getUpfList(auth.user!.authToken),
+    enabled: auth.user ? true : false
   });
 
-  const addNetworkSlice = async (newSlice: NetworkSlice): Promise<Response> => {
-    return await apiPostNetworkSlice(newSlice["slice-name"], newSlice, auth.user?.authToken || "");
-  };
+  const gnbsQuery = useQuery<GnbItem[], Error>({
+    queryKey: [queryKeys.gnbs, auth.user?.authToken],
+    queryFn: () => getGnbList(auth.user?.authToken ?? ""),
+    enabled: auth.user ? true : false,
+  })
 
-  // Mutation hook to add a new Network Slice
-  const addNetworkSliceMutation = useMutation<unknown, Error, NetworkSlice>({
-    mutationFn: addNetworkSlice,
-    onSuccess: () => {
-        // Invalidate and refetch the network slices query
-        queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
-        // Close model on success
-        setCreateModalVisible(false);
-    },
-    onError: (error) => {
-       console.error("Error adding network slice:", error);
-    },
-  });
-
-  const handleAddNetworkSlice = (newSlice: NetworkSlice) => {
-      addNetworkSliceMutation.mutate(newSlice);
-  }
-
-  const editNetworkSlice = async (updatedSlice: NetworkSlice): Promise<Response> => {
-    return await apiPostNetworkSlice(updatedSlice["slice-name"], updatedSlice, auth.user?.authToken || "");
-  };
-
-  // Mutation hook to edit Network Slice
-  const editNetworkSliceMutation = useMutation<unknown, Error, NetworkSlice>({
-    mutationFn: editNetworkSlice,
-    onSuccess: () => {
-        // Invalidate and refetch network slices
-        queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices, auth.user?.authToken ?? ""], refetchActive: true });
-        setEditModalVisible(false);
-    },
-    onError: (error) => {
-        console.error("Error editing network slice:", error);
-    },
-  });
-
-  const handleEditNetworkSlice = (updatedSlice: NetworkSlice) => {
-    editNetworkSliceMutation.mutate(updatedSlice);
-  };
-
-  const deleteNetworkSliceMutation = useMutation<void, Error, string>({
-    mutationFn: async (sliceName: string) => {
-        await deleteNetworkSlice(sliceName, auth.user?.authToken || "");
-    },
-    onSuccess: () => {
-        // Invalidate and refetch network slices
-        queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices, auth.user?.authToken ?? ""], refetchActive: true });
-    },
-    onError: (error) => {
-        console.error("Error deleting network slice:", error);
-    },
-  });
-
-  const handleConfirmDelete = (sliceName: string) => {
-    deleteNetworkSliceMutation.mutate(sliceName);
-  };
-
-  const toggleCreateNetworkSliceModal = () => {
-    setCreateModalVisible((prev) => !prev);
-    // Clear selection when closing modal
-    setNetworkSlice(undefined);
-  };
-
-  const toggleEditNetworkSliceModal = () =>
-    setEditModalVisible((prev) => !prev);
-
-  const handleEditButton = (networkSlice: NetworkSlice) => {
-    setNetworkSlice(networkSlice);
-    setEditModalVisible(true);
-  }
-
-  const getEditButton = (networkSlice: NetworkSlice) => {
-    return <Button
-      appearance=""
-      onClick={() => handleEditButton(networkSlice) }
-      className="u-no-margin--bottom">
-      Edit
-    </Button>
-  }
-
-  const getDeleteButton = (sliceName: string, deviceGroups: string[] | undefined) => {
-    if (deviceGroups &&
-      deviceGroups.length > 0) {
-      return <ConfirmationButton
-        appearance="negative"
-        className="u-no-margin--bottom"
-        confirmationModalProps={{
-          title: "Warning",
-          confirmButtonLabel: "Delete",
-          buttonRow: null,
-          onConfirm: () => { },
-          children: (
-            <p>
-              Network slice <b>{sliceName}</b> cannot be deleted.<br />
-              Please remove the following device groups first:
-              <br />
-              {deviceGroups.join(", ")}.
-            </p>
-          ),
-        }} >
-        Delete
-      </ConfirmationButton>
+  const queries = [networkSliceQuery, upfQuery, gnbsQuery];
+  if (queries.some(q => q.status === "pending") ) { return <Loader/> }
+  if (queries.some(q => q.status === "error")) {
+    if (queries.some(q => is401UnauthorizedError(q.error))) {
+      auth.logout();
     }
-    return <ConfirmationButton
-      appearance="negative"
-      className="u-no-margin--bottom"
-      shiftClickEnabled
-      showShiftClickHint
-      confirmationModalProps={{
-        title: "Confirm Delete",
-        confirmButtonLabel: "Delete",
-        onConfirm: () => handleConfirmDelete(sliceName),
-        children: (
-          <p>
-            This will permanently delete the network slice <b>{sliceName}</b><br />
-            This action cannot be undone.
-          </p>
-        ),
-      }} >
-      Delete
-    </ConfirmationButton>
+    return (<><ErrorNotification error={"Failed to retrieve network slices."} /></>);
   }
 
-  if (loading) {
-    return <Loader text="Loading..." />;
+  const networkSlices = networkSliceQuery.data || [];
+  const upfItems = upfQuery.data || [] as UpfItem[];
+  const gnbItems = gnbsQuery.data || [] as GnbItem[];
+  const isInventoryCreated = (upfItems.length > 0 && gnbItems.length > 0);
+
+  if (networkSlices.length === 0) {
+    if (!isInventoryCreated){
+      const message = (
+        <>
+          <p>To create a network slice first:</p>
+          {upfItems.length === 0 && <p>- Integrate your UPF charm with the NMS charm.</p>}
+          {gnbItems.length === 0 && <p>- Integrate your gNodeB charm with the NMS charm.</p>}
+        </>
+      );
+      return (
+        <>
+          <EmptyStatePage
+            title="No network slice available"
+            message={message}
+            onClick={() => window.open("https://canonical-charmed-aether-sd-core.readthedocs-hosted.com/en/latest/", "_blank")}
+            buttonText="Go to Documentation"
+          ></EmptyStatePage>
+        </>
+      );
+    }
+    return (
+      <>
+        <EmptyStatePage
+          title="No network slice available"
+          onClick={() => setModalData({ networkSlice: {} as NetworkSlice, action: CREATE })}
+          buttonText="Create"
+        ></EmptyStatePage>
+        {modalData?.action == CREATE && <CreateNetworkSliceModal closeFn={() => setModalData(null)} />}
+      </>
+    );
   }
 
-  if (networkSlicesQueryStatus == "error") {
-      if (networkSlicesQueryError.message.includes("401")) {
-          auth.logout()
-      }
-      return <p>{networkSlicesQueryError.message}</p>
-  }
+  const tableContent: MainTableRow[] = networkSlices.map((networkSlice) => {
+    const upf = networkSlice["site-info"]?.["upf"];
+    const gNodeBs = networkSlice["site-info"]?.gNodeBs || [];
+    const gNodeBList = [...gNodeBs.map((gNodeB, index) => `${gNodeB.name} (tac: ${gNodeB.tac})`)];
+    return {
+      key: networkSlice["slice-name"],
+      columns: [
+        { content: networkSlice["slice-name"] },
+        {
+          content: networkSlice["site-info"]?.plmn?.mcc,
+          className:"u-align--center",
+        },
+        {
+          content: networkSlice["site-info"]?.plmn?.mnc,
+          className:"u-align--center",
+        },
+        { content: networkSlice["slice-id"]?.sst + ": eMBB" },
+        { content: upf ? `${upf["upf-name"]}:${upf["upf-port"]}` : "" },
+        {
+          content: <List items={gNodeBList} divided></List>
+        },
+        {
+          content:
+            <Button
+              appearance=""
+              disabled={!isInventoryCreated}
+              className="u-no-margin--bottom"
+              onClick={() => setModalData({ networkSlice: networkSlice, action: EDIT })}
+              title="Edit"
+            >
+              Edit
+            </Button>,
+          className:"u-align--right",
+        },
+        {
+          content:
+            <DeleteNetworkSliceButton
+              networkSliceName={ networkSlice["slice-name"] }
+              deviceGroups={ networkSlice["site-device-group"] || [] }
+            >
+            </DeleteNetworkSliceButton>
+        },
+      ],
+    };
+  });
 
   return (
     <>
-      {networkSlices.length > 0 && (
-        <PageHeader title={`Network slices (${networkSlices.length})`}>
-          <Button appearance="positive" onClick={toggleCreateNetworkSliceModal}>
-            Create
-          </Button>
-        </PageHeader>
-      )}
-      <PageContent>
-        {networkSlices.length === 0 && <NetworkSliceEmptyState />}
-        {networkSlices.length > 0 && (
-          <>
-            {networkSlices.map((slice) => (
-              <Card key={slice["slice-name"]}>
-                <h2 className="p-heading--5">{slice["slice-name"]}</h2>
-                <NetworkSliceTable slice={slice} />
-                <hr />
-                <div className="u-align--right">
-                  {getEditButton(slice)}
-                  {getDeleteButton(slice["slice-name"], slice["site-device-group"])}
-                </div>
-              </Card>
-            ))}
-          </>
-        )}
+      <PageHeader title={`Network Slices (${networkSlices.length})`} colSize={12}>
+        <Button
+          hasIcon
+          appearance="base"
+          onClick={() => { networkSliceQuery.refetch(), upfQuery.refetch(),gnbsQuery.refetch() }}
+          title="Refresh network slice list"
+        >
+          <SyncOutlinedIcon style={{ color: "#666" }} />
+        </Button>
+        <Button
+          appearance="positive"
+          disabled={!isInventoryCreated}
+          onClick={() => setModalData({ networkSlice: {} as NetworkSlice, action: CREATE })}
+        >
+          Create
+        </Button>
+      </PageHeader>
+      <PageContent colSize={11}>
+        { !isInventoryCreated && showNotification && <Notification
+            severity="caution"
+            title="Inventory has not been initialized"
+            onDismiss={() => setShowNotification(false)}
+          >
+            {upfItems.length === 0 && <p>To add UPFs to the inventory, integrate your UPF charm with the NMS charm.</p>}
+            {gnbItems.length === 0 && <p>To add gNodeBs to the inventory, integrate your gNodeB charm with the NMS charm.</p>}
+          </Notification>
+        }
+        <MainTable
+          headers={[
+            { content: "Name" },
+            { 
+              content: "MCC",
+              className:"u-align--center",
+            },
+            { 
+              content: "MNC",
+              className:"u-align--center",
+            },
+            { content: "SST" },
+            { content: "UPF" },
+            {
+              content: "gNodeBs",
+              style: { textTransform: "none" },
+            },
+            { content: ""},
+            {
+              content: "Actions",
+              className:"u-align--center",
+            },
+          ]}
+          rows={tableContent}
+          emptyStateMsg={
+            <>
+              <br></br>
+              <p className="p-heading--4 u-no-margin--bottom u-align--center">No network slices available</p>
+            </>
+          }
+        />
       </PageContent>
-      {isCreateModalVisible && (
-        <NetworkSliceModal
-          toggleModal={toggleCreateNetworkSliceModal}
-          onSave={handleAddNetworkSlice}
-        />
-      )}
-      {isEditModalVisible && (
-        <NetworkSliceModal
-          networkSlice={networkSlice}
-          toggleModal={toggleEditNetworkSliceModal}
-          onSave={handleEditNetworkSlice}
-        />
-      )}
-    </>
-  );
-};
-export default NetworkConfiguration;
+      {modalData?.action == CREATE && <CreateNetworkSliceModal closeFn={() => setModalData(null)} />}
+      {modalData?.action == EDIT && <EditNetworkSliceModal networkSlice={modalData.networkSlice} closeFn={() => setModalData(null)} />}
+      </>
+  )
+}

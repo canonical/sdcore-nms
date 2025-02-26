@@ -1,69 +1,20 @@
-import { Button, Form, Input, ConfirmationButton, Modal, Notification, Select } from "@canonical/react-components"
+import { apiGetAllNetworkSlices } from "@/utils/networkSliceOperations"
+import { Button, Form, Input, ConfirmationButton, Modal, Select } from "@canonical/react-components"
 import { createDeviceGroup, editDeviceGroup, deleteDeviceGroup } from "@/utils/deviceGroupOperations";
 import { DeviceGroup } from "@/components/types";
-import { apiGetAllNetworkSlices } from "@/utils/callNetworkSliceApi"
+import { queryKeys } from "@/utils/queryKeys";
 import { useAuth } from "@/utils/auth"
 import { useFormik } from "formik";
 import { useQueryClient } from "@tanstack/react-query"
 import { useQuery } from "@tanstack/react-query"
 import { useState } from "react"
-import { WebconsoleApiError, OperationError}  from "@/utils/errors";
+import { OperationError, is401UnauthorizedError}  from "@/utils/errors";
 
+import ErrorNotification from "@/components/ErrorNotification";
 import isCidr from "is-cidr";
 import ipRegex from "ip-regex";
 import * as Yup from "yup";
 
-interface NetworkSliceFieldProps {
-  isEdit: boolean;
-  value: string;
-  onChange?: (value: string) => void;
-  networkSliceItems: string[];
-  error?: string | null;
-}
-
-const NetworkSliceField: React.FC<NetworkSliceFieldProps> = ({
-  isEdit,
-  value,
-  onChange,
-  networkSliceItems,
-  error,
-}) => {
-  if (isEdit) {
-    return (
-      <Input
-        id="network-slice"
-        label="Network Slice"
-        type="text"
-        required
-        stacked
-        disabled
-        value={value}
-        error={error}
-      />
-    );
-  }
-
-  return (
-    <Select
-      id="network-slice"
-      label="Network Slice"
-      required
-      stacked
-      value={value}
-      onChange={(event: React.ChangeEvent<HTMLSelectElement>) =>
-        onChange && onChange(event.target.value)
-      }
-      options={[
-        { disabled: true, label: "Select an option", value: "" },
-        ...networkSliceItems.map((networkSliceName) => ({
-          label: networkSliceName,
-          value: networkSliceName,
-        })),
-      ]}
-      error={error}
-    />
-  );
-};
 
 interface DeviceGroupFormValues {
   name: string;
@@ -85,8 +36,13 @@ const DeviceGroupSchema = Yup.object().shape({
   name: Yup.string()
       .min(1)
       .max(20, "Name should not exceed 20 characters.")
-      .matches(/^[a-zA-Z0-9-_]+$/, {
-      message: "Only alphanumeric characters, dashes and underscores.",
+      .matches(/^[a-zA-Z][a-zA-Z0-9-_]+$/, {
+      message: (
+        <>
+          Name must start with a letter. <br />
+          Only alphanumeric characters, dashes, and underscores.
+        </>
+      ),
       })
       .required("Name is required."),
   networkSlice: Yup.string()
@@ -144,15 +100,12 @@ export const DeviceGroupModal: React.FC<DeviceGroupModalProps> = ({
         await onSubmit({...values,});
         closeFn();
         setTimeout(async () => { // Wait 100 ms before invalidating due to a race condition
-          await queryClient.invalidateQueries({ queryKey: ['network-slices'] });
-          await queryClient.invalidateQueries({ queryKey: ['device-groups'] });
+          await queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
+          await queryClient.invalidateQueries({ queryKey: [queryKeys.deviceGroups] });
         }, 100);
       } catch (error) {
-        if (error instanceof WebconsoleApiError) {
-          if (error.status === 401) {
+        if (is401UnauthorizedError(error)) {
             auth.logout();
-          }
-          setApiError(error.statusText);
         } else if (error instanceof OperationError) {
           setApiError(error.message);
         } else {
@@ -163,7 +116,7 @@ export const DeviceGroupModal: React.FC<DeviceGroupModalProps> = ({
   });
 
   const networkSlicesQuery = useQuery<string[], Error>({
-    queryKey: ['network-slices'],
+    queryKey: [queryKeys.networkSlices, auth.user?.authToken],
     queryFn: () => apiGetAllNetworkSlices(auth.user?.authToken ?? ""),
     enabled: !isEdit && auth.user ? true : false,
   })
@@ -192,16 +145,8 @@ export const DeviceGroupModal: React.FC<DeviceGroupModalProps> = ({
         <Button onClick={closeFn}>Cancel</Button>
         </>
       }>
-      {apiError && (
-        <Notification severity="negative" title="Error">
-          {apiError}
-        </Notification>
-      )}
-      {networkSliceError && (
-        <Notification severity="negative" title="Error">
-          {networkSliceError}
-        </Notification>
-      )}
+      {apiError && <ErrorNotification error={apiError} />}
+      {networkSliceError && <ErrorNotification error={networkSliceError} />}
       <Form>
         <Input
           id="name"
@@ -214,12 +159,26 @@ export const DeviceGroupModal: React.FC<DeviceGroupModalProps> = ({
           {...formik.getFieldProps("name")}
           error={formik.touched.name ? formik.errors.name : null}
         />
-        <NetworkSliceField
-          isEdit={isEdit}
+        <Select
+          id="network-slice"
+          label="Network Slice"
+          required
+          stacked
+          disabled={isEdit}
           value={formik.values.networkSlice}
-          onChange={(value) => formik.setFieldValue("networkSlice", value)}
-          networkSliceItems={networkSliceItems}
-          error={formik.touched.networkSlice ? formik.errors.networkSlice : null}
+          onChange={(event) => formik.setFieldValue("networkSlice", (event.target.value))
+          }
+          options={[
+            {
+              label: "Select an option",
+              disabled: true,
+              value: ""
+            },
+              ...networkSliceItems.map((networkSliceName) => ({
+                label: networkSliceName,
+                value: networkSliceName,
+            })),
+          ]}
         />
         <Input
           id="ue-ip-pool"
@@ -457,15 +416,18 @@ export const DeleteDeviceGroupButton: React.FC<deleteDeviceGroupActionModalProps
   const auth = useAuth()
   const queryClient = useQueryClient()
   const handleConfirmDelete = async (name: string, networkSliceName: string) => {
-    await deleteDeviceGroup({
-      name,
-      networkSliceName,
-      token: auth.user ? auth.user.authToken : ""
-    });
-
+    try {
+      await deleteDeviceGroup({
+        name,
+        networkSliceName,
+        token: auth.user ? auth.user.authToken : ""
+      });
+    } catch (error) {
+      if (is401UnauthorizedError(error)) { auth.logout(); }
+    }
     setTimeout(async () => { // Wait 100 ms before invalidating due to a race condition
-      await queryClient.invalidateQueries({ queryKey: ['network-slices'] });
-      await queryClient.invalidateQueries({ queryKey: ['device-groups'] });
+      await queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
+      await queryClient.invalidateQueries({ queryKey: [queryKeys.deviceGroups] });
     }, 100);
   };
 

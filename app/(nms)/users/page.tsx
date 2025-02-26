@@ -34,7 +34,7 @@ export default function Users() {
       return true
     },
   })
-  if (query.status == "pending") { return <Loader text="loading..." /> }
+  if (query.status == "pending") { return <Loader/> }
   if (query.status == "error") {
     if (query.error.message.includes("401")) {
       auth.logout()

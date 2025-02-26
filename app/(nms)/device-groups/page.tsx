@@ -1,21 +1,25 @@
 "use client"
 
-import { apiGetAllNetworkSlices } from "@/utils/callNetworkSliceApi";
-import { Button, EmptyState, MainTable, Notification } from "@canonical/react-components"
+import { apiGetAllNetworkSlices } from "@/utils/networkSliceOperations";
+import { Button, MainTable } from "@canonical/react-components"
 import { CreateDeviceGroupModal, EditDeviceGroupModal, DeleteDeviceGroupButton } from "@/app/(nms)/device-groups/modals";
 import { DeviceGroup } from "@/components/types";
 import { getDeviceGroups } from "@/utils/deviceGroupOperations";
 import { MainTableRow } from "@canonical/react-components/dist/components/MainTable/MainTable"
+import { queryKeys } from "@/utils/queryKeys";
 import { useAuth } from "@/utils/auth"
 import { useQuery } from "@tanstack/react-query"
 import { useRouter } from "next/navigation";
 import { useState } from "react"
-import { WebconsoleApiError }  from "@/utils/errors";
+import { is401UnauthorizedError }  from "@/utils/errors";
 
+import EmptyStatePage from "@/components/EmptyStatePage";
+import ErrorNotification from "@/components/ErrorNotification";
 import Loader from "@/components/Loader"
 import PageContent from "@/components/PageContent"
 import PageHeader from "@/components/PageHeader"
 import SyncOutlinedIcon from "@mui/icons-material/SyncOutlined";
+
 
 const CREATE = "create" as const;
 const EDIT = "edit" as const;
@@ -31,64 +35,37 @@ export default function DeviceGroups() {
   const router = useRouter();
 
   const networkSlicesQuery = useQuery<string[], Error>({
-    queryKey: ['network-slices'],
+    queryKey: [queryKeys.networkSlices, auth.user?.authToken],
     queryFn: () => apiGetAllNetworkSlices(auth.user?.authToken ?? ""),
     enabled: auth.user ? true : false,
-    retry: (failureCount, error): boolean => {
-      if (error instanceof WebconsoleApiError && error.status === 401) {
-        return false
-      }
-      return failureCount < 3
-    },
   })
 
   const deviceGroupQuery = useQuery<DeviceGroup[], Error>({
-    queryKey: ['device-groups'],
+    queryKey: [queryKeys.deviceGroups, auth.user?.authToken],
     queryFn: () => getDeviceGroups(auth.user?.authToken ?? ""),
     enabled: auth.user ? true : false,
-    retry: (failureCount, error): boolean => {
-      if (error instanceof WebconsoleApiError && error.status === 401) {
-        return false
-      }
-      return failureCount < 3
-    },
   })
+
   if (deviceGroupQuery.status == "pending" || networkSlicesQuery.status == "pending") {
-    return <Loader text="loading..." />
+    return <Loader/>
   }
   if (deviceGroupQuery.status == "error" || networkSlicesQuery.status == "error") {
-    if ((deviceGroupQuery.error instanceof WebconsoleApiError && deviceGroupQuery.error.status === 401) ||
-        (networkSlicesQuery.error instanceof WebconsoleApiError && networkSlicesQuery.error.status === 401)) {
-        auth.logout();
-    } 
-    return (
-      <>
-        <Notification severity="negative" title="Error">
-          Failed to retrieve device groups.
-        </Notification>
-      </>
-    );
+    if (is401UnauthorizedError(deviceGroupQuery.error) || is401UnauthorizedError(networkSlicesQuery.error)) {
+      auth.logout();
+    }
+    return (<><ErrorNotification error={"Failed to retrieve device groups."} /></> );
   }
 
   const networkSlices = networkSlicesQuery.data || [];
   if (networkSlices.length === 0) {
     return (
       <>
-      <PageHeader title={""}>
-        <br></br>
-      </PageHeader>
-      <PageContent colSize={8}>
-        <EmptyState image={""} title="No device groups available">
-          <br></br>
-          <p>
-            To create a device group, first create a network slice.
-          </p>
-          <Button appearance="positive" onClick={() => router.push("/network-configuration")}>
-            Go to the &quot;Network Slices&quot; page
-          </Button>
-        </EmptyState>
-      </PageContent>
-      {modalData?.action == CREATE && <CreateDeviceGroupModal closeFn={() => setModalData(null)} />}
+        <EmptyStatePage
+          title="No device group available"
+          message="To create a device group, first create a network slice."
+          onClick={() => router.push("/network-configuration")}
+          buttonText="Go to the &quot;Network Slices&quot; page"
+        ></EmptyStatePage>
       </>
     );
   }
@@ -97,18 +74,12 @@ export default function DeviceGroups() {
   if (deviceGroups.length === 0) {
     return (
       <>
-      <PageHeader title={""}>
-        <br></br>
-      </PageHeader>
-      <PageContent colSize={8}>
-        <EmptyState image={""} title="No device group available">
-          <br></br>
-          <Button appearance="positive" onClick={() => setModalData({ deviceGroup: {} as DeviceGroup, action: CREATE })}>
-            Create
-          </Button>
-        </EmptyState>
-      </PageContent>
-      {modalData?.action == CREATE && <CreateDeviceGroupModal closeFn={() => setModalData(null)} />}
+        <EmptyStatePage
+          title="No device group available"
+          onClick={() => setModalData({ deviceGroup: {} as DeviceGroup, action: CREATE })}
+          buttonText="Create"
+        ></EmptyStatePage>
+        {modalData?.action == CREATE && <CreateDeviceGroupModal closeFn={() => setModalData(null)} />}
       </>
     );
   }
