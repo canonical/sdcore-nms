@@ -99,6 +99,9 @@ export default function NetworkSlices() {
   }
 
   const tableContent: MainTableRow[] = networkSlices.map((networkSlice) => {
+    const upf = networkSlice["site-info"]?.["upf"];
+    const gNodeBs = networkSlice["site-info"]?.gNodeBs || [];
+    const gNodeBList = [...gNodeBs.map((gNodeB, index) => <span key={index}>{gNodeB.name} (tac: {gNodeB.tac})</span>)];
     return {
       key: networkSlice["slice-name"],
       columns: [
@@ -116,14 +119,14 @@ export default function NetworkSlices() {
           className:"u-align--right",
 
         },
-        { content: networkSlice["site-info"]?.["upf"] ? `${networkSlice["site-info"]["upf"]["upf-name"]}:${networkSlice["site-info"]["upf"]["upf-port"]}` : "" },
+        { content: upf ? `${upf["upf-name"]}:${upf["upf-port"]}` : "" },
         {
           content: 
             <>
-            {networkSlice["site-info"]?.gNodeBs?.map((gNodeB) => (
-              <div key={gNodeB.name}>- {gNodeB.name} (tac: {gNodeB.tac})</div>
-            )) || "No gNodeBs available"}
-            </>  
+              {gNodeBs.map((gNodeB) => (
+                <div style={{paddingBottom: "8px"}} key={gNodeB.name}>{gNodeB.name} (tac: {gNodeB.tac})</div>
+              ))}
+            </>
         },
         {
           content:
