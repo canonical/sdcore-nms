@@ -1,6 +1,6 @@
 "use client"
 
-import { Button, MainTable, Notification } from "@canonical/react-components"
+import { Button, List, MainTable, Notification } from "@canonical/react-components"
 import { CreateNetworkSliceModal, EditNetworkSliceModal, DeleteNetworkSliceButton } from "@/app/(nms)/network-configuration/modals";
 import { GnbItem, NetworkSlice, UpfItem } from "@/components/types";
 import { getGnbList } from "@/utils/gnbOperations";
@@ -101,7 +101,7 @@ export default function NetworkSlices() {
   const tableContent: MainTableRow[] = networkSlices.map((networkSlice) => {
     const upf = networkSlice["site-info"]?.["upf"];
     const gNodeBs = networkSlice["site-info"]?.gNodeBs || [];
-    const gNodeBList = [...gNodeBs.map((gNodeB, index) => <span key={index}>{gNodeB.name} (tac: {gNodeB.tac})</span>)];
+    const gNodeBList = [...gNodeBs.map((gNodeB, index) => `${gNodeB.name} (tac: ${gNodeB.tac})`)];
     return {
       key: networkSlice["slice-name"],
       columns: [
@@ -121,12 +121,7 @@ export default function NetworkSlices() {
         },
         { content: upf ? `${upf["upf-name"]}:${upf["upf-port"]}` : "" },
         {
-          content: 
-            <>
-              {gNodeBs.map((gNodeB) => (
-                <div style={{paddingBottom: "8px"}} key={gNodeB.name}>{gNodeB.name} (tac: {gNodeB.tac})</div>
-              ))}
-            </>
+          content: <List items={gNodeBList} divided></List>
         },
         {
           content:
