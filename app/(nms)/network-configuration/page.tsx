@@ -108,17 +108,13 @@ export default function NetworkSlices() {
         { content: networkSlice["slice-name"] },
         {
           content: networkSlice["site-info"]?.plmn?.mcc,
-          className:"u-align--right",
+          className:"u-align--center",
         },
         {
           content: networkSlice["site-info"]?.plmn?.mnc,
-          className:"u-align--right",
+          className:"u-align--center",
         },
-        {
-          content: networkSlice["slice-id"]?.sst + ": eMBB",
-          className:"u-align--right",
-
-        },
+        { content: networkSlice["slice-id"]?.sst + ": eMBB" },
         { content: upf ? `${upf["upf-name"]}:${upf["upf-port"]}` : "" },
         {
           content: <List items={gNodeBList} divided></List>
@@ -182,16 +178,13 @@ export default function NetworkSlices() {
             { content: "Name" },
             { 
               content: "MCC",
-              className:"u-align--right",
+              className:"u-align--center",
             },
             { 
               content: "MNC",
-              className:"u-align--right",
+              className:"u-align--center",
             },
-            { 
-              content: "SST",
-              className:"u-align--right",
-            },
+            { content: "SST" },
             { content: "UPF" },
             {
               content: "gNodeBs",
