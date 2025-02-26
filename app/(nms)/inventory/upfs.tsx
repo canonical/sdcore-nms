@@ -50,7 +50,12 @@ export default function UpfTable() {
           title="Table automatically populated by the NMS charm"
           onDismiss={() => setShowNotification(false)}
           >
-          To add UPFs to the inventory, integrate your UPF charm with the NMS charm.
+          To add UPFs to the inventory, integrate your UPF charm with the NMS charm. For more details, see the
+          <a
+            href="https://canonical-charmed-aether-sd-core.readthedocs-hosted.com/en/latest/how-to/add_inventory/"
+            target="_blank"
+          > documentation
+          </a>.
           </Notification>
         }
         <PageHeader title={`UPFs (${upfs.length})`}>

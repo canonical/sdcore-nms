@@ -50,7 +50,12 @@ export default function GnbTable() {
           title="Table automatically populated by the NMS charm"
           onDismiss={() => setShowNotification(false)}
           >
-          To add gNodeBs to the inventory, integrate your gNodeB charm with the NMS charm.
+          To add gNodeBs to the inventory, integrate your gNodeB charm with the NMS charm. For more details, see the
+          <a
+            href="https://canonical-charmed-aether-sd-core.readthedocs-hosted.com/en/latest/how-to/add_inventory/"
+            target="_blank"
+          > documentation
+          </a>.
         </Notification>
       }
       <PageHeader title={`gNodeBs (${gnbs.length})`}>
