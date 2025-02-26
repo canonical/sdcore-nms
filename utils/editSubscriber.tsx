@@ -1,6 +1,6 @@
-import { apiGetDeviceGroup, apiPostDeviceGroup } from "@/utils/callDeviceGroupApi";
+import { apiGetDeviceGroup, apiPostDeviceGroup } from "@/utils/deviceGroupOperations";
 import { apiGetSubscriber, apiPostSubscriber } from "@/utils/callSubscriberApi";
-import { StepIconClassKey } from "@mui/material";
+
 
 interface EditSubscriberArgs {
   imsi: string;
@@ -40,11 +40,11 @@ export const editSubscriber = async ({
         if (oldDeviceGroupData){
           const index = oldDeviceGroupData["imsis"].indexOf(imsi);
           oldDeviceGroupData["imsis"].splice(index, 1);
-          await updateDeviceGroupData(oldDeviceGroupName, oldDeviceGroupData, token);
+          await apiPostDeviceGroup(oldDeviceGroupName, oldDeviceGroupData, token);
         }
       }
       newDeviceGroupData["imsis"].push(imsi);
-      await updateDeviceGroupData(newDeviceGroupName, newDeviceGroupData, token);
+      await apiPostDeviceGroup(newDeviceGroupName, newDeviceGroupData, token);
     }
   } catch (error) {
     console.error(error);
@@ -94,19 +94,6 @@ const getDeviceGroupData = async (deviceGroupName: string, token: string) => {
       existingDeviceGroupData["imsis"] = [];
     }
     return existingDeviceGroupData;
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-const updateDeviceGroupData = async (deviceGroupName: string, deviceGroupData: any, token: string) => {
-  try {
-    const updateDeviceGroupResponse = await apiPostDeviceGroup(deviceGroupName, deviceGroupData, token);
-    if (!updateDeviceGroupResponse.ok) {
-      throw new Error(
-        `Error updating device group. Error code: ${updateDeviceGroupResponse.status}`,
-      );
-    }
   } catch (error) {
     console.error(error);
   }

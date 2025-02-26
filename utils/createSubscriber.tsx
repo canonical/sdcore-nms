@@ -1,4 +1,4 @@
-import { apiGetDeviceGroup, apiPostDeviceGroup } from "@/utils/callDeviceGroupApi";
+import { apiGetDeviceGroup, apiPostDeviceGroup } from "@/utils/deviceGroupOperations";
 import { apiGetSubscriber, apiPostSubscriber } from "@/utils/callSubscriberApi";
 
 interface CreateSubscriberArgs {
@@ -50,13 +50,7 @@ export const createSubscriber = async ({
     }
     existingDeviceGroupData["imsis"].push(imsi);
 
-    const updateDeviceGroupResponse = await apiPostDeviceGroup(deviceGroupName, existingDeviceGroupData, token);
-    if (!updateDeviceGroupResponse.ok) {
-      throw new Error(
-        `Error updating device group. Error code: ${updateDeviceGroupResponse.status}`,
-      );
-    }
-
+    await apiPostDeviceGroup(deviceGroupName, existingDeviceGroupData, token);
     return updateSubscriberResponse.json();
   } catch (error) {
     console.error(error);

@@ -404,24 +404,18 @@ export function EditDeviceGroupModal({ deviceGroup, closeFn }: editDeviceGroupAc
 
 type deleteDeviceGroupActionModalProps = {
   deviceGroupName: string
-  networkSliceName: string
   subscribers: string[]
 }
 
 export const DeleteDeviceGroupButton: React.FC<deleteDeviceGroupActionModalProps> = ({
   deviceGroupName,
-  networkSliceName,
   subscribers,
 }) => {
   const auth = useAuth()
   const queryClient = useQueryClient()
-  const handleConfirmDelete = async (name: string, networkSliceName: string) => {
+  const handleConfirmDelete = async (name: string) => {
     try {
-      await deleteDeviceGroup({
-        name,
-        networkSliceName,
-        token: auth.user ? auth.user.authToken : ""
-      });
+      await deleteDeviceGroup(name, auth.user ? auth.user.authToken : "");
     } catch (error) {
       if (is401UnauthorizedError(error)) { auth.logout(); }
     }
@@ -467,7 +461,7 @@ export const DeleteDeviceGroupButton: React.FC<deleteDeviceGroupActionModalProps
       confirmationModalProps={{
         title: `Delete device group ${deviceGroupName}`,
         confirmButtonLabel: "Delete",
-        onConfirm: () => handleConfirmDelete(deviceGroupName, networkSliceName),
+        onConfirm: () => handleConfirmDelete(deviceGroupName),
         children: (
           <p>
             This will permanently delete the device group <b>{deviceGroupName}</b>.

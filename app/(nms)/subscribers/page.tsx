@@ -7,11 +7,11 @@ import {
   ConfirmationButton,
 } from "@canonical/react-components";
 import SubscriberModal from "@/components/SubscriberModal";
+import { apiDeleteSubscriber } from "@/utils/callSubscriberApi";
 import { getSubscribers } from "@/utils/getSubscribers";
 import { getDeviceGroups } from "@/utils/deviceGroupOperations";
 import { getNetworkSlices } from "@/utils/networkSliceOperations";
 import SyncOutlinedIcon from "@mui/icons-material/SyncOutlined";
-import { deleteSubscriber } from "@/utils/deleteSubscriber";
 import Loader from "@/components/Loader";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/utils/queryKeys";
@@ -19,6 +19,7 @@ import PageHeader from "@/components/PageHeader";
 import PageContent from "@/components/PageContent";
 import { useAuth } from "@/utils/auth";
 import {handleRefresh} from "@/utils/refreshQueries";
+
 
 export type Subscriber = {
   plmnID: string;
@@ -116,7 +117,7 @@ const Subscribers = () => {
   });
 
   const deleteSubscriberWithImsi = async (subscriberImsi: string) => {
-     await deleteSubscriber(subscriberImsi, auth.user?.authToken || "");
+     await apiDeleteSubscriber(subscriberImsi, auth.user?.authToken || "");
   };
 
   const deleteSubscriberMutation = useMutation({
