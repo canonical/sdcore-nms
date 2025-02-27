@@ -252,6 +252,9 @@ export async function getDeviceGroup(deviceGroupName: string, token: string): Pr
     if (!response.ok) {
       throw new WebconsoleApiError(response.status, deviceGroup.error);
     }
+    if (!deviceGroup["imsis"]) {
+      deviceGroup["imsis"] = [];
+    }
     return deviceGroup as DeviceGroup;
 
   } catch (error) {

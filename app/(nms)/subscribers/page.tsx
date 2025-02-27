@@ -21,6 +21,7 @@ import { useAuth } from "@/utils/auth";
 import {handleRefresh} from "@/utils/refreshQueries";
 import { Subscriber } from "@/components/types";
 import { is401UnauthorizedError } from "@/utils/errors";
+import ErrorNotification from "@/components/ErrorNotification";
 
 
 const addSubscriber = async (newSubscriber: Subscriber, token: string | undefined) => {
@@ -52,10 +53,6 @@ const Subscribers = () => {
     queryKey: [queryKeys.subscribers, auth.user?.authToken],
     queryFn: () => getSubscribers(auth.user?.authToken || ""),
     enabled: Boolean(auth.user),
-    retry: (failureCount, error): boolean => {
-      const errorMessage = error?.message || "";
-      return !errorMessage.includes("401");
-    }
   });
 
   // Mutation to add a subscriber
@@ -164,10 +161,10 @@ const Subscribers = () => {
   });
 
   if (subscribersQueryStatus == "error") {
-    if (subscribersQueryError.message.includes("401")) {
+    if (is401UnauthorizedError(subscribersQueryError)) {
       auth.logout()
     }
-    return <p>{subscribersQueryError.message}</p>
+    return (<><ErrorNotification error={"Failed to retrieve subscribers."} /></>);
   }
 
   const toggleCreateModal = () => setCreateModalVisible((prev) => !prev);

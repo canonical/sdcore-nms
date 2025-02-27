@@ -1,6 +1,6 @@
 import { apiPostDeviceGroup, getDeviceGroup} from "@/utils/deviceGroupOperations";
 import { apiGetSubscriber, apiPostSubscriber } from "@/utils/callSubscriberApi";
-import { OperationError, WebconsoleApiError } from "@/utils/errors";
+import { OperationError } from "@/utils/errors";
 
 
 interface EditSubscriberArgs {
