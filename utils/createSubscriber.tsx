@@ -1,5 +1,6 @@
-import { apiGetDeviceGroup, apiPostDeviceGroup } from "@/utils/deviceGroupOperations";
+import { apiPostDeviceGroup, getDeviceGroup } from "@/utils/deviceGroupOperations";
 import { apiGetSubscriber, apiPostSubscriber } from "@/utils/callSubscriberApi";
+import { OperationError } from "@/utils/errors";
 
 interface CreateSubscriberArgs {
   imsi: string;
@@ -10,14 +11,14 @@ interface CreateSubscriberArgs {
   token: string
 }
 
-export const createSubscriber = async ({
+export async function createSubscriber({
   imsi,
   opc,
   key,
   sequenceNumber,
   deviceGroupName,
   token
-}: CreateSubscriberArgs) => {
+}: CreateSubscriberArgs) : Promise<void> {
   const subscriberData = {
     UeId: imsi,
     opc: opc,
@@ -31,33 +32,17 @@ export const createSubscriber = async ({
     // Workaround for https://github.com/omec-project/webconsole/issues/109
     const existingSubscriberData = await getSubscriberResponse.json();
     if (getSubscriberResponse.ok && existingSubscriberData["AuthenticationSubscription"]["authenticationMethod"]) {
-      throw new Error("Subscriber already exists.");
+      throw new OperationError("Subscriber already exists.");
     }
 
-    const existingDeviceGroupResponse = await apiGetDeviceGroup(deviceGroupName, token);
-    var existingDeviceGroupData = await existingDeviceGroupResponse.json();
-    if (!existingDeviceGroupData){
-      throw new Error(`Device group ${deviceGroupName} cannot be found`);
-    }
-    const updateSubscriberResponse = await apiPostSubscriber(imsi, subscriberData, token);
-    if (!updateSubscriberResponse.ok) {
-      throw new Error(
-        `Error creating subscriber. Error code: ${updateSubscriberResponse.status}`,
-      );
-    }
-    if (!existingDeviceGroupData["imsis"]) {
-      existingDeviceGroupData["imsis"] = [];
-    }
+    var existingDeviceGroupData = await getDeviceGroup(deviceGroupName, token);
+    await apiPostSubscriber(imsi, subscriberData, token);
+
     existingDeviceGroupData["imsis"].push(imsi);
-
     await apiPostDeviceGroup(deviceGroupName, existingDeviceGroupData, token);
-    return updateSubscriberResponse.json();
+
   } catch (error) {
-    console.error(error);
-    const details =
-      error instanceof Error
-        ? error.message
-        : "Failed to create the subscriber.";
-    throw new Error(details);
+    console.error(`Failed to create subscriber ${imsi} : ${error}`);
+    throw error;
   }
 };

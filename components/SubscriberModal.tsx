@@ -16,6 +16,7 @@ import * as Yup from "yup";
 import { useFormik } from "formik";
 import { useAuth } from "@/utils/auth";
 import {handleRefresh} from "@/utils/refreshQueries";
+import { is401UnauthorizedError, OperationError } from "@/utils/errors";
 
 interface SubscriberValues {
   imsi: string;
@@ -110,10 +111,13 @@ const SubscriberModal = ({ toggleModal, subscriber, slices, deviceGroups, onSubm
         // Hence, window is reloaded.
         window.location.reload();
       } catch (error) {
-        console.error(error);
-        setApiError(
-          (error as Error).message || "An unexpected error occurred.",
-        );
+        if (is401UnauthorizedError(error)) {
+            auth.logout();
+        } else if (error instanceof OperationError) {
+          setApiError(error.message);
+        } else {
+          setApiError("An unexpected error occurred.");
+        }
       }
     },
   });

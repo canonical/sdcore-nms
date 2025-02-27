@@ -19,12 +19,9 @@ import PageHeader from "@/components/PageHeader";
 import PageContent from "@/components/PageContent";
 import { useAuth } from "@/utils/auth";
 import {handleRefresh} from "@/utils/refreshQueries";
+import { Subscriber } from "@/components/types";
+import { is401UnauthorizedError } from "@/utils/errors";
 
-
-export type Subscriber = {
-  plmnID: string;
-  ueId: string;
-};
 
 const addSubscriber = async (newSubscriber: Subscriber, token: string | undefined) => {
   const response = await fetch("/api/subscribers", {
@@ -134,7 +131,7 @@ const Subscribers = () => {
       window.location.reload();
     },
     onError: (error) => {
-      console.error("Error deleting subscriber:", error);
+      if (is401UnauthorizedError(error)) { auth.logout(); }
     },
   });
 

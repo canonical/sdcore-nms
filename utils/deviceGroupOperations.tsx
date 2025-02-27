@@ -17,7 +17,7 @@ function isValidDeviceGroupName(name: string): boolean {
   return /^[a-zA-Z][a-zA-Z0-9-_]+$/.test(name);
 }
 
-export const apiGetAllDeviceGroupNames = async (token: string): Promise<string[]> => {
+export async function apiGetAllDeviceGroupNames(token: string): Promise<string[]> {
   try {
     const response = await fetch(`/config/v1/device-group/`, {
       method: "GET",
@@ -245,7 +245,7 @@ export async function getDeviceGroups(token: string): Promise<DeviceGroup[]> {
   }
 };
 
-async function getDeviceGroup(deviceGroupName: string, token: string): Promise<DeviceGroup> {
+export async function getDeviceGroup(deviceGroupName: string, token: string): Promise<DeviceGroup> {
   try {
     const response = await apiGetDeviceGroup(deviceGroupName, token);
     const deviceGroup = await response.json();

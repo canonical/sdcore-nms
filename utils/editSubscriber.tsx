@@ -1,5 +1,6 @@
-import { apiGetDeviceGroup, apiPostDeviceGroup } from "@/utils/deviceGroupOperations";
+import { apiPostDeviceGroup, getDeviceGroup} from "@/utils/deviceGroupOperations";
 import { apiGetSubscriber, apiPostSubscriber } from "@/utils/callSubscriberApi";
+import { OperationError, WebconsoleApiError } from "@/utils/errors";
 
 
 interface EditSubscriberArgs {
@@ -12,7 +13,7 @@ interface EditSubscriberArgs {
   token: string
 }
 
-export const editSubscriber = async ({
+export async function editSubscriber({
   imsi,
   opc,
   key,
@@ -20,7 +21,7 @@ export const editSubscriber = async ({
   oldDeviceGroupName,
   newDeviceGroupName,
   token
-}: EditSubscriberArgs) => {
+}: EditSubscriberArgs) : Promise<void> {
   const subscriberData = {
     UeId: imsi,
     opc: opc,
@@ -29,14 +30,17 @@ export const editSubscriber = async ({
   };
 
   try {
-    var newDeviceGroupData = await getDeviceGroupData(newDeviceGroupName, token);
-    if (!newDeviceGroupData){
-      throw new Error(`Device group ${newDeviceGroupName} cannot be found`);
-    }
+    var newDeviceGroupData = await getDeviceGroup(newDeviceGroupName, token);
     await updateSubscriber(subscriberData, token);
     if (oldDeviceGroupName != newDeviceGroupName) {
       if (oldDeviceGroupName){
-        var oldDeviceGroupData = await getDeviceGroupData(oldDeviceGroupName, token);
+        var oldDeviceGroupData = null;
+        try {
+          oldDeviceGroupData = await getDeviceGroup(oldDeviceGroupName, token);
+        }
+        catch{
+          console.debug(`Previous device group ${oldDeviceGroupName} was not found.`)
+        }
         if (oldDeviceGroupData){
           const index = oldDeviceGroupData["imsis"].indexOf(imsi);
           oldDeviceGroupData["imsis"].splice(index, 1);
@@ -47,16 +51,12 @@ export const editSubscriber = async ({
       await apiPostDeviceGroup(newDeviceGroupName, newDeviceGroupData, token);
     }
   } catch (error) {
-    console.error(error);
-    const details =
-      error instanceof Error
-        ? error.message
-        : `Failed to edit subscriber .`;
-    throw new Error(details);
+    console.error(`Failed to edit subscriber ${imsi} : ${error}`);
+    throw error;
   }
 };
 
-const updateSubscriber = async (subscriberData: any, token: string) => {
+async function updateSubscriber(subscriberData: any, token: string) : Promise<void>{
   try {
     const getSubscriberResponse = await apiGetSubscriber(subscriberData.UeId, token);
 
@@ -65,7 +65,7 @@ const updateSubscriber = async (subscriberData: any, token: string) => {
     if (!getSubscriberResponse.ok ||
       (!existingSubscriberData["AuthenticationSubscription"]["authenticationMethod"] &&
         !existingSubscriberData["AccessAndMobilitySubscriptionData"]["nssai"])) {
-      throw new Error("Subscriber does not exist.");
+      throw new OperationError("Subscriber does not exist.");
     }
 
     existingSubscriberData["AuthenticationSubscription"]["opc"] = existingSubscriberData["AuthenticationSubscription"]["opc"] ?? {};
@@ -74,27 +74,11 @@ const updateSubscriber = async (subscriberData: any, token: string) => {
     existingSubscriberData["AuthenticationSubscription"]["permanentKey"]["permanentKeyValue"] = subscriberData.key;
     existingSubscriberData["AuthenticationSubscription"]["sequenceNumber"] = subscriberData.sequenceNumber;
 
-    const updateSubscriberResponse = await apiPostSubscriber(subscriberData.UeId, subscriberData, token);
-    if (!updateSubscriberResponse.ok) {
-      throw new Error(
-        `Error editing subscriber. Error code: ${updateSubscriberResponse.status}`,
-      );
-    }
+    await apiPostSubscriber(subscriberData.UeId, subscriberData, token);
+
   } catch (error) {
-    console.error(error);
+    console.error(`Failed to update subscriber ${subscriberData.UeId} : ${error}`);
+    throw error;
   }
 }
 
-const getDeviceGroupData = async (deviceGroupName: string, token: string) => {
-  try {
-    const existingDeviceGroupResponse = await apiGetDeviceGroup(deviceGroupName, token);
-    var existingDeviceGroupData = await existingDeviceGroupResponse.json();
-
-    if (existingDeviceGroupData && !existingDeviceGroupData["imsis"]) {
-      existingDeviceGroupData["imsis"] = [];
-    }
-    return existingDeviceGroupData;
-  } catch (error) {
-    console.error(error);
-  }
-}
