@@ -36,9 +36,11 @@ export async function createSubscriber({
     }
 
     var existingDeviceGroupData = await getDeviceGroup(deviceGroupName, token);
-    existingDeviceGroupData["imsis"].push(imsi);
     await apiPostSubscriber(imsi, subscriberData, token);
-    await apiPostDeviceGroup(deviceGroupName, existingDeviceGroupData, token);
+    if (!existingDeviceGroupData["imsis"].includes(imsi)) {
+      existingDeviceGroupData["imsis"].push(imsi);
+      await apiPostDeviceGroup(deviceGroupName, existingDeviceGroupData, token);
+    }
 
   } catch (error) {
     console.error(`Failed to create subscriber ${imsi} : ${error}`);

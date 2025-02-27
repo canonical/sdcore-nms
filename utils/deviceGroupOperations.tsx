@@ -113,6 +113,7 @@ export async function createDeviceGroup({
   }
   const deviceGroupData = {
     "site-info": "demo",
+    "imsis": [],
     "ip-domain-name": "pool1",
     "ip-domain-expanded": {
       dnn: "internet",
@@ -156,8 +157,8 @@ export async function createDeviceGroup({
     }
     if (!existingSliceData["site-device-group"].includes(name)) {
       existingSliceData["site-device-group"].push(name);
+      await apiPostNetworkSlice(networkSliceName, existingSliceData, token);
     }
-    await apiPostNetworkSlice(networkSliceName, existingSliceData, token);
 
   } catch (error: unknown) {
     console.error(`Failed to create device group ${name} : ${error}`);
