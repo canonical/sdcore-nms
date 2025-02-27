@@ -33,27 +33,7 @@ export async function editSubscriber({
     var newDeviceGroupData = await getDeviceGroup(newDeviceGroupName, token);
     await updateSubscriber(subscriberData, token);
     if (oldDeviceGroupName != newDeviceGroupName) {
-      if (oldDeviceGroupName){
-        var oldDeviceGroupData = null;
-        try {
-          oldDeviceGroupData = await getDeviceGroup(oldDeviceGroupName, token);
-        }
-        catch (error){
-          if (is404NotFound(error)) {
-            console.debug(`Error retrieving ${oldDeviceGroupName} when editing subscriber ${imsi}.`);
-          }
-          else {
-            throw error;
-          }
-        }
-        if (oldDeviceGroupData){
-          const index = oldDeviceGroupData["imsis"].indexOf(imsi);
-          if (index !== -1) {
-            oldDeviceGroupData["imsis"].splice(index, 1);
-          }
-          await apiPostDeviceGroup(oldDeviceGroupName, oldDeviceGroupData, token);
-        }
-      }
+      await updateOldDeviceGroup(imsi, oldDeviceGroupName, token);
     }
     if (!newDeviceGroupData["imsis"].includes(imsi)) {
       newDeviceGroupData["imsis"].push(imsi);
@@ -91,3 +71,26 @@ async function updateSubscriber(subscriberData: any, token: string) : Promise<vo
   }
 }
 
+async function updateOldDeviceGroup(imsi: string, oldDeviceGroupName: string, token: string) : Promise<void>{
+  try{
+    if (!oldDeviceGroupName){
+      return
+    }
+    var oldDeviceGroupData = await getDeviceGroup(oldDeviceGroupName, token);
+    if (oldDeviceGroupData){
+      const index = oldDeviceGroupData["imsis"].indexOf(imsi);
+      if (index !== -1) {
+        oldDeviceGroupData["imsis"].splice(index, 1);
+        await apiPostDeviceGroup(oldDeviceGroupName, oldDeviceGroupData, token);
+      }
+    }
+  }
+  catch (error){
+    if (is404NotFound(error)) {
+      console.debug(`${oldDeviceGroupName} not found when editing subscriber ${imsi}.`);
+      return;
+    }
+    console.error(`Failed to update device group ${oldDeviceGroupName} : ${error}`);
+    throw error;
+  }
+}
