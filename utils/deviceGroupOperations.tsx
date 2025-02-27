@@ -37,7 +37,7 @@ export async function apiGetAllDeviceGroupNames(token: string): Promise<string[]
   }
 };
 
-export async function apiGetDeviceGroup(name: string, token: string): Promise<Response> {
+async function apiGetDeviceGroup(name: string, token: string): Promise<Response> {
   if (!isValidDeviceGroupName(name)) {
     throw new OperationError(`Error getting device group: Invalid name provided ${name}.`);
   }
@@ -154,7 +154,9 @@ export async function createDeviceGroup({
     if (!existingSliceData["site-device-group"]) {
       existingSliceData["site-device-group"] = [];
     }
-    existingSliceData["site-device-group"].push(name);
+    if (!existingSliceData["site-device-group"].includes(name)) {
+      existingSliceData["site-device-group"].push(name);
+    }
     await apiPostNetworkSlice(networkSliceName, existingSliceData, token);
 
   } catch (error: unknown) {
@@ -290,7 +292,7 @@ export async function deleteDeviceGroup(name: string, token: string): Promise<vo
       throw new WebconsoleApiError(response.status, respData.error);
     }
   } catch (error) {
-    console.error(`Error deleting device group ${name} ${error}`);
+    console.error(`Failed to delete device group ${name} : ${error}`);
     throw error;
   }
 };

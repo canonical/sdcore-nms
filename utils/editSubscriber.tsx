@@ -1,6 +1,6 @@
 import { apiPostDeviceGroup, getDeviceGroup} from "@/utils/deviceGroupOperations";
 import { apiGetSubscriber, apiPostSubscriber } from "@/utils/callSubscriberApi";
-import { OperationError } from "@/utils/errors";
+import { is404NotFound, OperationError } from "@/utils/errors";
 
 
 interface EditSubscriberArgs {
@@ -38,15 +38,24 @@ export async function editSubscriber({
         try {
           oldDeviceGroupData = await getDeviceGroup(oldDeviceGroupName, token);
         }
-        catch{
-          console.debug(`Previous device group ${oldDeviceGroupName} was not found.`)
+        catch (error){
+          if (is404NotFound(error)) {
+            console.debug(`Error retrieving ${oldDeviceGroupName} when editing subscriber ${imsi}.`);
+          }
+          else {
+            throw error;
+          }
         }
         if (oldDeviceGroupData){
           const index = oldDeviceGroupData["imsis"].indexOf(imsi);
-          oldDeviceGroupData["imsis"].splice(index, 1);
+          if (index !== -1) {
+            oldDeviceGroupData["imsis"].splice(index, 1);
+          }
           await apiPostDeviceGroup(oldDeviceGroupName, oldDeviceGroupData, token);
         }
       }
+    }
+    if (!newDeviceGroupData["imsis"].includes(imsi)) {
       newDeviceGroupData["imsis"].push(imsi);
       await apiPostDeviceGroup(newDeviceGroupName, newDeviceGroupData, token);
     }

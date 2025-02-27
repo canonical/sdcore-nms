@@ -7,7 +7,7 @@ import {
   ConfirmationButton,
 } from "@canonical/react-components";
 import SubscriberModal from "@/components/SubscriberModal";
-import { apiDeleteSubscriber } from "@/utils/callSubscriberApi";
+import { deleteSubscriber } from "@/utils/callSubscriberApi";
 import { getSubscribers } from "@/utils/getSubscribers";
 import { getDeviceGroups } from "@/utils/deviceGroupOperations";
 import { getNetworkSlices } from "@/utils/networkSliceOperations";
@@ -111,7 +111,7 @@ const Subscribers = () => {
   });
 
   const deleteSubscriberWithImsi = async (subscriberImsi: string) => {
-     await apiDeleteSubscriber(subscriberImsi, auth.user?.authToken || "");
+     await deleteSubscriber(subscriberImsi, auth.user?.authToken || "");
   };
 
   const deleteSubscriberMutation = useMutation({
