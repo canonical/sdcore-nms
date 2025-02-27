@@ -80,7 +80,7 @@ export default function NetworkSlices() {
           <EmptyStatePage
             title="No network slice available"
             message={message}
-            onClick={() => window.open("https://canonical-charmed-aether-sd-core.readthedocs-hosted.com/en/latest/", "_blank")}
+            onClick={() => window.open("https://canonical-charmed-aether-sd-core.readthedocs-hosted.com/en/latest/how-to/add_inventory/", "_blank")}
             buttonText="Go to Documentation"
           ></EmptyStatePage>
         </>
@@ -166,11 +166,18 @@ export default function NetworkSlices() {
       <PageContent colSize={11}>
         { !isInventoryCreated && showNotification && <Notification
             severity="caution"
-            title="Inventory has not been initialized"
+            title="Inventory is not initialized"
             onDismiss={() => setShowNotification(false)}
           >
             {upfItems.length === 0 && <p>To add UPFs to the inventory, integrate your UPF charm with the NMS charm.</p>}
             {gnbItems.length === 0 && <p>To add gNodeBs to the inventory, integrate your gNodeB charm with the NMS charm.</p>}
+            {"For more details, see the "}
+            <a
+              href="https://canonical-charmed-aether-sd-core.readthedocs-hosted.com/en/latest/how-to/add_inventory/"
+              target="_blank"
+            >
+            documentation
+            </a>.
           </Notification>
         }
         <MainTable
