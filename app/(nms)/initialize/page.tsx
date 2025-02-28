@@ -1,25 +1,34 @@
 "use client"
 
-import { useState, ChangeEvent } from "react"
+import { Input, PasswordToggle, Button, Form, LoginPageLayout } from "@canonical/react-components";
 import { getStatus, login, postFirstUser } from "@/utils/accountQueries"
+import { is401UnauthorizedError, is404NotFound } from "@/utils/errors";
+import { passwordIsValid } from "@/utils/utils"
+import { statusResponse } from "@/components/types"
+import { useCookies } from "react-cookie"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { useRouter } from "next/navigation"
-import { passwordIsValid } from "@/utils/utils"
-import { useAuth } from "@/utils/auth"
-import { useCookies } from "react-cookie"
-import { statusResponse } from "@/components/types"
-import { Input, PasswordToggle, Button, Form, LoginPageLayout } from "@canonical/react-components";
+import { useState, ChangeEvent } from "react"
+
+import ErrorNotification from "@/components/ErrorNotification";
 
 
 export default function Initialize() {
     const router = useRouter()
-    const auth = useAuth()
     const [cookies, setCookie, removeCookie] = useCookies(['user_token']);
+    const [errorText, setErrorText] = useState<string>("")
     const statusQuery = useQuery<statusResponse, Error>({
         queryKey: ['status'],
         queryFn: getStatus
     })
-    if (statusQuery.data && statusQuery.data.initialized) {
+    if (statusQuery.status === "error"){
+        if (is404NotFound(statusQuery.error)){
+            setErrorText("Endpoint not found.");
+        } else {
+            setErrorText("An unexpected error occurred.");
+        }
+    }
+    if (statusQuery.status !== "error" && statusQuery.data && statusQuery.data.initialized) {
         router.push("/login")
     }
     const loginMutation = useMutation({
@@ -33,8 +42,12 @@ export default function Initialize() {
             })
             router.push('/network-configuration')
         },
-        onError: (e: Error) => {
-            setErrorText(e.message)
+        onError: (error: Error) => {
+            if (is401UnauthorizedError(error)) {
+                setErrorText("Incorrect username or password. Please, try again.")
+            } else {
+                setErrorText("An unexpected error occurred.");
+            }
         }
     })
     const postUserMutation = useMutation({
@@ -44,7 +57,7 @@ export default function Initialize() {
             loginMutation.mutate({ username: username, password: password1 })
         },
         onError: (e: Error) => {
-            setErrorText(e.message)
+            setErrorText("An unexpected error occurred.")
         }
     })
     const [username, setUsername] = useState<string>("")
@@ -54,7 +67,6 @@ export default function Initialize() {
     const password1Error = password1 && !passwordIsValid(password1) ? "Password is not valid" : ""
     const password2Error = password2 && !passwordsMatch ? "Passwords do not match" : ""
 
-    const [errorText, setErrorText] = useState<string>("")
     const handleUsernameChange = (event: ChangeEvent<HTMLInputElement>) => { setUsername(event.target.value) }
     const handlePassword1Change = (event: ChangeEvent<HTMLInputElement>) => { setPassword1(event.target.value) }
     const handlePassword2Change = (event: ChangeEvent<HTMLInputElement>) => { setPassword2(event.target.value) }
@@ -70,6 +82,7 @@ export default function Initialize() {
             >
                 <Form>
                     <h4>Create the initial admin user</h4>
+                    {errorText && <ErrorNotification error={errorText}/>}
                     <Input
                         id="InputUsername"
                         label="Username"
