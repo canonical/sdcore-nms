@@ -35,8 +35,8 @@ export async function editSubscriber({
     if (oldDeviceGroupName != newDeviceGroupName) {
       await updateOldDeviceGroup(imsi, oldDeviceGroupName, token);
     }
-    if (!newDeviceGroupData["imsis"].includes(imsi)) {
-      newDeviceGroupData["imsis"].push(imsi);
+    if (!newDeviceGroupData.imsis.includes(imsi)) {
+      newDeviceGroupData.imsis.push(imsi);
       await apiPostDeviceGroup(newDeviceGroupName, newDeviceGroupData, token);
     }
   } catch (error) {
@@ -78,9 +78,9 @@ async function updateOldDeviceGroup(imsi: string, oldDeviceGroupName: string, to
     }
     var oldDeviceGroupData = await getDeviceGroup(oldDeviceGroupName, token);
     if (oldDeviceGroupData){
-      const index = oldDeviceGroupData["imsis"].indexOf(imsi);
+      const index = oldDeviceGroupData.imsis.indexOf(imsi);
       if (index !== -1) {
-        oldDeviceGroupData["imsis"].splice(index, 1);
+        oldDeviceGroupData.imsis.splice(index, 1);
         await apiPostDeviceGroup(oldDeviceGroupName, oldDeviceGroupData, token);
       }
     }
