@@ -1,10 +1,14 @@
-import { UserEntry } from "@/components/types"
-import { useAuth } from "@/utils/auth"
-import { changePassword, deleteUser, postUser } from "@/utils/accountQueries"
-import { passwordIsValid } from "@/utils/utils"
-import { Button, Form, Input, Modal, Notification, PasswordToggle } from "@canonical/react-components"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { Button, Form, Input, Modal, PasswordToggle } from "@canonical/react-components"
 import { ChangeEvent, useState } from "react"
+import { changePassword, deleteUser, postUser } from "@/utils/accountQueries"
+import { is401UnauthorizedError, is403ForbiddenError } from "@/utils/errors"
+import { passwordIsValid } from "@/utils/utils"
+import { useAuth } from "@/utils/auth"
+import { UserEntry } from "@/components/types"
+import { useRouter } from "next/navigation"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+
+import ErrorNotification from "@/components/ErrorNotification"
 
 
 type accountDeleteActionModalProps = {
@@ -19,7 +23,10 @@ export function DeleteModal({ user, closeFn }: accountDeleteActionModalProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] })
       closeFn()
-    }
+    },
+    onError: (error) => {
+      if (is401UnauthorizedError(error)) { auth.logout(); }
+    },
   })
   return (
     <Modal
@@ -50,8 +57,9 @@ export function ChangePasswordModal({ user, closeFn }: accountChangePasswordActi
       queryClient.invalidateQueries({ queryKey: ['users'] })
       closeFn()
     },
-    onError: (e) => {
-      setErrorText(e.message)
+    onError: (error) => {
+      if (is401UnauthorizedError(error)) { auth.logout(); }
+      setErrorText("An unexpected error occurred.")
     }
   })
   const [password1, setPassword1] = useState<string>("")
@@ -105,14 +113,7 @@ export function ChangePasswordModal({ user, closeFn }: accountChangePasswordActi
           />
         </div>
       </Form>
-      {errorText &&
-        <Notification
-          severity="negative"
-          title="Error"
-        >
-          {errorText.split("error: ")}
-        </Notification>
-      }
+      {errorText && <ErrorNotification error={errorText}/>}
     </Modal>
   )
 }
@@ -122,6 +123,7 @@ type createNewAccountModalProps = {
 }
 export function CreateUserModal({ closeFn }: createNewAccountModalProps) {
   const auth = useAuth()
+  const router = useRouter()
   const queryClient = useQueryClient()
   const mutation = useMutation({
     mutationFn: postUser,
@@ -130,8 +132,10 @@ export function CreateUserModal({ closeFn }: createNewAccountModalProps) {
       setErrorText("")
       closeFn()
     },
-    onError: (e: Error) => {
-      setErrorText(e.message)
+    onError: (error: Error) => {
+      if (is401UnauthorizedError(error)) { auth.logout(); }
+      if (is403ForbiddenError(error)) { router.push("/") }
+      setErrorText("Failed to create user")
     }
   })
   const [username, setUsername] = useState<string>("")
@@ -186,14 +190,7 @@ export function CreateUserModal({ closeFn }: createNewAccountModalProps) {
           />
         </div>
       </Form>
-      {errorText &&
-        <Notification
-          severity="negative"
-          title="Error"
-        >
-          {errorText.split("error: ")}
-        </Notification>
-      }
+      {errorText && <ErrorNotification error={errorText}/>}
     </Modal>
   )
 }
