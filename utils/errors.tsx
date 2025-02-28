@@ -20,6 +20,10 @@ export function is403ForbiddenError(error: Error | unknown): boolean {
   return (error instanceof WebconsoleApiError && error.status === 403);
 }
 
+export function is404NotFound(error: Error | unknown): boolean {
+  return (error instanceof WebconsoleApiError && error.status === 404);
+}
+
 export class OperationError extends Error {
 
   constructor(message: string) {

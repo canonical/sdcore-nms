@@ -7,11 +7,11 @@ import {
   ConfirmationButton,
 } from "@canonical/react-components";
 import SubscriberModal from "@/components/SubscriberModal";
+import { deleteSubscriber } from "@/utils/callSubscriberApi";
 import { getSubscribers } from "@/utils/getSubscribers";
 import { getDeviceGroups } from "@/utils/deviceGroupOperations";
 import { getNetworkSlices } from "@/utils/networkSliceOperations";
 import SyncOutlinedIcon from "@mui/icons-material/SyncOutlined";
-import { deleteSubscriber } from "@/utils/deleteSubscriber";
 import Loader from "@/components/Loader";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/utils/queryKeys";
@@ -19,11 +19,10 @@ import PageHeader from "@/components/PageHeader";
 import PageContent from "@/components/PageContent";
 import { useAuth } from "@/utils/auth";
 import {handleRefresh} from "@/utils/refreshQueries";
+import { Subscriber } from "@/components/types";
+import { is401UnauthorizedError } from "@/utils/errors";
+import ErrorNotification from "@/components/ErrorNotification";
 
-export type Subscriber = {
-  plmnID: string;
-  ueId: string;
-};
 
 const addSubscriber = async (newSubscriber: Subscriber, token: string | undefined) => {
   const response = await fetch("/api/subscribers", {
@@ -54,10 +53,6 @@ const Subscribers = () => {
     queryKey: [queryKeys.subscribers, auth.user?.authToken],
     queryFn: () => getSubscribers(auth.user?.authToken || ""),
     enabled: Boolean(auth.user),
-    retry: (failureCount, error): boolean => {
-      const errorMessage = error?.message || "";
-      return !errorMessage.includes("401");
-    }
   });
 
   // Mutation to add a subscriber
@@ -133,7 +128,7 @@ const Subscribers = () => {
       window.location.reload();
     },
     onError: (error) => {
-      console.error("Error deleting subscriber:", error);
+      if (is401UnauthorizedError(error)) { auth.logout(); }
     },
   });
 
@@ -166,10 +161,10 @@ const Subscribers = () => {
   });
 
   if (subscribersQueryStatus == "error") {
-    if (subscribersQueryError.message.includes("401")) {
+    if (is401UnauthorizedError(subscribersQueryError)) {
       auth.logout()
     }
-    return <p>{subscribersQueryError.message}</p>
+    return (<><ErrorNotification error={"Failed to retrieve subscribers."} /></>);
   }
 
   const toggleCreateModal = () => setCreateModalVisible((prev) => !prev);
