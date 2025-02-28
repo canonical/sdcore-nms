@@ -39,7 +39,7 @@ parts:
     plugin: go
     source: https://github.com/omec-project/webconsole.git
     source-type: git
-    source-tag: v1.8.2
+    source-tag: v1.8.3
     build-snaps:
       - go/1.21/stable
     go-buildtags:

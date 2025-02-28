@@ -1,6 +1,7 @@
-import { apiGetDeviceGroup, apiPostDeviceGroup } from "@/utils/callDeviceGroupApi";
+import { apiPostDeviceGroup, getDeviceGroup} from "@/utils/deviceGroupOperations";
 import { apiGetSubscriber, apiPostSubscriber } from "@/utils/callSubscriberApi";
-import { StepIconClassKey } from "@mui/material";
+import { is404NotFound, OperationError } from "@/utils/errors";
+
 
 interface EditSubscriberArgs {
   imsi: string;
@@ -12,7 +13,7 @@ interface EditSubscriberArgs {
   token: string
 }
 
-export const editSubscriber = async ({
+export async function editSubscriber({
   imsi,
   opc,
   key,
@@ -20,7 +21,7 @@ export const editSubscriber = async ({
   oldDeviceGroupName,
   newDeviceGroupName,
   token
-}: EditSubscriberArgs) => {
+}: EditSubscriberArgs) : Promise<void> {
   const subscriberData = {
     UeId: imsi,
     opc: opc,
@@ -29,34 +30,22 @@ export const editSubscriber = async ({
   };
 
   try {
-    var newDeviceGroupData = await getDeviceGroupData(newDeviceGroupName, token);
-    if (!newDeviceGroupData){
-      throw new Error(`Device group ${newDeviceGroupName} cannot be found`);
-    }
+    var newDeviceGroupData = await getDeviceGroup(newDeviceGroupName, token);
     await updateSubscriber(subscriberData, token);
     if (oldDeviceGroupName != newDeviceGroupName) {
-      if (oldDeviceGroupName){
-        var oldDeviceGroupData = await getDeviceGroupData(oldDeviceGroupName, token);
-        if (oldDeviceGroupData){
-          const index = oldDeviceGroupData["imsis"].indexOf(imsi);
-          oldDeviceGroupData["imsis"].splice(index, 1);
-          await updateDeviceGroupData(oldDeviceGroupName, oldDeviceGroupData, token);
-        }
-      }
-      newDeviceGroupData["imsis"].push(imsi);
-      await updateDeviceGroupData(newDeviceGroupName, newDeviceGroupData, token);
+      await updateOldDeviceGroup(imsi, oldDeviceGroupName, token);
+    }
+    if (!newDeviceGroupData.imsis.includes(imsi)) {
+      newDeviceGroupData.imsis.push(imsi);
+      await apiPostDeviceGroup(newDeviceGroupName, newDeviceGroupData, token);
     }
   } catch (error) {
-    console.error(error);
-    const details =
-      error instanceof Error
-        ? error.message
-        : `Failed to edit subscriber .`;
-    throw new Error(details);
+    console.error(`Failed to edit subscriber ${imsi} : ${error}`);
+    throw error;
   }
 };
 
-const updateSubscriber = async (subscriberData: any, token: string) => {
+async function updateSubscriber(subscriberData: any, token: string) : Promise<void>{
   try {
     const getSubscriberResponse = await apiGetSubscriber(subscriberData.UeId, token);
 
@@ -65,7 +54,7 @@ const updateSubscriber = async (subscriberData: any, token: string) => {
     if (!getSubscriberResponse.ok ||
       (!existingSubscriberData["AuthenticationSubscription"]["authenticationMethod"] &&
         !existingSubscriberData["AccessAndMobilitySubscriptionData"]["nssai"])) {
-      throw new Error("Subscriber does not exist.");
+      throw new OperationError("Subscriber does not exist.");
     }
 
     existingSubscriberData["AuthenticationSubscription"]["opc"] = existingSubscriberData["AuthenticationSubscription"]["opc"] ?? {};
@@ -74,40 +63,34 @@ const updateSubscriber = async (subscriberData: any, token: string) => {
     existingSubscriberData["AuthenticationSubscription"]["permanentKey"]["permanentKeyValue"] = subscriberData.key;
     existingSubscriberData["AuthenticationSubscription"]["sequenceNumber"] = subscriberData.sequenceNumber;
 
-    const updateSubscriberResponse = await apiPostSubscriber(subscriberData.UeId, subscriberData, token);
-    if (!updateSubscriberResponse.ok) {
-      throw new Error(
-        `Error editing subscriber. Error code: ${updateSubscriberResponse.status}`,
-      );
-    }
+    await apiPostSubscriber(subscriberData.UeId, subscriberData, token);
+
   } catch (error) {
-    console.error(error);
+    console.error(`Failed to update subscriber ${subscriberData.UeId} : ${error}`);
+    throw error;
   }
 }
 
-const getDeviceGroupData = async (deviceGroupName: string, token: string) => {
-  try {
-    const existingDeviceGroupResponse = await apiGetDeviceGroup(deviceGroupName, token);
-    var existingDeviceGroupData = await existingDeviceGroupResponse.json();
-
-    if (existingDeviceGroupData && !existingDeviceGroupData["imsis"]) {
-      existingDeviceGroupData["imsis"] = [];
+async function updateOldDeviceGroup(imsi: string, oldDeviceGroupName: string, token: string) : Promise<void>{
+  try{
+    if (!oldDeviceGroupName){
+      return
     }
-    return existingDeviceGroupData;
-  } catch (error) {
-    console.error(error);
+    var oldDeviceGroupData = await getDeviceGroup(oldDeviceGroupName, token);
+    if (oldDeviceGroupData){
+      const index = oldDeviceGroupData.imsis.indexOf(imsi);
+      if (index !== -1) {
+        oldDeviceGroupData.imsis.splice(index, 1);
+        await apiPostDeviceGroup(oldDeviceGroupName, oldDeviceGroupData, token);
+      }
+    }
   }
-}
-
-const updateDeviceGroupData = async (deviceGroupName: string, deviceGroupData: any, token: string) => {
-  try {
-    const updateDeviceGroupResponse = await apiPostDeviceGroup(deviceGroupName, deviceGroupData, token);
-    if (!updateDeviceGroupResponse.ok) {
-      throw new Error(
-        `Error updating device group. Error code: ${updateDeviceGroupResponse.status}`,
-      );
+  catch (error){
+    if (is404NotFound(error)) {
+      console.debug(`${oldDeviceGroupName} not found when editing subscriber ${imsi}.`);
+      return;
     }
-  } catch (error) {
-    console.error(error);
+    console.error(`Failed to update device group ${oldDeviceGroupName} : ${error}`);
+    throw error;
   }
 }
