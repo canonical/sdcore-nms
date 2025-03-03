@@ -101,6 +101,7 @@ export const DeviceGroupModal: React.FC<DeviceGroupModalProps> = ({
         closeFn();
         setTimeout(async () => { // Wait 100 ms before invalidating due to a race condition
           await queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
+          await queryClient.invalidateQueries({ queryKey: [queryKeys.deviceGroupNames] });
           await queryClient.invalidateQueries({ queryKey: [queryKeys.deviceGroups] });
         }, 100);
       } catch (error) {
@@ -116,7 +117,7 @@ export const DeviceGroupModal: React.FC<DeviceGroupModalProps> = ({
   });
 
   const networkSlicesQuery = useQuery<string[], Error>({
-    queryKey: [queryKeys.networkSlices, auth.user?.authToken],
+    queryKey: [queryKeys.networkSliceNames, auth.user?.authToken],
     queryFn: () => apiGetAllNetworkSlices(auth.user?.authToken ?? ""),
     enabled: !isEdit && auth.user ? true : false,
   })
@@ -421,6 +422,7 @@ export const DeleteDeviceGroupButton: React.FC<deleteDeviceGroupActionModalProps
     }
     setTimeout(async () => { // Wait 100 ms before invalidating due to a race condition
       await queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
+      await queryClient.invalidateQueries({ queryKey: [queryKeys.deviceGroupNames] });
       await queryClient.invalidateQueries({ queryKey: [queryKeys.deviceGroups] });
     }, 100);
   };
