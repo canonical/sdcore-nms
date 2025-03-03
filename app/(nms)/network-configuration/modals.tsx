@@ -1,4 +1,4 @@
-import { apiGetAllDeviceGroupNames } from "@/utils/callDeviceGroupApi";
+import { apiGetAllDeviceGroupNames } from "@/utils/deviceGroupOperations";
 import { Button, Form, Input, ConfirmationButton, Modal, Select } from "@canonical/react-components"
 import { createNetworkSlice, editNetworkSlice, deleteNetworkSlice } from "@/utils/networkSliceOperations";
 import { getGnbList } from "@/utils/gnbOperations";

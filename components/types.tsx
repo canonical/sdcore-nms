@@ -50,6 +50,10 @@ export type DeviceGroup = {
   };
 };
 
+export type Subscriber = {
+  plmnID: string;
+  ueId: string;
+};
 
 export type User = {
   exp: number
