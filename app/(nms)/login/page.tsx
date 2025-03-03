@@ -1,12 +1,15 @@
 "use client"
 
+import { ChangeEvent, useState,  } from "react"
+import { Input, PasswordToggle, Button, Form, LoginPageLayout } from "@canonical/react-components";
+import { is401UnauthorizedError } from "@/utils/errors"
 import { getStatus, login } from "@/utils/accountQueries"
-import { useMutation, useQuery } from "@tanstack/react-query"
-import { useState, ChangeEvent } from "react"
-import { useCookies } from "react-cookie"
-import { useRouter } from "next/navigation"
 import { statusResponse } from "@/components/types"
-import { Input, PasswordToggle, Button, Form, Notification, LoginPageLayout } from "@canonical/react-components";
+import { useCookies } from "react-cookie"
+import { useMutation, useQuery } from "@tanstack/react-query"
+import { useRouter } from "next/navigation"
+
+import ErrorNotification from "@/components/ErrorNotification";
 
 
 export default function LoginPage() {
@@ -29,8 +32,12 @@ export default function LoginPage() {
             })
             router.push('/')
         },
-        onError: (e: Error) => {
-            setErrorText(e.message)
+        onError: (error: Error) => {
+            if (is401UnauthorizedError(error)) {
+                setErrorText("Incorrect username or password. Please, try again.")
+            } else {
+                setErrorText("An unexpected error occurred.");
+            }
         }
     })
 
@@ -63,14 +70,7 @@ export default function LoginPage() {
                         required={true}
                         onChange={handlePasswordChange}
                     />
-                    {errorText &&
-                        <Notification
-                            severity="negative"
-                            title="Error"
-                        >
-                            {errorText.split("error: ")}
-                        </Notification>
-                    }
+                    {errorText && <ErrorNotification error={ errorText}/>}
                     <Button
                         appearance="positive"
                         disabled={password.length == 0 || username.length == 0}
