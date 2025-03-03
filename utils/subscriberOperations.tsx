@@ -133,12 +133,25 @@ async function getSubscriberAuthData(ueId: string, token: string): Promise<Subsc
 async function doesSubscriberExist(rawImsi: string, token: string) : Promise<boolean>{
   try {
     const subscribers: SubscriberId[] = await apiGetAllSubscribersIds(token);
-    return subscribers.some(subscriber => subscriber.ueId === rawImsi);
+    return subscribers.some(subscriber => subscriber.ueId.split("-")[1] === rawImsi);
   } catch (error) {
     console.error("Error retrieving subscribers:", error);
     throw error;
   }
 }
+
+export async function filterSubscribers(subscribers: string[], token: string): Promise<string[]> {
+  try {
+    const allSubscribers: SubscriberId[] = await apiGetAllSubscribersIds(token);
+    const existingImsis = new Set(allSubscribers.map(sub => sub.ueId.split("-")[1]));
+
+    return subscribers.filter(imsi => existingImsis.has(imsi));
+  } catch (error) {
+    console.error("Error retrieving subscribers:", error);
+    throw error;
+  }
+}
+
 
 interface CreateSubscriberArgs {
   subscriberData: SubscriberAuthData;

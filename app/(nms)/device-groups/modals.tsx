@@ -2,13 +2,14 @@ import { apiGetAllNetworkSlices } from "@/utils/networkSliceOperations"
 import { Button, Form, Input, ConfirmationButton, Modal, Select } from "@canonical/react-components"
 import { createDeviceGroup, editDeviceGroup, deleteDeviceGroup } from "@/utils/deviceGroupOperations";
 import { DeviceGroup } from "@/components/types";
+import { filterSubscribers } from "@/utils/subscriberOperations";
+import { OperationError, is401UnauthorizedError}  from "@/utils/errors";
 import { queryKeys } from "@/utils/queryKeys";
 import { useAuth } from "@/utils/auth"
 import { useFormik } from "formik";
 import { useQueryClient } from "@tanstack/react-query"
 import { useQuery } from "@tanstack/react-query"
 import { useState } from "react"
-import { OperationError, is401UnauthorizedError}  from "@/utils/errors";
 
 import ErrorNotification from "@/components/ErrorNotification";
 import isCidr from "is-cidr";
@@ -424,10 +425,22 @@ export const DeleteDeviceGroupButton: React.FC<deleteDeviceGroupActionModalProps
       await queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
       await queryClient.invalidateQueries({ queryKey: [queryKeys.deviceGroupNames] });
       await queryClient.invalidateQueries({ queryKey: [queryKeys.deviceGroups] });
+      await queryClient.invalidateQueries({ queryKey: [queryKeys.filteredSubscribers] });
     }, 100);
   };
 
-  if (subscribers && subscribers.length > 0) {
+  const subscriberQuery= useQuery({
+    queryKey: [queryKeys.filteredSubscribers, subscribers, auth.user?.authToken],
+    queryFn: () =>  filterSubscribers(subscribers, auth.user?.authToken ?? ""),
+    enabled: auth.user ? true : false,
+  });
+
+  if (subscriberQuery.status == "error" && is401UnauthorizedError(subscriberQuery.error)) {
+    auth.logout();
+  }
+  const filteredSubscribers = subscriberQuery.data || [];
+
+  if (subscribers && filteredSubscribers.length > 0) {
     return (
       <ConfirmationButton
         appearance="negative"
@@ -444,7 +457,7 @@ export const DeleteDeviceGroupButton: React.FC<deleteDeviceGroupActionModalProps
               <br />
               Please remove the following subscribers first:
               <br />
-              {subscribers.join(", ")}.
+              {filteredSubscribers.join(", ")}.
             </p>
           ),
         }}
