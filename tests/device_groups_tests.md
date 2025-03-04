@@ -7,13 +7,13 @@ This document outlines test cases for creating, editing, and deleting a Device G
 ## Empty State: No Device Groups
 
 ### 1. No Network Slices Available
-- Expected empty state message: No device group available
-- Expected Button: `Go to "Network Slices" page`
+- Empty state message: No device group available
+- Button: `Go to "Network Slices" page`
 - Table is not displayed
 
 ### 2. Network Slices Exist
-- Expected empty state message: No device group available
-- Expected Button: Green `Create` button
+- Empty state message: No device group available
+- Button: Green `Create` button
 - Table is not displayed
 
 ---
@@ -46,7 +46,6 @@ When invalid values are entered in the form, an error is displayed, and the `Sub
   - Network Slice (test with multiple elements in the list)
   - 5QI
   - ARP
-- If no changes are made, the Submit button remains disabled.
 
 ### 5. Successful Creation
 - When a valid Device Group is created, it immediately appears in the table with the correct attributes.
@@ -63,6 +62,7 @@ When invalid values are entered in the form, an error is displayed, and the `Sub
 - The following fields are not editable:
   - Name
   - Network Slice
+- If no changes are made, the Submit button remains disabled.
 
 ### 8. Validation Errors in Edit Modal
 - **UE IP Pool**: Not in CIDR format

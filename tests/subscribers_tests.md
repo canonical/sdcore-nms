@@ -47,7 +47,7 @@ When invalid values are entered in the form, an error is displayed, and the `Sub
 
 #### Dropdown Selections:
 - Before selecting a Network Slice, the Device Group list is empty.
-- When selecting a Network Slice with two or more Device Groups → Device Group is not automatically selected, but the list is populated.
+- When selecting a Network Slice with two or more Device Groups → Device Group is not automatically selected, but the Device Group list is populated.
 - When selecting a Network Slice with one Device Group → Device Group is automatically selected.
 - When selecting a Network Slice with no Device Groups → The Device Group list remains empty.
 

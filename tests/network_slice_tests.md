@@ -89,7 +89,7 @@ When invalid values are entered in the form, an error is displayed, and the `Sub
 - SST field is set to `1` and cannot be edited.
 
 ### 11. Given multiple UPFs
-- Each UPF can be selected.
+- Each UPF can be selected (test with one and more elements in the list).
 
 ### 12. Given multiple gNodeBs
 - Multiple gNBs selection is possible using `Ctrl`.
