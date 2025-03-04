@@ -1,5 +1,4 @@
-import { generateRandomKey, generateOpc, aes128GcmEncrypt,  bufferXor} from "./generateOpc";
-import * as crypto from 'crypto';
+import { generateRandomKey, generateOpc, aes128EncryptBlock,  bufferXor} from "./generateOpc";
 
 
 describe('OPc Generator Unit Tests', () => {
@@ -17,34 +16,34 @@ describe('OPc Generator Unit Tests', () => {
         });
     });
 
-    describe('aes128GcmEncrypt', () => {
-        it('should correctly encrypt a 16-byte block using AES-128-GCM', () => {
+    describe('aes128EncryptBlock', () => {
+        it('should correctly encrypt a 16-byte block using AES-128-ECB', async () => {
             const key = Buffer.from('0123456789ABCDEF0123456789ABCDEF', 'hex');
             const data = Buffer.from('1234567890ABCDEF1234567890ABCDEF', 'hex');
-            const iv = Buffer.from('000000000000', 'binary');
-            const expectedCiphertext = Buffer.from([
-                35, 207, 52, 2, 207, 5, 46, 100, 222, 45, 142, 75, 24, 138, 198, 223,
+            const expectedCiphertext = Uint8Array.from([
+                13, 211, 125, 240, 149, 254, 179, 139, 232, 133, 159, 133, 40, 145, 2, 40
             ]);
-            const { ciphertext } = aes128GcmEncrypt(key, data, iv);
+            const ciphertext = await aes128EncryptBlock(key, data);
             expect(ciphertext).toEqual(expectedCiphertext);
+            expect(ciphertext).toBeInstanceOf(Uint8Array);
+            expect(ciphertext.length).toBe(16);
         });
 
-        it('should throw an error if key length is invalid', () => {
+        it('should throw an error if key length is invalid', async () => {
             // Too short key
             const invalidKey = Buffer.from('0123456789ABCDEF', 'hex');
             const data = Buffer.from('1234567890ABCDEF1234567890ABCDEF', 'hex');
-
-            const iv = crypto.randomBytes(12); // Generate a 12-byte IV for AES-GCM
-            expect(() => aes128GcmEncrypt(invalidKey, data, iv)).toThrow();
+            await expect(aes128EncryptBlock(invalidKey, data)).rejects.toThrow(
+                'Key must be 16 bytes (128 bits) for AES-128 encryption.'
+            );
         });
 
-        it('should throw an error if data block is empty', () => {
+        it('should throw an error if input data is empty', async() => {
             const key = Buffer.from('0123456789ABCDEF0123456789ABCDEF', 'hex');
-            // Too long data block
+            // Empty data block
             const invalidData = Buffer.from('', 'hex');
-
-            const iv = crypto.randomBytes(12);
-            expect(() => aes128GcmEncrypt(key, invalidData, iv)).toThrow();
+            await expect(() => aes128EncryptBlock(key, invalidData)).rejects.toThrow(
+                'Input data must be 16 bytes (128 bits) for AES-128 encryption.');
         });
     });
 
@@ -78,24 +77,24 @@ describe('OPc Generator Unit Tests', () => {
         const validOp = '00112233445566778899AABBCCDDEEFF';
         const validKi = '8899AABBCCDDEEFF0011223344556677';
 
-        it('should generate a valid OPc from given valid OP and KI', () => {
-            const result = generateOpc(validOp, validKi);
+        it('should generate a valid OPc from given valid OP and KI', async () => {
+            const result = await generateOpc(validOp, validKi);
             expect(result).toMatch(/^[A-F0-9]{32}$/);
         });
 
-        it('should throw an error if OP is not a 32-character hex string', () => {
+        it('should throw an error if OP is not a 32-character hex string', async () => {
             // 30 characters Op
             const invalidOp = '00112233445566778899AABBCCDD';
 
-            expect(() => generateOpc(invalidOp, validKi)).toThrow(
+            await expect(generateOpc(invalidOp, validKi)).rejects.toThrow(
                 'Invalid OP: Must be a 128-bit hexadecimal string (32 characters).'
             );
         });
 
-        it('should throw an error if KI is not a 32-character hex string', () => {
+        it('should throw an error if KI is not a 32-character hex string', async () => {
             // 12 characters Ki
             const invalidKi = '8899AABBCCDD';
-            expect(() => generateOpc(validOp, invalidKi)).toThrow(
+            await expect(generateOpc(validOp, invalidKi)).rejects.toThrow(
                 'Invalid KI: Must be a 128-bit hexadecimal string (32 characters).'
             );
         });
