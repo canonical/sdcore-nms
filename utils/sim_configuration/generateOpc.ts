@@ -1,5 +1,5 @@
 import * as crypto from "crypto";
-import { InvalidDataError } from "../errors";
+import { InvalidDataError, OperationError } from "../errors";
 
 
 export function generateRandomKey(): string {
@@ -7,27 +7,30 @@ export function generateRandomKey(): string {
     return crypto.randomBytes(16).toString("hex").toUpperCase();
 }
 
-
-export function aes128GcmEncrypt(key: Buffer, data: Buffer, iv: Buffer): {
-    ciphertext: Buffer, authTag: Buffer} {
+/**
+ * Using aes128EncryptBlock, only a single 16-byte block is encrypted.
+ * AES-GCM, AES-CTR or AES-CBC's strength lies in deriving unique ciphertexts for cryptographic
+ * randomization on processing multiple blocks. Since the code only encrypts one standalone block,
+ * there will be no observable differences  among any AES encryption modes.
+ * However, AES-ECB is the more practical one as it does not require any input vector or
+ * authentication tag (not effectively used in the single block case).
+ */
+export async function aes128EncryptBlock(key: Uint8Array, data: Uint8Array): Promise<Uint8Array> {
     if (key.length !== 16) {
-        throw new InvalidDataError("Invalid Key: Key must be exactly 16 bytes (128 bits).");
+        throw new InvalidDataError("Key must be 16 bytes (128 bits) for AES-128 encryption.");
     }
-
-    if (iv.length !== 12) {
-        throw new InvalidDataError("Invalid IV: IV must be exactly 12 bytes for AES-GCM.");
+    if (data.length !== 16) {
+        throw new InvalidDataError("Input data must be 16 bytes (128 bits) for AES-128 encryption.");
     }
-
-    if (!data || data.length === 0) {
-        throw new InvalidDataError("Invalid Data: Data to encrypt cannot be null or empty.");
+    try {
+        const cipher = crypto.createCipheriv("aes-128-ecb", key, null);
+        cipher.setAutoPadding(false);
+        const encrypted = Buffer.concat([cipher.update(data), cipher.final()]);
+        return new Uint8Array(encrypted)
+    } catch (error) {
+        throw new OperationError(`Failed to encrypt data: ${error instanceof Error ? error.message : String(error)}`);
     }
-    const cipher = crypto.createCipheriv("aes-128-gcm", key, iv);
-    // Encryption process produces ciphertext and authentication tag
-    const ciphertext = Buffer.concat([cipher.update(data), cipher.final()]);
-    const authTag = cipher.getAuthTag();
-    return { ciphertext, authTag };
 }
-
 
 export function bufferXor(buf1: Buffer, buf2: Buffer): Buffer {
     if (buf1.length !== buf2.length) {
@@ -37,7 +40,7 @@ export function bufferXor(buf1: Buffer, buf2: Buffer): Buffer {
 }
 
 
-export function generateOpc(op: string, ki: string): string {
+export async function generateOpc(op: string, ki: string): Promise<string> {
     // Validate Op input is a 32-character hexadecimal string
     if (op.length !== 32 || !/^[a-fA-F0-9]+$/.test(op.trim())) {
         throw new InvalidDataError("Invalid OP: Must be a 128-bit hexadecimal string (32 characters).");
@@ -50,16 +53,17 @@ export function generateOpc(op: string, ki: string): string {
     // Convert to binary buffers which is raw binary data to make operations byte by byte
     const opBuffer = Buffer.from(op, "hex");
     const kiBuffer = Buffer.from(ki, "hex");
+    try {
 
-    // Generate a random 12-byte IV for AES-GCM (standard recommended IV length for AES-GCM)
-    const iv = crypto.randomBytes(12);
+        // Perform AES-128 encryption of OP using Ki
+        const ciphertext = await aes128EncryptBlock(kiBuffer, opBuffer);
 
-    // Perform AES-128-GCM encryption of OP using Ki as the key and the random IV
-    const  { ciphertext } = aes128GcmEncrypt(kiBuffer, opBuffer, iv);
+        // XOR encrypted OP (ciphertext) with the original OP to derive OPc
+        const opcBuffer = bufferXor(Buffer.from(ciphertext), opBuffer);
 
-    // XOR the encrypted OP (ciphertext) with the original OP to derive OPc
-    const opcBuffer = bufferXor(ciphertext, opBuffer);
-
-    // Return OPc as an uppercase hexadecimal string
-    return opcBuffer.toString("hex").toUpperCase();
+        // Return OPc as an uppercase hexadecimal string
+        return opcBuffer.toString("hex").toUpperCase();
+    } catch (error) {
+        throw new OperationError(`Failed to generate OPc: ${error instanceof Error ? error.message : String(error)}`);
+    }
 }
