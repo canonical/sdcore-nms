@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { Button, MainTable } from "@canonical/react-components"
 import { getDeviceGroups } from "@/utils/deviceGroupOperations";
@@ -125,6 +125,7 @@ export default function Subscribers() {
         { content: subscriber.rawImsi },
         {
           content:
+          <div>
             <Button
               appearance=""
               className="u-no-margin--bottom"
@@ -140,12 +141,10 @@ export default function Subscribers() {
               title="Edit"
             >
               Edit
-            </Button>,
-          className:"u-align--right",
-        },
-        {
-          content:
+            </Button>
             <DeleteSubscriberButton rawImsi={subscriber.rawImsi} />
+          </div>,
+          className:"u-align--right",
         },
       ],
     };
@@ -168,9 +167,10 @@ export default function Subscribers() {
       </PageHeader>
       <PageContent>
         <MainTable
+          defaultSort='"abcd"'
+          defaultSortDirection="ascending"
           headers={[
-            { content: "Name" },
-            { content: ""},
+            { content: "IMSI" },
             {
               content: "Actions",
               className:"u-align--right",

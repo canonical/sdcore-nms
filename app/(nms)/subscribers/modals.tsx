@@ -33,14 +33,14 @@ const SubscriberSchema = Yup.object().shape({
   opc: Yup.string()
     .length(32, "OPC must be 32 hexadecimal characters.")
     .matches(/^[A-Fa-f0-9]+$/, "Use valid hexadecimal characters.")
-    .required("OPC is required"),
+    .required("OPC is required."),
   key: Yup.string()
     .length(32, "Key must be 32 hexadecimal characters." )
     .matches(/^[A-Fa-f0-9]+$/, "Use valid hexadecimal characters.")
-    .required("Key is required"),
+    .required("Key is required."),
   sequenceNumber: Yup.string().required("Sequence number is required."),
   selectedSlice: Yup.string().required("Network slice selection is required."),
-  deviceGroup: Yup.string().required("Device group selection is required"),
+  deviceGroup: Yup.string().required("Device group selection is required."),
 });
 
 interface SubscriberModalProps {

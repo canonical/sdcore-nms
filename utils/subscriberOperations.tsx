@@ -130,16 +130,6 @@ async function getSubscriberAuthData(ueId: string, token: string): Promise<Subsc
   }
 };
 
-async function doesSubscriberExist(rawImsi: string, token: string) : Promise<boolean>{
-  try {
-    const subscribers: SubscriberId[] = await apiGetAllSubscribersIds(token);
-    return subscribers.some(subscriber => subscriber.ueId.split("-")[1] === rawImsi);
-  } catch (error) {
-    console.error("Error retrieving subscribers:", error);
-    throw error;
-  }
-}
-
 export async function filterSubscribers(subscribers: string[], token: string): Promise<string[]> {
   try {
     const allSubscribers: SubscriberId[] = await apiGetAllSubscribersIds(token);
@@ -152,6 +142,15 @@ export async function filterSubscribers(subscribers: string[], token: string): P
   }
 }
 
+async function doesSubscriberExist(rawImsi: string, token: string) : Promise<boolean>{
+  try {
+    const subscribers: SubscriberId[] = await apiGetAllSubscribersIds(token);
+    return subscribers.some(subscriber => subscriber.ueId.split("-")[1] === rawImsi);
+  } catch (error) {
+    console.error("Error retrieving subscribers:", error);
+    throw error;
+  }
+}
 
 interface CreateSubscriberArgs {
   subscriberData: SubscriberAuthData;
@@ -174,8 +173,8 @@ export async function createSubscriber({
     await apiPostSubscriber(subscriberData.rawImsi, subscriberData, token);
     if (!existingDeviceGroupData["imsis"].includes(subscriberData.rawImsi)) {
       existingDeviceGroupData["imsis"].push(subscriberData.rawImsi);
-      await apiPostDeviceGroup(deviceGroupName, existingDeviceGroupData, token);
     }
+    await apiPostDeviceGroup(deviceGroupName, existingDeviceGroupData, token);
 
   } catch (error) {
     console.error(`Failed to create subscriber ${subscriberData.rawImsi} : ${error}`);
@@ -209,8 +208,8 @@ export async function editSubscriber({
     }
     if (!newDeviceGroupData.imsis.includes(subscriberData.rawImsi)) {
       newDeviceGroupData.imsis.push(subscriberData.rawImsi);
-      await apiPostDeviceGroup(newDeviceGroupName, newDeviceGroupData, token);
     }
+    await apiPostDeviceGroup(newDeviceGroupName, newDeviceGroupData, token);
   } catch (error) {
     console.error(`Failed to edit subscriber ${subscriberData.rawImsi} : ${error}`);
     throw error;
