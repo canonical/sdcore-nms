@@ -18,7 +18,7 @@ This document outlines test cases for creating, editing, and deleting a Device G
 
 ---
 
-## 🟢 Creating a Device Group
+## Creating a Device Group
 
 ### 3. Form Validation Errors
 When invalid values are entered in the form, an error is displayed, and the `Submit` button is disabled.  
@@ -56,7 +56,7 @@ When invalid values are entered in the form, an error is displayed, and the `Sub
 
 ---
 
-## ✏️ Editing a Device Group
+## Editing a Device Group
 
 ### 7. Edit Device Group Modal
 - Fields are prefilled with existing values.
@@ -82,7 +82,7 @@ When invalid values are entered in the form, an error is displayed, and the `Sub
 
 ---
 
-## 🗑️ Deleting a Device Group
+## Deleting a Device Group
 
 ### 10. Device Group with a Subscriber
 - Deletion is not allowed.

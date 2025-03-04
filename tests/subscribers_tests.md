@@ -23,7 +23,7 @@ This document outlines test cases for creating, editing, and deleting a Subscrib
 
 ---
 
-## 🟢  Creating a Subscriber
+## Creating a Subscriber
 
 ### 4. Validation Errors
 When invalid values are entered in the form, an error is displayed, and the `Submit` button is disabled.
@@ -59,7 +59,7 @@ When invalid values are entered in the form, an error is displayed, and the `Sub
 
 ---
 
-## ✏️ Editing a Subscriber
+## Editing a Subscriber
 
 ### 8. Edit Subscriber Modal
 - Fields are prefilled with existing values.
@@ -83,7 +83,7 @@ When invalid values are entered in the form, an error is displayed, and the `Sub
 
 ---
 
-## 🗑️ Deleting a Subscriber
+## Deleting a Subscriber
 
 ### 11. Deletion Flow
 - A warning modal is displayed before deletion.

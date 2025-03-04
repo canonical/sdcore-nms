@@ -65,7 +65,7 @@ This document outlines test cases for creating, editing, and deleting a Network 
 
 ---
 
-## 🟢 Creating a Network Slice
+## Creating a Network Slice
 
 ### 9. Form Validation Errors  
 When invalid values are entered in the form, an error is displayed, and the `Submit` button is disabled.  
@@ -103,7 +103,7 @@ When invalid values are entered in the form, an error is displayed, and the `Sub
 
 ---
 
-## ✏️ Editing a Network Slice
+## Editing a Network Slice
 
 ### 15. Edit Network Slice Modal
 - Fields are prefilled with existing values.
@@ -120,7 +120,7 @@ When invalid values are entered in the form, an error is displayed, and the `Sub
 
 ---
 
-## 🗑️ Deleting a Network Slice
+## Deleting a Network Slice
 
 ### 17. Network Slice with a Device Group
 - Deletion is not allowed.
