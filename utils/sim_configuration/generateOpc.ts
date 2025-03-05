@@ -17,10 +17,14 @@ export function generateRandomKey(): string {
  */
 export async function aes128EncryptBlock(key: Uint8Array, data: Uint8Array): Promise<Uint8Array> {
     if (key.length !== 16) {
-        throw new InvalidDataError("Key must be 16 bytes (128 bits) for AES-128 encryption.");
+        const errorMessage = "Key must be 16 bytes (128 bits) for AES-128 encryption.";
+        console.error(errorMessage);
+        throw new InvalidDataError(errorMessage);
     }
     if (data.length !== 16) {
-        throw new InvalidDataError("Input data must be 16 bytes (128 bits) for AES-128 encryption.");
+        const errorMessage = "Input data must be 16 bytes (128 bits) for AES-128 encryption.";
+        console.error(errorMessage);
+        throw new InvalidDataError(errorMessage);
     }
     try {
         const cipher = crypto.createCipheriv("aes-128-ecb", key, null);
@@ -28,13 +32,17 @@ export async function aes128EncryptBlock(key: Uint8Array, data: Uint8Array): Pro
         const encrypted = Buffer.concat([cipher.update(data), cipher.final()]);
         return new Uint8Array(encrypted)
     } catch (error) {
-        throw new OperationError(`Failed to encrypt data: ${error instanceof Error ? error.message : String(error)}`);
+        const errorMessage = `Failed to encrypt data: ${error instanceof Error ? error.message : String(error)}`;
+        console.error(errorMessage);
+        throw new OperationError(errorMessage);
     }
 }
 
 export function bufferXor(buf1: Buffer, buf2: Buffer): Buffer {
     if (buf1.length !== buf2.length) {
-        throw new InvalidDataError("Buffers must have the same length for XOR.");
+        const errorMessage = "Buffers must have the same length for XOR.";
+        console.error(errorMessage);
+        throw new InvalidDataError(errorMessage);
     }
     return Buffer.from(buf1.map((b, i) => b ^ buf2[i]));
 }
@@ -43,11 +51,15 @@ export function bufferXor(buf1: Buffer, buf2: Buffer): Buffer {
 export async function generateOpc(op: string, ki: string): Promise<string> {
     // Validate Op input is a 32-character hexadecimal string
     if (op.length !== 32 || !/^[a-fA-F0-9]+$/.test(op.trim())) {
-        throw new InvalidDataError("Invalid OP: Must be a 128-bit hexadecimal string (32 characters).");
+        const errorMessage = "Invalid OP: Must be a 128-bit hexadecimal string (32 characters).";
+        console.error(errorMessage);
+        throw new InvalidDataError(errorMessage);
     }
     // Validate Ki input is a 32-character hexadecimal string
     if (ki.length !== 32 || !/^[a-fA-F0-9]+$/.test(ki.trim())) {
-        throw new InvalidDataError("Invalid KI: Must be a 128-bit hexadecimal string (32 characters).");
+        const errorMessage = "Invalid KI: Must be a 128-bit hexadecimal string (32 characters).";
+        console.error(errorMessage);
+        throw new InvalidDataError(errorMessage);
     }
 
     // Convert to binary buffers which is raw binary data to make operations byte by byte
@@ -64,6 +76,8 @@ export async function generateOpc(op: string, ki: string): Promise<string> {
         // Return OPc as an uppercase hexadecimal string
         return opcBuffer.toString("hex").toUpperCase();
     } catch (error) {
-        throw new OperationError(`Failed to generate OPc: ${error instanceof Error ? error.message : String(error)}`);
+        const errorMessage = `Failed to generate OPc: ${error instanceof Error ? error.message : String(error)}`;
+        console.error(errorMessage);
+        throw new OperationError(errorMessage);
     }
 }
