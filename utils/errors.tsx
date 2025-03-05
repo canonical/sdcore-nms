@@ -20,7 +20,7 @@ export function is403ForbiddenError(error: Error | unknown): boolean {
   return (error instanceof WebconsoleApiError && error.status === 403);
 }
 
-export function is404NotFound(error: Error | unknown): boolean {
+export function is404NotFoundError(error: Error | unknown): boolean {
   return (error instanceof WebconsoleApiError && error.status === 404);
 }
 
