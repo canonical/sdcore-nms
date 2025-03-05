@@ -8,11 +8,15 @@ import { useAuth } from "@/utils/auth"
 import { useFormik } from "formik";
 import { useQueryClient } from "@tanstack/react-query"
 import { useQuery } from "@tanstack/react-query"
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { OperationError, is401UnauthorizedError}  from "@/utils/errors";
 
 import ErrorNotification from "@/components/ErrorNotification";
 import * as Yup from "yup";
+import { generateUniqueImsi } from "@/utils/sim_configuration/generateImsi";
+import { generateKey } from "crypto";
+import { generateOpc, generateRandomKey } from "@/utils/sim_configuration/generateOpc";
+import { generateSqn } from "@/utils/sim_configuration/generateSqn";
 
 
 interface SubscriberFormValues {
@@ -60,8 +64,11 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
 }) => {
   const auth = useAuth()
   const [apiError, setApiError] = useState<string | null>(null);
+  const [imsiError, setImsiError] = useState<string | null>(null);
   const [networkSliceError, setNetworkSliceError] = useState<string | null>(null);
   const [deviceGroupError, setDeviceGroupError] = useState<string | null>(null);
+  const [mcc, setMcc] = useState<string>("");
+  const [mnc, setMnc] = useState<string>("");
   const queryClient = useQueryClient()
 
   const formik = useFormik<SubscriberFormValues>({
@@ -119,21 +126,68 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
     const selectedSlice = networkSliceItems.find((slice) => slice["slice-name"] === sliceName);
     return (selectedSlice?.["site-device-group"] || []).filter((group) => deviceGroupNames.includes(group));
   };
-
+  
   const handleSliceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedSliceName = e.target.value;
-    const filteredDeviceGroupOptions = getFilteredDeviceGroups(selectedSliceName);
+    console.error(networkSliceItems);
+    const filteredDeviceGroupOptions = getFilteredDeviceGroups(selectedSliceName);    
+    const selectedSlice = networkSliceItems.find(slice => slice["slice-name"] === selectedSliceName);
+  
+    setMcc(selectedSlice?.["site-info"].plmn?.mcc || "");
+    setMnc(selectedSlice?.["site-info"].plmn?.mnc || "");
+    console.error(selectedSlice);
+    //setImsiError(null);
+
     formik.setValues({
       ...formik.values,
       selectedSlice: selectedSliceName,
       deviceGroup: filteredDeviceGroupOptions.length > 1 ? "" : filteredDeviceGroupOptions[0] || "",
     });
+
+    //console.error(formik.values.rawImsi);
+    //console.error(`${mcc}${mnc}`);
+    //console.error(formik.values.rawImsi.startsWith(`${mcc}${mnc}`));
+
+    //if (formik.values.rawImsi !== "" && !formik.values.rawImsi.startsWith(`${mcc}${mnc}`)) {
+    //  console.error("do not match");
+    //  setImsiError("IMSI do not match the Network Slice.")
+    //}
+    
   };
+  
+  useEffect(() => {
+    if (formik.values.rawImsi !== "" && !formik.values.rawImsi.startsWith(`${mcc}${mnc}`)) {
+      setImsiError("IMSI does not match the Network Slice (MCC and MNC).");
+    }
+    else {
+      setImsiError(null);
+    }
+  }, [mcc, mnc, formik.values.rawImsi]); 
 
   const deviceGroupOptions = useMemo(() => getFilteredDeviceGroups(formik.values.selectedSlice), [
     formik.values.selectedSlice,
-    networkSliceItems,
   ]);
+
+  
+  const handleGenerateValues = async () => {
+    if (!mcc || !mnc) {
+      setImsiError("Please select a network slice first.");
+      return;
+    }
+    const imsi = await generateUniqueImsi(mcc, mnc);
+
+    const opc = await generateOpc('00112233445566778899AABBCCDDEEFF', '8899AABBCCDDEEFF0011223344556677');
+    const key = generateRandomKey();
+    const sqn = generateSqn();
+    formik.setValues({
+      ...formik.values,
+      rawImsi: imsi,
+      opc: opc,
+      key: key,
+      sequenceNumber: sqn,
+    });
+    //setImsiError(null);
+  };
 
   return (
     <Modal
@@ -144,7 +198,7 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
         <Button
           appearance="positive"
           onClick={formik.submitForm}
-          disabled={!(formik.isValid && formik.dirty)}
+          disabled={!(formik.isValid && formik.dirty && !imsiError)}
           loading={formik.isSubmitting}
         >
           Submit
@@ -156,51 +210,6 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
       {networkSliceError && <ErrorNotification error={networkSliceError} />}
       {deviceGroupError && <ErrorNotification error={deviceGroupError} />}
       <Form>
-        <Input
-          id="imsi"
-          label="IMSI"
-          type="text"
-          required
-          stacked
-          disabled={isEdit}
-          placeholder="208930100007487"
-          {...formik.getFieldProps("rawImsi")}
-          error={formik.touched.rawImsi ? formik.errors.rawImsi : null}
-        />
-        <Input
-          id="opc"
-          label="OPC"
-          type="text"
-          required
-          stacked
-          placeholder="981d464c7c52eb6e5036234984ad0bcf"
-          help="Operator code"
-          {...formik.getFieldProps("opc")}
-          error={formik.touched.opc ? formik.errors.opc : null}
-        />
-        <Input
-          id="key"
-          label="Key"
-          type="text"
-          required
-          stacked
-          placeholder="5122250214c33e723a5dd523fc145fc0"
-          help="Permanent subscription key"
-          {...formik.getFieldProps("key")}
-          error={formik.touched.key ? formik.errors.key : null}
-        />
-        <Input
-          id="sequence-number"
-          label="Sequence Number"
-          type="text"
-          required
-          stacked
-          placeholder="16f3b3f70fc2"
-          {...formik.getFieldProps("sequenceNumber")}
-          error={
-            formik.touched.sequenceNumber ? formik.errors.sequenceNumber : null
-          }
-        />
         <Select
           id="network-slice"
           label="Network Slice"
@@ -239,6 +248,56 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
               : [])
           ]}
         />
+        {!isEdit && <Button appearance="positive" type="button" onClick={handleGenerateValues}>Generate</Button>}
+        <Input
+          id="imsi"
+          label="IMSI"
+          type="text"
+          required
+          stacked
+          disabled={isEdit}
+          placeholder="208930100007487"
+          {...formik.getFieldProps("rawImsi")}
+          error={formik.touched.rawImsi && formik.errors.rawImsi ? formik.errors.rawImsi : imsiError }
+        />
+        <Input
+          id="opc"
+          label="OPC"
+          type="text"
+          required
+          stacked
+          disabled={isEdit}
+          placeholder="981d464c7c52eb6e5036234984ad0bcf"
+          help="Operator code"
+          {...formik.getFieldProps("opc")}
+          error={formik.touched.opc ? formik.errors.opc : null}
+        />
+        <Input
+          id="key"
+          label="Key"
+          type="text"
+          required
+          stacked
+          disabled={isEdit}
+          placeholder="5122250214c33e723a5dd523fc145fc0"
+          help="Permanent subscription key"
+          {...formik.getFieldProps("key")}
+          error={formik.touched.key ? formik.errors.key : null}
+        />
+        <Input
+          id="sequence-number"
+          label="Sequence Number"
+          type="text"
+          required
+          stacked
+          disabled={isEdit}
+          placeholder="16f3b3f70fc2"
+          {...formik.getFieldProps("sequenceNumber")}
+          error={
+            formik.touched.sequenceNumber ? formik.errors.sequenceNumber : null
+          }
+        />
+
       </Form>
     </Modal>
   )
