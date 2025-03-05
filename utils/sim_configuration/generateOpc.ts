@@ -27,7 +27,7 @@ export async function aes128EncryptBlock(key: Uint8Array, data: Uint8Array): Pro
         throw new InvalidDataError(errorMessage);
     }
     try {
-        const cipher = crypto.createCipheriv("aes-128-ecb", key, null);
+        const cipher = crypto.createCipheriv("aes-128-ecb", key, Buffer.alloc(0));
         cipher.setAutoPadding(false);
         const encrypted = Buffer.concat([cipher.update(data), cipher.final()]);
         return new Uint8Array(encrypted)
