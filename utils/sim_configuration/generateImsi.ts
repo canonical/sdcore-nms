@@ -13,12 +13,16 @@ export async function generateUniqueImsi(
 
     // Validate MCC
     if (!/^\d{3}$/.test(mcc)) {
-        throw new InvalidDataError("Invalid MCC. It must be exactly 3 digits.");
+        const errorMessage = "Invalid MCC. It must be exactly 3 digits.";
+        console.error(`generateUniqueImsi Error: ${errorMessage}`);
+        throw new InvalidDataError(errorMessage);
     }
 
     // Validate MNC (2 or 3 digits)
     if (!/^\d{2,3}$/.test(mnc)) {
-        throw new InvalidDataError("Invalid MNC. It must be 2 or 3 digits.");
+        const errorMessage = "Invalid MNC. It must be 2 or 3 digits.";
+        console.error(`generateUniqueImsi Error: ${errorMessage}`);
+        throw new InvalidDataError(errorMessage);
     }
 
     let attempts = 0;
@@ -36,15 +40,12 @@ export async function generateUniqueImsi(
         const existingIMSIs = await getAllImsis(token);
         // Check for uniqueness
         if (!existingIMSIs.has(imsi)) {
-            // Add IMSI to the set
-            existingIMSIs.add(imsi);
             return imsi;
         }
         attempts++;
     }
 
-    // If max attempts are reached, throw an error
-    throw new IMSIGenerationError(
-        `Failed to generate a unique IMSI after ${maxAttempts} attempts for MCC: ${mcc}, MNC: ${mnc}.`
-    );
+    const errorMessage = `Failed to generate a unique IMSI after ${maxAttempts} attempts using MCC: ${mcc}, MNC: ${mnc}.`;
+    console.error(`generateUniqueImsi Error: ${errorMessage}`);
+    throw new IMSIGenerationError(errorMessage);
 }
