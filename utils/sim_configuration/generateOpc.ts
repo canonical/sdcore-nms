@@ -15,7 +15,7 @@ export function generateRandomKey(): string {
  * However, AES-ECB is the more practical one as it does not require any input vector or
  * authentication tag (not effectively used in the single block case).
  */
-export async function aes128EncryptBlock(key: Uint8Array, data: Uint8Array): Promise<Uint8Array> {
+export function aes128EncryptBlock(key: Uint8Array, data: Uint8Array): Uint8Array {
     if (key.length !== 16) {
         const errorMessage = "Key must be 16 bytes (128 bits) for AES-128 encryption.";
         console.error(errorMessage);
@@ -30,7 +30,7 @@ export async function aes128EncryptBlock(key: Uint8Array, data: Uint8Array): Pro
         const cipher = crypto.createCipheriv("aes-128-ecb", key, Buffer.alloc(0));
         cipher.setAutoPadding(false);
         const encrypted = Buffer.concat([cipher.update(data), cipher.final()]);
-        return new Uint8Array(encrypted)
+        return new Uint8Array(encrypted);
     } catch (error) {
         const errorMessage = `Failed to encrypt data: ${error instanceof Error ? error.message : String(error)}`;
         console.error(errorMessage);
@@ -48,7 +48,7 @@ export function bufferXor(buf1: Buffer, buf2: Buffer): Buffer {
 }
 
 
-export async function generateOpc(op: string, ki: string): Promise<string> {
+export function generateOpc(op: string, ki: string): string {
     // Validate Op input is a 32-character hexadecimal string
     if (op.length !== 32 || !/^[a-fA-F0-9]+$/.test(op.trim())) {
         const errorMessage = "Invalid OP: Must be a 128-bit hexadecimal string (32 characters).";
@@ -68,7 +68,7 @@ export async function generateOpc(op: string, ki: string): Promise<string> {
     try {
 
         // Perform AES-128 encryption of OP using Ki
-        const ciphertext = await aes128EncryptBlock(kiBuffer, opBuffer);
+        const ciphertext = aes128EncryptBlock(kiBuffer, opBuffer);
 
         // XOR encrypted OP (ciphertext) with the original OP to derive OPc
         const opcBuffer = bufferXor(Buffer.from(ciphertext), opBuffer);
