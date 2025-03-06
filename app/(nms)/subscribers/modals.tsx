@@ -248,56 +248,62 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
               : [])
           ]}
         />
-        {!isEdit && <Button appearance="positive" type="button" onClick={handleGenerateValues}>Generate</Button>}
-        <Input
-          id="imsi"
-          label="IMSI"
-          type="text"
-          required
-          stacked
-          disabled={isEdit}
-          placeholder="208930100007487"
-          {...formik.getFieldProps("rawImsi")}
-          error={formik.touched.rawImsi && formik.errors.rawImsi ? formik.errors.rawImsi : imsiError }
-        />
-        <Input
-          id="opc"
-          label="OPC"
-          type="text"
-          required
-          stacked
-          disabled={isEdit}
-          placeholder="981d464c7c52eb6e5036234984ad0bcf"
-          help="Operator code"
-          {...formik.getFieldProps("opc")}
-          error={formik.touched.opc ? formik.errors.opc : null}
-        />
-        <Input
-          id="key"
-          label="Key"
-          type="text"
-          required
-          stacked
-          disabled={isEdit}
-          placeholder="5122250214c33e723a5dd523fc145fc0"
-          help="Permanent subscription key"
-          {...formik.getFieldProps("key")}
-          error={formik.touched.key ? formik.errors.key : null}
-        />
-        <Input
-          id="sequence-number"
-          label="Sequence Number"
-          type="text"
-          required
-          stacked
-          disabled={isEdit}
-          placeholder="16f3b3f70fc2"
-          {...formik.getFieldProps("sequenceNumber")}
-          error={
-            formik.touched.sequenceNumber ? formik.errors.sequenceNumber : null
-          }
-        />
-
+        <fieldset><legend>Authentication</legend>
+          {!isEdit && 
+            <div className="p-form__group p-form-validation row">
+              <Button appearance="positive" type="button" onClick={handleGenerateValues} >
+                Generate
+              </Button>
+            </div>}
+          <Input
+            id="imsi"
+            label="IMSI"
+            type="text"
+            required
+            stacked
+            disabled={isEdit}
+            placeholder="208930100007487"
+            {...formik.getFieldProps("rawImsi")}
+            error={formik.touched.rawImsi && formik.errors.rawImsi ? formik.errors.rawImsi : imsiError }
+          />
+          <Input
+            id="opc"
+            label="OPC"
+            type="text"
+            required
+            stacked
+            disabled={isEdit}
+            placeholder="981d464c7c52eb6e5036234984ad0bcf"
+            help="Operator code"
+            {...formik.getFieldProps("opc")}
+            error={formik.touched.opc ? formik.errors.opc : null}
+          />
+          <Input
+            id="key"
+            label="Key"
+            type="text"
+            required
+            stacked
+            disabled={isEdit}
+            placeholder="5122250214c33e723a5dd523fc145fc0"
+            help="Permanent subscription key"
+            {...formik.getFieldProps("key")}
+            error={formik.touched.key ? formik.errors.key : null}
+          />
+          <Input
+            id="sequence-number"
+            label="Sequence Number"
+            type="text"
+            required
+            stacked
+            disabled={isEdit}
+            placeholder="16f3b3f70fc2"
+            {...formik.getFieldProps("sequenceNumber")}
+            error={
+              formik.touched.sequenceNumber ? formik.errors.sequenceNumber : null
+            }
+          />
+        </fieldset>
       </Form>
     </Modal>
   )
