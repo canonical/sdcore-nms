@@ -168,25 +168,30 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
     formik.values.selectedSlice,
   ]);
 
-  
-  const handleGenerateValues = async () => {
+  const handleGenerateImsi = async () => {
     if (!mcc || !mnc) {
       setImsiError("Please select a network slice first.");
       return;
     }
     const imsi = await generateUniqueImsi(mcc, mnc);
 
+    formik.setValues({
+      ...formik.values,
+      rawImsi: imsi,
+    });
+    //setImsiError(null);
+  };
+
+  const handleGenerateValues = async () => {
     const opc = await generateOpc('00112233445566778899AABBCCDDEEFF', '8899AABBCCDDEEFF0011223344556677');
     const key = generateRandomKey();
     const sqn = generateSqn();
     formik.setValues({
       ...formik.values,
-      rawImsi: imsi,
       opc: opc,
       key: key,
       sequenceNumber: sqn,
     });
-    //setImsiError(null);
   };
 
   return (
@@ -248,14 +253,14 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
               : [])
           ]}
         />
-        <fieldset><legend>Authentication</legend>
-          {!isEdit && 
-            <div className="p-form__group p-form-validation row">
-              <Button appearance="positive" type="button" onClick={handleGenerateValues} >
-                Generate
-              </Button>
-            </div>}
-          <Input
+        <fieldset><legend>Identifier</legend>
+        {!isEdit && 
+        <div className="p-form__group p-form-validation row">
+          <Button appearance="positive" type="button" onClick={handleGenerateImsi} >
+            Generate
+          </Button>
+        </div>}
+        <Input
             id="imsi"
             label="IMSI"
             type="text"
@@ -266,6 +271,14 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
             {...formik.getFieldProps("rawImsi")}
             error={formik.touched.rawImsi && formik.errors.rawImsi ? formik.errors.rawImsi : imsiError }
           />
+        </fieldset>
+        <fieldset><legend>Authentication</legend>
+          {!isEdit && 
+            <div className="p-form__group p-form-validation row">
+              <Button appearance="positive" type="button" onClick={handleGenerateValues} >
+                Generate
+              </Button>
+            </div>}
           <Input
             id="opc"
             label="OPC"
