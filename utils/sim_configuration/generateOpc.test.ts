@@ -1,7 +1,7 @@
 import { generateRandomKey, generateOpc, aes128EncryptBlock,  bufferXor} from "./generateOpc";
 
 
-describe('OPc Generator Unit Tests', () => {
+describe('Helper Functions Unit Tests', () => {
     describe('generateRandomKey', () => {
         it('should generate a 32-character uppercase hexadecimal string', () => {
             const result = generateRandomKey();
@@ -72,31 +72,13 @@ describe('OPc Generator Unit Tests', () => {
             expect(result).toEqual(expected);
         });
     });
-
     describe('generateOpc', () => {
-        const validOp = '00112233445566778899AABBCCDDEEFF';
-        const validKi = '8899AABBCCDDEEFF0011223344556677';
-
-        it('should generate a valid OPc from given valid OP and KI', () => {
-            const result = generateOpc(validOp, validKi);
-            expect(result).toMatch(/^[A-F0-9]{32}$/);
+        test('should generate valid OPc and Ki as uppercase hex strings', () => {
+            const result = generateOpc();
+            expect(result.opc).toMatch(/^[A-F0-9]{32}$/);
+            expect(result.ki).toMatch(/^[A-F0-9]{32}$/);
         });
 
-        it('should throw an error if OP is not a 32-character hex string', () => {
-            // 30 characters Op
-            const invalidOp = '00112233445566778899AABBCCDD';
-
-            expect(() => generateOpc(invalidOp, validKi)).toThrow(
-                'Invalid OP: Must be a 128-bit hexadecimal string (32 characters).'
-            );
-        });
-
-        it('should throw an error if KI is not a 32-character hex string', () => {
-            // 12 characters Ki
-            const invalidKi = '8899AABBCCDD';
-            expect(() => generateOpc(validOp, invalidKi)).toThrow(
-                'Invalid KI: Must be a 128-bit hexadecimal string (32 characters).'
-            );
-        });
     });
 });
+
