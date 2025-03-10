@@ -20,7 +20,8 @@ import { generateSqn } from "@/utils/sim_configuration/generateSqn";
 
 
 interface SubscriberFormValues {
-  rawImsi: string;
+  imsiPrefix: string;
+  msin: string;
   opc: string;
   key: string;
   sequenceNumber: string;
@@ -29,9 +30,13 @@ interface SubscriberFormValues {
 }
 
 const SubscriberSchema = Yup.object().shape({
-  rawImsi: Yup.string()
-    .min(14, "IMSI must be at least 14 digits.")
-    .max(15, "IMSI must be at most 15 digits.")
+  imsiPrefix: Yup.string()
+    .min(5, "IMSI prefix must contain at least 5 digits.")
+    .max(6, "IMSI prefix must contain at most 6 digits.")
+    .matches(/^[0-9]+$/, "Only numbers are allowed.")
+    .required("IMSI is required."),
+    msin: Yup.string()
+    .length(10, "IMSI complement must contain 10 digits." )
     .matches(/^[0-9]+$/, "Only numbers are allowed.")
     .required("IMSI is required."),
   opc: Yup.string()
@@ -67,8 +72,9 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
   const [imsiError, setImsiError] = useState<string | null>(null);
   const [networkSliceError, setNetworkSliceError] = useState<string | null>(null);
   const [deviceGroupError, setDeviceGroupError] = useState<string | null>(null);
-  const [mcc, setMcc] = useState<string>("");
-  const [mnc, setMnc] = useState<string>("");
+  const [mcc, setMcc] = useState<string>(initialValues.imsiPrefix.substring(0, 3));
+  const [mnc, setMnc] = useState<string>(initialValues.imsiPrefix.substring(3));
+  const [selectedSlice, selectSlice] = useState<NetworkSlice | null>(null);
   const queryClient = useQueryClient()
 
   const formik = useFormik<SubscriberFormValues>({
@@ -126,8 +132,21 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
     const selectedSlice = networkSliceItems.find((slice) => slice["slice-name"] === sliceName);
     return (selectedSlice?.["site-device-group"] || []).filter((group) => deviceGroupNames.includes(group));
   };
-  
-  const handleSliceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+
+  const getDGList = () => {
+    selectedSlice?.["site-device-group"] || [].filter((group) => deviceGroupNames.includes(group))
+  }
+
+  const getEditFilteredNetworkSlices = (mcc: string, mnc: string) => {
+    const selectedSlices = networkSliceItems.filter(
+      (slice) =>
+        slice["site-info"]?.plmn?.mcc === mcc &&
+        slice["site-info"]?.plmn?.mnc === mnc
+    );
+    return selectedSlices;
+  };
+
+  const handleSliceChangeCreate = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedSliceName = e.target.value;
     console.error(networkSliceItems);
     const filteredDeviceGroupOptions = getFilteredDeviceGroups(selectedSliceName);    
@@ -135,38 +154,45 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
   
     setMcc(selectedSlice?.["site-info"].plmn?.mcc || "");
     setMnc(selectedSlice?.["site-info"].plmn?.mnc || "");
-    console.error(selectedSlice);
-    //setImsiError(null);
+    selectSlice(selectedSlice ? selectedSlice : null)
+    const localMcc = selectedSlice?.["site-info"].plmn?.mcc || "";
+    const localMnc = selectedSlice?.["site-info"].plmn?.mnc || "";
 
     formik.setValues({
       ...formik.values,
       selectedSlice: selectedSliceName,
       deviceGroup: filteredDeviceGroupOptions.length > 1 ? "" : filteredDeviceGroupOptions[0] || "",
+      imsiPrefix: `${localMcc}${localMnc}`
     });
-
-    //console.error(formik.values.rawImsi);
-    //console.error(`${mcc}${mnc}`);
-    //console.error(formik.values.rawImsi.startsWith(`${mcc}${mnc}`));
-
-    //if (formik.values.rawImsi !== "" && !formik.values.rawImsi.startsWith(`${mcc}${mnc}`)) {
-    //  console.error("do not match");
-    //  setImsiError("IMSI do not match the Network Slice.")
-    //}
-    
   };
-  
+
+  const handleSliceChangeEdit = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedSliceName = e.target.value;
+    const filteredDeviceGroupOptions = getFilteredDeviceGroups(selectedSliceName);
+    const selectedSlice = networkSliceItems.find(slice => slice["slice-name"] === selectedSliceName);
+    selectSlice(selectedSlice ? selectedSlice : null)
+    formik.setValues({
+      ...formik.values,
+      selectedSlice: selectedSliceName,
+      deviceGroup: filteredDeviceGroupOptions.length > 1 ? "" : filteredDeviceGroupOptions[0] || "",
+    });    
+  };
+
+  const handleSliceChange = isEdit ? handleSliceChangeEdit: handleSliceChangeCreate;
+
   useEffect(() => {
-    if (formik.values.rawImsi !== "" && !formik.values.rawImsi.startsWith(`${mcc}${mnc}`)) {
+    if (formik.values.imsiPrefix !== "" && formik.values.imsiPrefix !== `${mcc}${mnc}`) {
       setImsiError("IMSI does not match the Network Slice (MCC and MNC).");
     }
     else {
       setImsiError(null);
     }
-  }, [mcc, mnc, formik.values.rawImsi]); 
+  }, [mcc, mnc, formik.values.imsiPrefix]); 
 
   const deviceGroupOptions = useMemo(() => getFilteredDeviceGroups(formik.values.selectedSlice), [
     formik.values.selectedSlice,
   ]);
+
 
   const handleGenerateImsi = async () => {
     if (!mcc || !mnc) {
@@ -177,7 +203,7 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
 
     formik.setValues({
       ...formik.values,
-      rawImsi: imsi,
+      msin: imsi.slice(-10),
     });
     //setImsiError(null);
   };
@@ -227,7 +253,10 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
           }
           options={[
             { disabled: true, label: "Select an option", value: "" },
-            ...networkSliceItems
+            ...(isEdit
+              ? getEditFilteredNetworkSlices(mcc, mnc)
+              : networkSliceItems
+            )
               .filter((slice) => slice["slice-name"]) // Ensure only valid entries are included
               .map((slice) => ({
                 label: slice["slice-name"],
@@ -245,32 +274,46 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
           error={formik.touched.deviceGroup ? formik.errors.deviceGroup : null}
           options={[
             { disabled: true, label: "Select an option", value: "" },
-            ...(deviceGroupOptions?.length
-              ? deviceGroupOptions.map((deviceGroupName) => ({
+            ...(deviceGroupNames?.length
+              ? deviceGroupNames
+                .filter((group) =>
+                (selectedSlice?.["site-device-group"] || [initialValues.deviceGroup]).includes(group))
+                .map((deviceGroupName) => ({
                   label: deviceGroupName,
                   value: deviceGroupName,
                 }))
               : [])
           ]}
         />
-        <fieldset><legend>Identifier</legend>
-        {!isEdit && 
-        <div className="p-form__group p-form-validation row">
-          <Button appearance="positive" type="button" onClick={handleGenerateImsi} >
-            Generate
-          </Button>
-        </div>}
-        <Input
-            id="imsi"
-            label="IMSI"
-            type="text"
-            required
-            stacked
-            disabled={isEdit}
-            placeholder="208930100007487"
-            {...formik.getFieldProps("rawImsi")}
-            error={formik.touched.rawImsi && formik.errors.rawImsi ? formik.errors.rawImsi : imsiError }
-          />
+        <fieldset><legend></legend>
+          {!isEdit && 
+          <div className="p-form__group p-form-validation row">
+            <Button appearance="positive" type="button" onClick={handleGenerateImsi} >
+              Generate
+            </Button>
+          </div>}
+          <Form inline>
+            <Input
+              id="imsi-prefix"
+              label="IMSI"
+              type="text"
+              required
+              stacked
+              disabled={true}
+              {...formik.getFieldProps("imsiPrefix")}
+              error={formik.touched.imsiPrefix && formik.errors.imsiPrefix ? formik.errors.imsiPrefix : imsiError }
+              />
+            <Input
+              id="msin"
+              type="text"
+              required
+              stacked
+              disabled={isEdit}
+              placeholder="0100007487"
+              {...formik.getFieldProps("msin")}
+              error={formik.touched.msin && formik.errors.msin ? formik.errors.msin : null }
+              />
+            </Form>
         </fieldset>
         <fieldset><legend>Authentication</legend>
           {!isEdit && 
@@ -330,7 +373,7 @@ export function CreateSubscriberModal({ closeFn }: createNewSubscriberModalProps
   const auth = useAuth()
   const handleSubmit = async (values: SubscriberFormValues) => {
     const subscriberAuthData: SubscriberAuthData = {  
-      rawImsi: values.rawImsi,
+      rawImsi: values.imsiPrefix + values.msin,
       opc: values.opc,
       key: values.key,
       sequenceNumber: values.sequenceNumber
@@ -343,7 +386,8 @@ export function CreateSubscriberModal({ closeFn }: createNewSubscriberModalProps
   };
 
   const initialValues: SubscriberFormValues = {
-    rawImsi: "",
+    imsiPrefix: "",
+    msin: "",
     opc: "",
     key: "",
     sequenceNumber: "",
@@ -374,7 +418,7 @@ type editSubscriberModalProps = {
 export function EditSubscriberModal({ subscriber, previousNetworkSlice, previousDeviceGroup, token, closeFn }: editSubscriberModalProps) {
   const handleSubmit = async (values: SubscriberFormValues) => {
     const subscriberAuthData: SubscriberAuthData = {  
-      rawImsi: values.rawImsi,
+      rawImsi: values.imsiPrefix + values.msin,
       opc: values.opc,
       key: values.key,
       sequenceNumber: values.sequenceNumber
@@ -388,7 +432,8 @@ export function EditSubscriberModal({ subscriber, previousNetworkSlice, previous
   };
 
   const initialValues: SubscriberFormValues = {
-    rawImsi: subscriber.rawImsi,
+    imsiPrefix: subscriber.rawImsi.slice(0, -10),
+    msin: subscriber.rawImsi.slice(-10),
     opc: subscriber.opc,
     key: subscriber.key,
     sequenceNumber: subscriber.sequenceNumber,
