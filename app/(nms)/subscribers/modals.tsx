@@ -8,37 +8,36 @@ import { useAuth } from "@/utils/auth"
 import { useFormik } from "formik";
 import { useQueryClient } from "@tanstack/react-query"
 import { useQuery } from "@tanstack/react-query"
-import { useEffect, useMemo, useState } from "react"
+import { useState } from "react"
 import { OperationError, is401UnauthorizedError}  from "@/utils/errors";
 
 import ErrorNotification from "@/components/ErrorNotification";
 import * as Yup from "yup";
 import { generateUniqueImsi } from "@/utils/sim_configuration/generateImsi";
-import { generateKey } from "crypto";
 import { generateOpc, generateRandomKey } from "@/utils/sim_configuration/generateOpc";
 import { generateSqn } from "@/utils/sim_configuration/generateSqn";
 
 
 interface SubscriberFormValues {
-  imsiPrefix: string;
+  plmnId: string;
   msin: string;
   opc: string;
   key: string;
   sequenceNumber: string;
-  selectedSlice: string;
-  deviceGroup: string;
+  networkSliceName: string;
+  deviceGroupName: string;
 }
 
 const SubscriberSchema = Yup.object().shape({
-  imsiPrefix: Yup.string()
-    .min(5, "IMSI prefix must contain at least 5 digits.")
-    .max(6, "IMSI prefix must contain at most 6 digits.")
+  plmnId: Yup.string()
+    .min(5, "IMSI PLMN ID must contain at least 5 digits.")
+    .max(6, "IMSI PLMN ID must contain at most 6 digits.")
     .matches(/^[0-9]+$/, "Only numbers are allowed.")
-    .required("IMSI is required."),
-    msin: Yup.string()
-    .length(10, "IMSI complement must contain 10 digits." )
+    .required("IMSI PLMN ID is required."),
+  msin: Yup.string()
+    .length(10, "IMSI MSIN must contain 10 digits." )
     .matches(/^[0-9]+$/, "Only numbers are allowed.")
-    .required("IMSI is required."),
+    .required("IMSI MSIN is required."),
   opc: Yup.string()
     .length(32, "OPC must be 32 hexadecimal characters.")
     .matches(/^[A-Fa-f0-9]+$/, "Use valid hexadecimal characters.")
@@ -48,15 +47,15 @@ const SubscriberSchema = Yup.object().shape({
     .matches(/^[A-Fa-f0-9]+$/, "Use valid hexadecimal characters.")
     .required("Key is required."),
   sequenceNumber: Yup.string().required("Sequence number is required."),
-  selectedSlice: Yup.string().required("Network slice selection is required."),
-  deviceGroup: Yup.string().required("Device group selection is required."),
+  networkSliceName: Yup.string().required("Network slice selection is required."),
+  deviceGroupName: Yup.string().required("Device group selection is required."),
 });
 
 interface SubscriberModalProps {
   title: string;
   initialValues: SubscriberFormValues;
   isEdit?: boolean;
-  selectedSlice2?: NetworkSlice;
+  previousSlice?: NetworkSlice;
   onSubmit: (values: any) => void;
   closeFn: () => void
 }
@@ -65,7 +64,7 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
   title,
   initialValues,
   isEdit = false,
-  selectedSlice2 = null,
+  previousSlice = null,
   onSubmit,
   closeFn,
 }) => {
@@ -74,13 +73,9 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
   const [imsiError, setImsiError] = useState<string | null>(null);
   const [networkSliceError, setNetworkSliceError] = useState<string | null>(null);
   const [deviceGroupError, setDeviceGroupError] = useState<string | null>(null);
-  const [mcc, setMcc] = useState<string>(initialValues.imsiPrefix.substring(0, 3));
-  const [mnc, setMnc] = useState<string>(initialValues.imsiPrefix.substring(3));
-  const [selectedSlice, selectSlice] = useState<NetworkSlice | null>(selectedSlice2);
+  const [selectedSlice, selectSlice] = useState<NetworkSlice | null>(previousSlice);
   const queryClient = useQueryClient()
 
-  console.log(`given slice ${selectedSlice2}`)
-  console.log(`use state ${selectedSlice}`)
   const formik = useFormik<SubscriberFormValues>({
     initialValues,
     validationSchema: SubscriberSchema,
@@ -91,6 +86,7 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
         setTimeout(async () => { // Wait 100 ms before invalidating due to a race condition
           await queryClient.invalidateQueries({ queryKey: [queryKeys.deviceGroups] });
           await queryClient.invalidateQueries({ queryKey: [queryKeys.subscribers] });
+          await queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlice] });
         }, 100);
       } catch (error) {
         if (is401UnauthorizedError(error)) {
@@ -137,11 +133,9 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
     return (selectedSlice?.["site-device-group"] || []).filter((group) => deviceGroupNames.includes(group));
   };
 
-  const getDGList = () => {
-    selectedSlice?.["site-device-group"] || [].filter((group) => deviceGroupNames.includes(group))
-  }
-
-  const getEditFilteredNetworkSlices = (mcc: string, mnc: string) => {
+  const getNetworkSliceUsingPlmnId = (plmnId: string) => {
+    const mcc = plmnId.substring(0, 3);
+    const mnc = plmnId.substring(3);
     const selectedSlices = networkSliceItems.filter(
       (slice) =>
         slice["site-info"]?.plmn?.mcc === mcc &&
@@ -155,17 +149,16 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
     const filteredDeviceGroupOptions = getFilteredDeviceGroups(selectedSliceName);    
     const selectedSlice = networkSliceItems.find(slice => slice["slice-name"] === selectedSliceName);
   
-    setMcc(selectedSlice?.["site-info"].plmn?.mcc || "");
-    setMnc(selectedSlice?.["site-info"].plmn?.mnc || "");
+    const mcc = selectedSlice?.["site-info"].plmn?.mcc || "";
+    const mnc = selectedSlice?.["site-info"].plmn?.mnc || "";
     selectSlice(selectedSlice ? selectedSlice : null)
-    const localMcc = selectedSlice?.["site-info"].plmn?.mcc || "";
-    const localMnc = selectedSlice?.["site-info"].plmn?.mnc || "";
+    setImsiError(null);
 
     formik.setValues({
       ...formik.values,
-      selectedSlice: selectedSliceName,
-      deviceGroup: filteredDeviceGroupOptions.length > 1 ? "" : filteredDeviceGroupOptions[0] || "",
-      imsiPrefix: `${localMcc}${localMnc}`
+      networkSliceName: selectedSliceName,
+      deviceGroupName: filteredDeviceGroupOptions.length > 1 ? "" : filteredDeviceGroupOptions[0] || "",
+      plmnId: `${mcc}${mnc}`
     });
   };
 
@@ -176,42 +169,28 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
     selectSlice(selectedSlice ? selectedSlice : null)
     formik.setValues({
       ...formik.values,
-      selectedSlice: selectedSliceName,
-      deviceGroup: filteredDeviceGroupOptions.length > 1 ? "" : filteredDeviceGroupOptions[0] || "",
-    });    
+      networkSliceName: selectedSliceName,
+      deviceGroupName: filteredDeviceGroupOptions.length > 1 ? "" : filteredDeviceGroupOptions[0] || "",
+    });
   };
 
-  const handleSliceChange = isEdit ? handleSliceChangeEdit: handleSliceChangeCreate;
-
-  useEffect(() => {
-    if (formik.values.imsiPrefix !== "" && formik.values.imsiPrefix !== `${mcc}${mnc}`) {
-      setImsiError("IMSI does not match the Network Slice (MCC and MNC).");
-    }
-    else {
-      setImsiError(null);
-    }
-  }, [mcc, mnc, formik.values.imsiPrefix]); 
-
-  const deviceGroupOptions = useMemo(() => getFilteredDeviceGroups(formik.values.selectedSlice), [
-    formik.values.selectedSlice,
-  ]);
-
-
   const handleGenerateImsi = async () => {
-    if (!mcc || !mnc) {
+    if (!formik.values.plmnId) {
       setImsiError("Please select a network slice first.");
       return;
     }
+    const mcc = formik.values.plmnId.substring(0, 3);
+    const mnc = formik.values.plmnId.substring(3);
     const imsi = await generateUniqueImsi(mcc, mnc);
 
     formik.setValues({
       ...formik.values,
       msin: imsi.slice(-10),
     });
-    //setImsiError(null);
+    setImsiError(null);
   };
 
-  const handleGenerateValues = async () => {
+  const handleGenerateAuthValues = async () => {
     const opc = await generateOpc('00112233445566778899AABBCCDDEEFF', '8899AABBCCDDEEFF0011223344556677');
     const key = generateRandomKey();
     const sqn = generateSqn();
@@ -249,15 +228,13 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
           label="Network Slice"
           required
           stacked
-          value={formik.values.selectedSlice}
-          onChange={handleSliceChange}
-          error={
-            formik.touched.selectedSlice ? formik.errors.selectedSlice : null
-          }
+          value={formik.values.networkSliceName}
+          onChange={isEdit ? handleSliceChangeEdit: handleSliceChangeCreate}
+          error={formik.touched.networkSliceName ? formik.errors.networkSliceName : null}
           options={[
             { disabled: true, label: "Select an option", value: "" },
             ...(isEdit
-              ? getEditFilteredNetworkSlices(mcc, mnc)
+              ? getNetworkSliceUsingPlmnId(initialValues.plmnId)
               : networkSliceItems
             )
               .filter((slice) => slice["slice-name"]) // Ensure only valid entries are included
@@ -272,15 +249,15 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
           label="Device Group"
           required
           stacked
-          value={formik.values.deviceGroup}
-          onChange={(event) => formik.setFieldValue("deviceGroup", (event.target.value))}
-          error={formik.touched.deviceGroup ? formik.errors.deviceGroup : null}
+          value={formik.values.deviceGroupName}
+          onChange={(event) => formik.setFieldValue("deviceGroupName", (event.target.value))}
+          error={formik.touched.deviceGroupName ? formik.errors.deviceGroupName : null}
           options={[
             { disabled: true, label: "Select an option", value: "" },
             ...(deviceGroupNames?.length
               ? deviceGroupNames
                 .filter((group) =>
-                (selectedSlice?.["site-device-group"] || selectedSlice2?.["site-device-group"] || []).includes(group))
+                (selectedSlice?.["site-device-group"] || previousSlice?.["site-device-group"] || []).includes(group))
                 .map((deviceGroupName) => ({
                   label: deviceGroupName,
                   value: deviceGroupName,
@@ -303,8 +280,8 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
               required
               stacked
               disabled={true}
-              {...formik.getFieldProps("imsiPrefix")}
-              error={formik.touched.imsiPrefix && formik.errors.imsiPrefix ? formik.errors.imsiPrefix : imsiError }
+              {...formik.getFieldProps("plmnId")}
+              error={formik.touched.plmnId && formik.errors.plmnId ? formik.errors.plmnId : imsiError }
               />
             <Input
               id="msin"
@@ -321,7 +298,7 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
         <fieldset><legend>Authentication</legend>
           {!isEdit && 
             <div className="p-form__group p-form-validation row">
-              <Button appearance="positive" type="button" onClick={handleGenerateValues} >
+              <Button appearance="positive" type="button" onClick={handleGenerateAuthValues} >
                 Generate
               </Button>
             </div>}
@@ -376,26 +353,26 @@ export function CreateSubscriberModal({ closeFn }: createNewSubscriberModalProps
   const auth = useAuth()
   const handleSubmit = async (values: SubscriberFormValues) => {
     const subscriberAuthData: SubscriberAuthData = {  
-      rawImsi: values.imsiPrefix + values.msin,
+      rawImsi: values.plmnId + values.msin,
       opc: values.opc,
       key: values.key,
       sequenceNumber: values.sequenceNumber
     }
     await createSubscriber({
       subscriberData: subscriberAuthData,
-      deviceGroupName: values.deviceGroup,
+      deviceGroupName: values.deviceGroupName,
       token: auth.user ? auth.user.authToken : "",
     });
   };
 
   const initialValues: SubscriberFormValues = {
-    imsiPrefix: "",
+    plmnId: "",
     msin: "",
     opc: "",
     key: "",
     sequenceNumber: "",
-    selectedSlice: "",
-    deviceGroup: "",
+    networkSliceName: "",
+    deviceGroupName: "",
   };
 
   return (
@@ -421,7 +398,7 @@ type editSubscriberModalProps = {
 export function EditSubscriberModal({ subscriber, previousNetworkSlice, previousDeviceGroup, token, closeFn }: editSubscriberModalProps) {
   const handleSubmit = async (values: SubscriberFormValues) => {
     const subscriberAuthData: SubscriberAuthData = {  
-      rawImsi: values.imsiPrefix + values.msin,
+      rawImsi: values.plmnId + values.msin,
       opc: values.opc,
       key: values.key,
       sequenceNumber: values.sequenceNumber
@@ -429,23 +406,23 @@ export function EditSubscriberModal({ subscriber, previousNetworkSlice, previous
     await editSubscriber({
       subscriberData: subscriberAuthData,
       previousDeviceGroup: previousDeviceGroup,
-      newDeviceGroupName: values.deviceGroup,
+      newDeviceGroupName: values.deviceGroupName,
       token: token,
     });
   };
 
   const initialValues: SubscriberFormValues = {
-    imsiPrefix: subscriber.rawImsi.slice(0, -10),
+    plmnId: subscriber.rawImsi.slice(0, -10),
     msin: subscriber.rawImsi.slice(-10),
     opc: subscriber.opc,
     key: subscriber.key,
     sequenceNumber: subscriber.sequenceNumber,
-    selectedSlice: previousNetworkSlice,
-    deviceGroup: previousDeviceGroup,
+    networkSliceName: previousNetworkSlice,
+    deviceGroupName: previousDeviceGroup,
   };
 
   const networkSliceQuery = useQuery<NetworkSlice, Error>({
-    queryKey: ["newkey", token],
+    queryKey: [queryKeys.networkSlice, token],
     queryFn: () => getNetworkSlice(previousNetworkSlice, token ?? ""),
     enabled: token ? true : false,
   })
@@ -457,7 +434,7 @@ export function EditSubscriberModal({ subscriber, previousNetworkSlice, previous
         title={"Edit subscriber: " + `${subscriber.rawImsi}`}
         initialValues={initialValues}
         isEdit={true}
-        selectedSlice2={networkSlice}
+        previousSlice={networkSlice}
         onSubmit={handleSubmit}
         closeFn={closeFn}
       />

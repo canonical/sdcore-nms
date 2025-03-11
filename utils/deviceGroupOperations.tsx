@@ -1,4 +1,4 @@
-import { apiGetNetworkSlice, apiPostNetworkSlice, getNetworkSlices } from "@/utils/networkSliceOperations";
+import { apiPostNetworkSlice, getNetworkSlice, getNetworkSlices } from "@/utils/networkSliceOperations";
 import { NetworkSlice, DeviceGroup } from "@/components/types";
 import { WebconsoleApiError, OperationError } from "@/utils/errors";
 
@@ -147,11 +147,7 @@ export async function createDeviceGroup({
 
     await apiPostDeviceGroup(name, deviceGroupData, token);
 
-    const getNetworkSliceResponse = await apiGetNetworkSlice(networkSliceName, token);
-    var existingSliceData = await getNetworkSliceResponse.json();
-    if (!getNetworkSliceResponse.ok) {
-      throw new WebconsoleApiError(getNetworkSliceResponse.status, existingSliceData.error);
-    }
+    const existingSliceData = await getNetworkSlice(networkSliceName, token);
     if (!existingSliceData["site-device-group"]) {
       existingSliceData["site-device-group"] = [];
     }
