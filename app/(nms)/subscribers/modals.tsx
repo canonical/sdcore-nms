@@ -1,7 +1,7 @@
 import { apiGetAllDeviceGroupNames } from "@/utils/deviceGroupOperations";
 import { Button, Form, Input, ConfirmationButton, Modal, Select } from "@canonical/react-components"
 import { createSubscriber, deleteSubscriber, editSubscriber } from "@/utils/subscriberOperations";
-import { getNetworkSlices } from "@/utils/networkSliceOperations";
+import { getNetworkSlice, getNetworkSlices } from "@/utils/networkSliceOperations";
 import { NetworkSlice, SubscriberAuthData } from "@/components/types";
 import { queryKeys } from "@/utils/queryKeys";
 import { useAuth } from "@/utils/auth"
@@ -56,6 +56,7 @@ interface SubscriberModalProps {
   title: string;
   initialValues: SubscriberFormValues;
   isEdit?: boolean;
+  selectedSlice2?: NetworkSlice;
   onSubmit: (values: any) => void;
   closeFn: () => void
 }
@@ -64,6 +65,7 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
   title,
   initialValues,
   isEdit = false,
+  selectedSlice2 = null,
   onSubmit,
   closeFn,
 }) => {
@@ -74,9 +76,11 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
   const [deviceGroupError, setDeviceGroupError] = useState<string | null>(null);
   const [mcc, setMcc] = useState<string>(initialValues.imsiPrefix.substring(0, 3));
   const [mnc, setMnc] = useState<string>(initialValues.imsiPrefix.substring(3));
-  const [selectedSlice, selectSlice] = useState<NetworkSlice | null>(null);
+  const [selectedSlice, selectSlice] = useState<NetworkSlice | null>(selectedSlice2);
   const queryClient = useQueryClient()
 
+  console.log(`given slice ${selectedSlice2}`)
+  console.log(`use state ${selectedSlice}`)
   const formik = useFormik<SubscriberFormValues>({
     initialValues,
     validationSchema: SubscriberSchema,
@@ -148,7 +152,6 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
 
   const handleSliceChangeCreate = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedSliceName = e.target.value;
-    console.error(networkSliceItems);
     const filteredDeviceGroupOptions = getFilteredDeviceGroups(selectedSliceName);    
     const selectedSlice = networkSliceItems.find(slice => slice["slice-name"] === selectedSliceName);
   
@@ -277,7 +280,7 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
             ...(deviceGroupNames?.length
               ? deviceGroupNames
                 .filter((group) =>
-                (selectedSlice?.["site-device-group"] || [initialValues.deviceGroup]).includes(group))
+                (selectedSlice?.["site-device-group"] || selectedSlice2?.["site-device-group"] || []).includes(group))
                 .map((deviceGroupName) => ({
                   label: deviceGroupName,
                   value: deviceGroupName,
@@ -441,12 +444,20 @@ export function EditSubscriberModal({ subscriber, previousNetworkSlice, previous
     deviceGroup: previousDeviceGroup,
   };
 
+  const networkSliceQuery = useQuery<NetworkSlice, Error>({
+    queryKey: ["newkey", token],
+    queryFn: () => getNetworkSlice(previousNetworkSlice, token ?? ""),
+    enabled: token ? true : false,
+  })
+  const networkSlice = (networkSliceQuery.data as NetworkSlice) || null;
+  console.error(networkSlice)
   return (
     <>
       <SubscriberModal
         title={"Edit subscriber: " + `${subscriber.rawImsi}`}
         initialValues={initialValues}
         isEdit={true}
+        selectedSlice2={networkSlice}
         onSubmit={handleSubmit}
         closeFn={closeFn}
       />

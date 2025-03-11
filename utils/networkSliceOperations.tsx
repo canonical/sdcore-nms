@@ -194,6 +194,20 @@ export async function getNetworkSlices (token: string): Promise<NetworkSlice[]> 
   }
 };
 
+export async function getNetworkSlice(sliceName: string, token: string): Promise<NetworkSlice> {
+  try {
+      const detailResponse = await apiGetNetworkSlice(sliceName, token);
+      const networkSliceData = await detailResponse.json();
+      if (!detailResponse.ok) {
+        throw new WebconsoleApiError(detailResponse.status, networkSliceData.error);
+      }
+      return networkSliceData;
+  } catch (error) {
+    console.error(`Failed to get network slice ${sliceName}: ${error}`);
+    throw error;
+  }
+};
+
 export async function deleteNetworkSlice(name: string, token: string): Promise<void> {
   if (!isValidNetworkSliceName(name)) {
     throw new OperationError(`Error deleting network slice: Invalid name provided ${name}.`);
