@@ -1,14 +1,12 @@
 import { InvalidDataError } from "@/utils/errors";
 import { randomBytes } from "crypto";
 
-export async function generateUniqueImsi(
+export function generateUniqueImsi(
     // 3 digits
     mcc: string,
     // 2 or 3 digits
     mnc: string,
-    // A valid token
-    token: string,
-): Promise<string> {
+): string {
 
     // Validate MCC
     if (!/^\d{3}$/.test(mcc)) {
