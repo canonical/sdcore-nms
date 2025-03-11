@@ -1,6 +1,5 @@
-import {IMSIGenerationError, InvalidDataError} from "@/utils/errors";
+import { InvalidDataError } from "@/utils/errors";
 import { randomBytes } from "crypto";
-import { getAllImsis } from "@/utils/callSubscriberApi"
 
 export async function generateUniqueImsi(
     // 3 digits
@@ -25,27 +24,10 @@ export async function generateUniqueImsi(
         throw new InvalidDataError(errorMessage);
     }
 
-    let attempts = 0;
-    // maxAttempts usage is a workaround until we implement the fix in the Webconsole to
-    // return Conflict (409) error for an existing subscriber.
-    let maxAttempts = 1000;
-
-    while (attempts < maxAttempts) {
-        // Generate 10 random bytes and converts each byte to a single digit (0–9)
-        // Then, join digits to make a string
-        const msin = Array.from(randomBytes(10), byte => byte % 10).join('');
-
-        // Concatenate MCC, MNC, and MSIN
-        const imsi = `${mcc}${mnc}${msin}`;
-        const existingIMSIs = await getAllImsis(token);
-        // Check for uniqueness
-        if (!existingIMSIs.has(imsi)) {
-            return imsi;
-        }
-        attempts++;
-    }
-
-    const errorMessage = `Failed to generate a unique IMSI after ${maxAttempts} attempts using MCC: ${mcc}, MNC: ${mnc}.`;
-    console.error(`generateUniqueImsi Error: ${errorMessage}`);
-    throw new IMSIGenerationError(errorMessage);
+    // Generate 10 random bytes and converts each byte to a single digit (0–9)
+    // Then, join digits to make a string
+    const msin = Array.from(randomBytes(10), byte => Math.floor(byte / 25.6)).join('');
+    // Concatenate MCC, MNC, and MSIN
+    return`${mcc}${mnc}${msin}`;
 }
+

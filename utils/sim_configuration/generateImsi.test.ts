@@ -1,14 +1,8 @@
 import { generateUniqueImsi } from "./generateImsi";
 
 
-jest.mock("../callSubscriberApi", () => ({
-    getAllImsis: jest.fn().mockResolvedValue(new Set(['mock-value'])),
-}));
 describe('IMSI Generator Unit Tests', () => {
     const token = "test-token";
-    afterEach(() => {
-        jest.clearAllMocks();
-    });
     it("should generate a unique IMSI with valid MCC, MNC", async () => {
         const mcc = "310";
         const mnc = "410";

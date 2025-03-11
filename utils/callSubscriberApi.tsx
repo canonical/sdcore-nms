@@ -87,18 +87,3 @@ export async function deleteSubscriber(imsi: string, token: string): Promise<voi
     throw error;
   }
 };
-
-
-export async function getAllImsis(token: string): Promise<Set<string>> {
-  try {
-    const subscribers: Subscriber[] = await apiGetAllSubscribers(token);
-
-    // Extract IMSIs from subscriber list
-    const imsiList: string[] = subscribers.map(subscriber => subscriber.ueId.split("-")[1]);
-    return new Set(imsiList)
-
-  } catch (error) {
-    console.error("Error getting IMSIs from subscribers:", error);
-    throw error;
-  }
-}
