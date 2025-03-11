@@ -46,7 +46,10 @@ const SubscriberSchema = Yup.object().shape({
     .length(32, "Key must be 32 hexadecimal characters." )
     .matches(/^[A-Fa-f0-9]+$/, "Use valid hexadecimal characters.")
     .required("Key is required."),
-  sequenceNumber: Yup.string().required("Sequence number is required."),
+  sequenceNumber: Yup.string()
+  .length(12, "Sequence number must be 12 hexadecimal characters." )
+  .matches(/^[A-Fa-f0-9]+$/, "Use valid hexadecimal characters.")
+  .required("Sequence number is required."),
   networkSliceName: Yup.string().required("Network slice selection is required."),
   deviceGroupName: Yup.string().required("Device group selection is required."),
 });
@@ -190,14 +193,13 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
     setImsiError(null);
   };
 
-  const handleGenerateAuthValues = async () => {
-    const opc = await generateOpc('00112233445566778899AABBCCDDEEFF', '8899AABBCCDDEEFF0011223344556677');
-    const key = generateRandomKey();
+  const handleGenerateAuthValues = () => {
+    const opc = generateOpc();
     const sqn = generateSqn();
     formik.setValues({
       ...formik.values,
-      opc: opc,
-      key: key,
+      opc: opc.opc,
+      key: opc.ki,
       sequenceNumber: sqn,
     });
   };
@@ -422,7 +424,7 @@ export function EditSubscriberModal({ subscriber, previousNetworkSlice, previous
   };
 
   const networkSliceQuery = useQuery<NetworkSlice, Error>({
-    queryKey: [queryKeys.networkSlice, token],
+    queryKey: [queryKeys.networkSlice, token, previousNetworkSlice],
     queryFn: () => getNetworkSlice(previousNetworkSlice, token ?? ""),
     enabled: token ? true : false,
   })
