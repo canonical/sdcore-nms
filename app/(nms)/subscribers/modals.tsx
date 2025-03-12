@@ -1,5 +1,5 @@
 import { apiGetAllDeviceGroupNames } from "@/utils/deviceGroupOperations";
-import { Button, Form, Input, ConfirmationButton, Modal, Select } from "@canonical/react-components"
+import { Button, Form, Input, ConfirmationButton, Modal, Select, Row, Col } from "@canonical/react-components"
 import { createSubscriber, deleteSubscriber, editSubscriber } from "@/utils/subscriberOperations";
 import { generateOpc } from "@/utils/sim_configuration/generateOpc";
 import { generateSqn } from "@/utils/sim_configuration/generateSqn";
@@ -35,7 +35,7 @@ const SubscriberSchema = Yup.object().shape({
     .matches(/^[0-9]+$/, "Only numbers are allowed.")
     .required("IMSI PLMN ID is required."),
   msin: Yup.string()
-    .length(10, "MSIN must contain 10 digits." )
+    .length(10, "IMSI MSIN must contain 10 digits." )
     .matches(/^[0-9]+$/, "Only numbers are allowed.")
     .required("IMSI MSIN is required."),
   opc: Yup.string()
@@ -268,18 +268,22 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
           ]}
         />
         <fieldset><legend></legend>
-          
-          <Form className="p-form__group p-form-validation row" inline>
-            <Input
-              id="plmnId"
-              label="IMSI"
-              type="text"
-              required
-              stacked
-              disabled={true}
-              {...formik.getFieldProps("plmnId")}
-              error={formik.touched.plmnId && formik.errors.plmnId ? formik.errors.plmnId : imsiError }
+          <Row>
+            <Col size={isEdit? 4: 2}>
+              * IMSI
+            </Col>
+            <Col size={4}> 
+              <Input
+                id="plmnId"
+                type="text"
+                required
+                stacked
+                disabled={true}
+                {...formik.getFieldProps("plmnId")}
+                error={formik.touched.plmnId && formik.errors.plmnId ? formik.errors.plmnId : imsiError }
               />
+            </Col> 
+            <Col size={4}>
             <Input
               id="msin"
               type="text"
@@ -289,17 +293,18 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
               placeholder="0100007487"
               {...formik.getFieldProps("msin")}
               error={formik.touched.msin && formik.errors.msin ? formik.errors.msin : null }
-              />
-              {!isEdit && 
-              <div className="p-form__group p-form-validation row">
+            />
+            </Col> 
+            {!isEdit ? 
+              <Col size={2}>          
                 <div className="u-align--right">
                   <Button appearance="positive" type="button" onClick={handleGenerateImsi} >
                     Generate
                   </Button>
                 </div>
-              </div>
+              </Col> : null
             }
-          </Form>
+          </Row>
         </fieldset>
         <fieldset><legend>Authentication</legend>
           {!isEdit && 
