@@ -269,20 +269,16 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
         />
         <fieldset><legend></legend>
           <Row>
-            <Col size={isEdit? 4: 2}>
+            <Col size={4}>
               * IMSI
             </Col>
-            <Col size={4}> 
-              <Input
-                id="plmnId"
-                type="text"
-                required
-                stacked
-                disabled={true}
-                {...formik.getFieldProps("plmnId")}
-                error={formik.touched.plmnId && formik.errors.plmnId ? formik.errors.plmnId : imsiError }
-              />
-            </Col> 
+            <Col size={2}>
+              {
+                isEdit ?
+                  `${previousSlice?.["site-info"]?.plmn?.mcc || ""}${previousSlice?.["site-info"]?.plmn?.mnc || ""}`
+                : `${selectedSlice?.["site-info"]?.plmn?.mcc || ""}${selectedSlice?.["site-info"]?.plmn?.mnc || ""}`
+              }
+            </Col>
             <Col size={4}>
             <Input
               id="msin"
