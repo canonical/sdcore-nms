@@ -195,7 +195,7 @@ export const NetworkSliceModal: React.FC<NetworkSliceModalProps> = ({
           required
           stacked
           placeholder="001"
-          disabled={ isEdit } // Workaround for https://github.com/omec-project/webconsole/issues/200
+          disabled={ isEdit }
           {...formik.getFieldProps("mcc")}
           error={formik.touched.mcc ? formik.errors.mcc : null}
         />
@@ -207,7 +207,7 @@ export const NetworkSliceModal: React.FC<NetworkSliceModalProps> = ({
           required
           stacked
           placeholder="01"
-          disabled={ isEdit } // Workaround for https://github.com/omec-project/webconsole/issues/200
+          disabled={ isEdit }
           {...formik.getFieldProps("mnc")}
           error={formik.touched.mnc ? formik.errors.mnc : null}
         />

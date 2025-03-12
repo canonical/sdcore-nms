@@ -1,6 +1,9 @@
 import { apiGetAllDeviceGroupNames } from "@/utils/deviceGroupOperations";
 import { Button, Form, Input, ConfirmationButton, Modal, Select } from "@canonical/react-components"
 import { createSubscriber, deleteSubscriber, editSubscriber } from "@/utils/subscriberOperations";
+import { generateOpc } from "@/utils/sim_configuration/generateOpc";
+import { generateSqn } from "@/utils/sim_configuration/generateSqn";
+import { generateUniqueImsi } from "@/utils/sim_configuration/generateImsi";
 import { getNetworkSlice, getNetworkSlices } from "@/utils/networkSliceOperations";
 import { NetworkSlice, SubscriberAuthData } from "@/components/types";
 import { queryKeys } from "@/utils/queryKeys";
@@ -13,9 +16,6 @@ import { OperationError, is401UnauthorizedError}  from "@/utils/errors";
 
 import ErrorNotification from "@/components/ErrorNotification";
 import * as Yup from "yup";
-import { generateUniqueImsi } from "@/utils/sim_configuration/generateImsi";
-import { generateOpc, generateRandomKey } from "@/utils/sim_configuration/generateOpc";
-import { generateSqn } from "@/utils/sim_configuration/generateSqn";
 
 
 interface SubscriberFormValues {
@@ -35,7 +35,7 @@ const SubscriberSchema = Yup.object().shape({
     .matches(/^[0-9]+$/, "Only numbers are allowed.")
     .required("IMSI PLMN ID is required."),
   msin: Yup.string()
-    .length(10, "IMSI MSIN must contain 10 digits." )
+    .length(10, "MSIN must contain 10 digits." )
     .matches(/^[0-9]+$/, "Only numbers are allowed.")
     .required("IMSI MSIN is required."),
   opc: Yup.string()
@@ -268,15 +268,10 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
           ]}
         />
         <fieldset><legend></legend>
-          {!isEdit && 
-          <div className="p-form__group p-form-validation row">
-            <Button appearance="positive" type="button" onClick={handleGenerateImsi} >
-              Generate
-            </Button>
-          </div>}
-          <Form inline>
+          
+          <Form className="p-form__group p-form-validation row" inline>
             <Input
-              id="imsi-prefix"
+              id="plmnId"
               label="IMSI"
               type="text"
               required
@@ -295,15 +290,27 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
               {...formik.getFieldProps("msin")}
               error={formik.touched.msin && formik.errors.msin ? formik.errors.msin : null }
               />
-            </Form>
+              {!isEdit && 
+              <div className="p-form__group p-form-validation row">
+                <div className="u-align--right">
+                  <Button appearance="positive" type="button" onClick={handleGenerateImsi} >
+                    Generate
+                  </Button>
+                </div>
+              </div>
+            }
+          </Form>
         </fieldset>
         <fieldset><legend>Authentication</legend>
           {!isEdit && 
             <div className="p-form__group p-form-validation row">
-              <Button appearance="positive" type="button" onClick={handleGenerateAuthValues} >
-                Generate
-              </Button>
-            </div>}
+              <div className="u-align--right">
+                <Button  appearance="positive" type="button" onClick={handleGenerateAuthValues} >
+                  Generate
+                </Button>
+              </div>
+            </div>
+          }
           <Input
             id="opc"
             label="OPC"
