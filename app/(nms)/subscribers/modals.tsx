@@ -273,11 +273,13 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
               * IMSI
             </Col>
             <Col size={2}>
+              <div style={{ lineHeight: "36px" }}>
               {
                 isEdit ?
                   `${previousSlice?.["site-info"]?.plmn?.mcc || ""}${previousSlice?.["site-info"]?.plmn?.mnc || ""}`
                 : `${selectedSlice?.["site-info"]?.plmn?.mcc || ""}${selectedSlice?.["site-info"]?.plmn?.mnc || ""}`
               }
+              </div>
             </Col>
             <Col size={4}>
             <Input
@@ -288,7 +290,7 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
               disabled={isEdit}
               placeholder="0100007487"
               {...formik.getFieldProps("msin")}
-              error={formik.touched.msin && formik.errors.msin ? formik.errors.msin : null }
+              error={formik.touched.msin && formik.errors.msin ? formik.errors.msin : imsiError }
             />
             </Col> 
             {!isEdit ? 
