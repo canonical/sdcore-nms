@@ -47,9 +47,9 @@ const SubscriberSchema = Yup.object().shape({
     .matches(/^[A-Fa-f0-9]+$/, "Use valid hexadecimal characters.")
     .required("Key is required."),
   sequenceNumber: Yup.string()
-  .length(12, "Sequence number must be 12 hexadecimal characters." )
-  .matches(/^[A-Fa-f0-9]+$/, "Use valid hexadecimal characters.")
-  .required("Sequence number is required."),
+    .length(12, "Sequence number must be 12 hexadecimal characters." )
+    .matches(/^[A-Fa-f0-9]+$/, "Use valid hexadecimal characters.")
+    .required("Sequence number is required."),
   networkSliceName: Yup.string().required("Network slice selection is required."),
   deviceGroupName: Yup.string().required("Device group selection is required."),
 });
@@ -269,9 +269,7 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
         />
         <fieldset><legend></legend>
           <Row>
-            <Col size={4}>
-              * IMSI
-            </Col>
+            <Col size={4}>* IMSI</Col>
             <Col size={1}>
               <div style={{ lineHeight: "36px", color: isEdit || !selectedSlice ? "#999" : "inherit"}}>
               {
@@ -294,25 +292,21 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
             />
             </Col> 
             {!isEdit ? 
-              <Col size={2}>          
-                <div className="u-align--right">
-                  <Button appearance="positive" type="button" onClick={handleGenerateImsi} >
-                    Generate
-                  </Button>
-                </div>
-              </Col> : null
+              <Col size={2}><div className="u-align--right">
+                <Button appearance="positive" type="button" onClick={handleGenerateImsi} >
+                  Generate
+                </Button>
+              </div></Col> : null
             }
           </Row>
         </fieldset>
         <fieldset><legend>Authentication</legend>
           {!isEdit && 
-            <div className="p-form__group p-form-validation row">
-              <div className="u-align--right">
-                <Button  appearance="positive" type="button" onClick={handleGenerateAuthValues} >
-                  Generate
-                </Button>
-              </div>
-            </div>
+            <div className="p-form__group p-form-validation row"><div className="u-align--right">
+              <Button  appearance="positive" type="button" onClick={handleGenerateAuthValues} >
+                Generate
+              </Button>
+            </div></div>
           }
           <Input
             id="opc"

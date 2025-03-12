@@ -61,11 +61,11 @@ export type SubscriberData = {
   AuthenticationSubscription: {
     authenticationMethod: string;
     permanentKey: {
-      permanentKeyValue: string; // KEY IN FORM
+      permanentKeyValue: string;
       encryptionKey: number;
       encryptionAlgorithm: number;
     },
-    sequenceNumber: string; // SEQ in FORM
+    sequenceNumber: string;
     authenticationManagementField: string;
     milenage: {
       op: {
@@ -75,7 +75,7 @@ export type SubscriberData = {
       }
     },
     opc: {
-      opcValue: string; // OPC VALIE IN FORM
+      opcValue: string;
       encryptionKey: number;
       encryptionAlgorithm: number;
     }

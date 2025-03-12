@@ -69,7 +69,7 @@ hotswap: artifacts/webconsole examples/config/webuicfg.yaml
 	lxc exec nms -- docker exec nms pebble restart nms
 
 logs:
-	lxc exec nms -- docker logs nms --tail 100
+	lxc exec nms -- docker logs nms --tail 20
 
 clean:
 	rm -rf $(BUILD_FOLDER)
