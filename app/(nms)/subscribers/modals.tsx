@@ -272,16 +272,16 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
             <Col size={4}>
               * IMSI
             </Col>
-            <Col size={2}>
-              <div style={{ lineHeight: "36px" }}>
+            <Col size={1}>
+              <div style={{ lineHeight: "36px", color: isEdit || !selectedSlice ? "#999" : "inherit"}}>
               {
                 isEdit ?
                   `${previousSlice?.["site-info"]?.plmn?.mcc || ""}${previousSlice?.["site-info"]?.plmn?.mnc || ""}`
-                : `${selectedSlice?.["site-info"]?.plmn?.mcc || ""}${selectedSlice?.["site-info"]?.plmn?.mnc || ""}`
+                : `${selectedSlice?.["site-info"]?.plmn?.mcc || "000"}${selectedSlice?.["site-info"]?.plmn?.mnc || "00"}`
               }
               </div>
             </Col>
-            <Col size={4}>
+            <Col size={isEdit ? 7 : 5}>
             <Input
               id="msin"
               type="text"
