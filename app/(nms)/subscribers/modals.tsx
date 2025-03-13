@@ -268,36 +268,40 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
           ]}
         />
         <fieldset><legend></legend>
-          <Row>
-            <Col size={4}>* IMSI</Col>
-            <Col size={1}>
-              <div style={{ lineHeight: "36px", color: isEdit || !selectedSlice ? "#999" : "inherit"}}>
+          <Row className={"p-form__group p-form-validation"}  style={{ maxWidth: "800px" }}>
+            <Col size={4} >* IMSI</Col>
+            <Col size={8} >
+              <Row className="p-form__control" style={{ display : "flex" }}>
+              <Col size={2}>
+              <label className="p-form__label" style={{color: isEdit || !selectedSlice ? "#999" : "inherit"}}>
               {
                 isEdit ?
                   `${previousSlice?.["site-info"]?.plmn?.mcc || ""}${previousSlice?.["site-info"]?.plmn?.mnc || ""}`
-                : `${selectedSlice?.["site-info"]?.plmn?.mcc || "000"}${selectedSlice?.["site-info"]?.plmn?.mnc || "00"}`
+                : `${selectedSlice?.["site-info"]?.plmn?.mcc || "000"}${selectedSlice?.["site-info"]?.plmn?.mnc || "000"}`
               }
-              </div>
-            </Col>
-            <Col size={isEdit ? 7 : 5}>
+              </label>
+              </Col>
+              <Col size={isEdit ? 5 : 4}>
             <Input
               id="msin"
               type="text"
               required
-              stacked
               disabled={isEdit}
               placeholder="0100007487"
               {...formik.getFieldProps("msin")}
               error={formik.touched.msin && formik.errors.msin ? formik.errors.msin : imsiError }
             />
-            </Col> 
+            </Col>
+
             {!isEdit ? 
               <Col size={2}><div className="u-align--right">
                 <Button appearance="positive" type="button" onClick={handleGenerateImsi} >
                   Generate
                 </Button>
-              </div></Col> : null
+            </div></Col> : null
             }
+            </Row>
+            </Col>
           </Row>
         </fieldset>
         <fieldset><legend>Authentication</legend>

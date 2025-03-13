@@ -114,23 +114,18 @@ export default function Subscribers() {
         { content: subscriber.deviceGroupName },
         {
           content:
-          <div>
             <Button
               appearance=""
               className="u-no-margin--bottom"
-              onClick={() => {
-                setModalData({
-                  subscriber: subscriber,
-                  action: EDIT,
-                });
-              }}
+              onClick={() => {setModalData({ subscriber: subscriber, action: EDIT, });}}
               title="Edit"
             >
               Edit
-            </Button>
-            <DeleteSubscriberButton rawImsi={subscriber.rawImsi} />
-          </div>,
-          className:"u-align--right",
+            </Button>,
+            className:"u-align--right",
+        },
+        {
+          content: <DeleteSubscriberButton rawImsi={subscriber.rawImsi} />, 
         },
       ],
     };
@@ -138,7 +133,7 @@ export default function Subscribers() {
 
   return (
     <>
-      <PageHeader title={`Subscribers (${subscribers.length})`} colSize={10}>
+      <PageHeader title={`Subscribers (${subscribers.length})`} colSize={11}>
         <Button
           hasIcon
           appearance="base"
@@ -151,7 +146,7 @@ export default function Subscribers() {
           Create
         </Button>
       </PageHeader>
-      <PageContent colSize={8}>
+      <PageContent colSize={9}>
         <MainTable
           defaultSort='"abcd"'
           defaultSortDirection="ascending"
@@ -159,9 +154,10 @@ export default function Subscribers() {
             { content: "IMSI" },
             { content: "Network Slice" },
             { content: "Device Group" },
+            { content: "" },
             {
               content: "Actions",
-              className:"u-align--right",
+              className:"u-align--center",
             },
           ]}
           rows={tableContent}
