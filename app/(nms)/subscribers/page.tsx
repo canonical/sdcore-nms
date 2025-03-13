@@ -42,7 +42,7 @@ export default function Subscribers() {
   })
 
   const deviceGroupQuery = useQuery<string[], Error>({
-    queryKey: [queryKeys.deviceGroups, auth.user?.authToken],
+    queryKey: [queryKeys.deviceGroupNames, auth.user?.authToken],
     queryFn: () => apiGetAllDeviceGroupNames(auth.user?.authToken ?? ""),
     enabled: auth.user ? true : false,
   })
