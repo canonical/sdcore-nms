@@ -28,3 +28,4 @@ export function generateUniqueImsi(
     // Concatenate MCC, MNC, and MSIN
     return`${mcc}${mnc}${msin}`;
 }
+

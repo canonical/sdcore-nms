@@ -38,10 +38,3 @@ export class InvalidDataError extends Error {
     this.name = "InvalidDataError";
   }
 }
-
-export class IMSIGenerationError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "IMSIGenerationError";
-  }
-}
