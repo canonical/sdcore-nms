@@ -177,14 +177,14 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
     });
   };
 
-  const handleGenerateImsi = async () => {
+  const handleGenerateImsi = () => {
     if (!formik.values.plmnId) {
       setImsiError("Please select a network slice first.");
       return;
     }
     const mcc = formik.values.plmnId.substring(0, 3);
     const mnc = formik.values.plmnId.substring(3);
-    const imsi = await generateUniqueImsi(mcc, mnc);
+    const imsi = generateUniqueImsi(mcc, mnc);
 
     formik.setValues({
       ...formik.values,
