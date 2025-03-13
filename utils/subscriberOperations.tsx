@@ -1,6 +1,7 @@
-import { apiPostDeviceGroup, getDeviceGroup } from "@/utils/deviceGroupOperations";
+import { apiPostDeviceGroup, getDeviceGroup, getDeviceGroups } from "@/utils/deviceGroupOperations";
 import { is404NotFoundError, OperationError, WebconsoleApiError }  from "@/utils/errors";
-import { SubscriberAuthData, SubscriberData, SubscriberId } from "@/components/types";
+import { DeviceGroup, SubscriberAuthData, SubscriberData, SubscriberId, SubscriberTableData } from "@/components/types";
+import { getNetworkSlices } from "./networkSliceOperations";
 
 
 function isValidSubscriberRawImsi(rawImsi: string): boolean {
@@ -90,15 +91,17 @@ export async function deleteSubscriber(rawImsi: string, token: string): Promise<
   }
 };
 
-export async function getSubscribersAuthData(token: string): Promise<SubscriberAuthData[]> {
+export async function getSubscribersTableData(token: string): Promise<SubscriberTableData[]> {
   try {
     var subscriberNames = await apiGetAllSubscribersIds(token);
-
+    const deviceGroups = await getDeviceGroups(token);
     const allSubscribers = await Promise.all(
-      subscriberNames.map(async (subscriber: SubscriberId) =>
-        await getSubscriberAuthData(subscriber.ueId, token),
-      ),
-    );
+      subscriberNames.map(async (subscriber: SubscriberId) => {
+        const subscriberAuthData = await getSubscriberAuthData(subscriber.ueId, token);
+        const parents = findDeviceGroupByImsi(subscriber.ueId.split("-")[1], deviceGroups);
+          return { ...subscriberAuthData, networkSliceName: parents?.networkSliceName || "", deviceGroupName: parents?.deviceGroupName || "" };
+        })
+      );
     return allSubscribers.filter((item) => item !== undefined);
 
   } catch (error) {
@@ -106,6 +109,22 @@ export async function getSubscribersAuthData(token: string): Promise<SubscriberA
     throw error;
   }
 };
+
+const findDeviceGroupByImsi = (
+  rawImsi: string,
+  deviceGroups: DeviceGroup[]
+): { deviceGroupName: string; networkSliceName: string } | null => {
+  for (const deviceGroup of deviceGroups) {
+    if (deviceGroup.imsis && deviceGroup.imsis.includes(rawImsi)) {
+      return {
+        deviceGroupName: deviceGroup["group-name"],
+        networkSliceName: deviceGroup["network-slice"] ?? ""
+      };
+    }
+  }
+  return null;
+};
+
 
 async function getSubscriberAuthData(ueId: string, token: string): Promise<SubscriberAuthData> {
   try {

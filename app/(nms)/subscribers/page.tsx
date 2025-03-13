@@ -1,11 +1,11 @@
 "use client";
 
 import { Button, MainTable } from "@canonical/react-components"
-import { getDeviceGroups } from "@/utils/deviceGroupOperations";
+import { apiGetAllDeviceGroupNames } from "@/utils/deviceGroupOperations";
 import { apiGetAllNetworkSlices } from "@/utils/networkSliceOperations";
-import { getSubscribersAuthData } from "@/utils/subscriberOperations";
+import { getSubscribersTableData } from "@/utils/subscriberOperations";
 import { CreateSubscriberModal, DeleteSubscriberButton, EditSubscriberModal } from "@/app/(nms)/subscribers/modals";
-import { DeviceGroup, SubscriberAuthData } from "@/components/types";
+import { SubscriberTableData } from "@/components/types";
 import { is401UnauthorizedError }  from "@/utils/errors";
 import { MainTableRow } from "@canonical/react-components/dist/components/MainTable/MainTable"
 import { queryKeys } from "@/utils/queryKeys";
@@ -26,21 +26,8 @@ const CREATE = "create" as const;
 const EDIT = "edit" as const;
 
 type modalData = {
-  subscriber: SubscriberAuthData;
-  networkSliceName: string;
-  deviceGroupName: string;
+  subscriber: SubscriberTableData;
   action: typeof CREATE | typeof EDIT;
-}
-
-function findDeviceGroupByImsi(deviceGroups: DeviceGroup[], imsi: string): {
-  deviceGroupName: string;  
-  networkSliceName: string;
-} | null {
-  const foundGroup = deviceGroups.find(group => group.imsis.includes(imsi));
-
-  return foundGroup 
-    ? { deviceGroupName: foundGroup["group-name"], networkSliceName: foundGroup["network-slice"] ?? "" }
-    : null;
 }
 
 export default function Subscribers() {
@@ -54,15 +41,15 @@ export default function Subscribers() {
     enabled: auth.user ? true : false,
   })
 
-  const deviceGroupQuery = useQuery<DeviceGroup[], Error>({
-    queryKey: [queryKeys.deviceGroups, auth.user?.authToken],
-    queryFn: () => getDeviceGroups(auth.user?.authToken ?? ""),
+  const deviceGroupQuery = useQuery<string[], Error>({
+    queryKey: [queryKeys.deviceGroupNames, auth.user?.authToken],
+    queryFn: () => apiGetAllDeviceGroupNames(auth.user?.authToken ?? ""),
     enabled: auth.user ? true : false,
   })
 
-  const subscribersQuery = useQuery<SubscriberAuthData[], Error>({
+  const subscribersQuery = useQuery<SubscriberTableData[], Error>({
     queryKey: [queryKeys.subscribers, auth.user?.authToken],
-    queryFn: () => getSubscribersAuthData(auth.user?.authToken ?? ""),
+    queryFn: () => getSubscribersTableData(auth.user?.authToken ?? ""),
     enabled: auth.user ? true : false,
   })
 
@@ -110,7 +97,7 @@ export default function Subscribers() {
       <>
         <EmptyStatePage
           title="No subscriber available"
-          onClick={() => setModalData({ subscriber: {} as SubscriberAuthData, networkSliceName:"", deviceGroupName:"", action: CREATE })}
+          onClick={() => setModalData({ subscriber: {} as SubscriberTableData, action: CREATE })}
           buttonText="Create"
         ></EmptyStatePage>
         {modalData?.action == CREATE && <CreateSubscriberModal closeFn={() => setModalData(null)} />}
@@ -123,6 +110,8 @@ export default function Subscribers() {
       key: subscriber.rawImsi,
       columns: [
         { content: subscriber.rawImsi },
+        { content: subscriber.networkSliceName },
+        { content: subscriber.deviceGroupName },
         {
           content:
           <div>
@@ -130,11 +119,8 @@ export default function Subscribers() {
               appearance=""
               className="u-no-margin--bottom"
               onClick={() => {
-                const subscriberDeviceGroup = findDeviceGroupByImsi(deviceGroups, subscriber.rawImsi);
                 setModalData({
                   subscriber: subscriber,
-                  networkSliceName: subscriberDeviceGroup?.networkSliceName || "",
-                  deviceGroupName: subscriberDeviceGroup?.deviceGroupName || "",
                   action: EDIT,
                 });
               }}
@@ -152,7 +138,7 @@ export default function Subscribers() {
 
   return (
     <>
-      <PageHeader title={`Subscribers (${subscribers.length})`}>
+      <PageHeader title={`Subscribers (${subscribers.length})`} colSize={10}>
         <Button
           hasIcon
           appearance="base"
@@ -161,16 +147,18 @@ export default function Subscribers() {
         >
           <SyncOutlinedIcon style={{ color: "#666" }} />
         </Button>
-        <Button appearance="positive" onClick={() => setModalData({ subscriber: {} as SubscriberAuthData, networkSliceName:"", deviceGroupName:"", action: CREATE })}>
+        <Button appearance="positive" onClick={() => setModalData({ subscriber: {} as SubscriberTableData, action: CREATE })}>
           Create
         </Button>
       </PageHeader>
-      <PageContent>
+      <PageContent colSize={8}>
         <MainTable
           defaultSort='"abcd"'
           defaultSortDirection="ascending"
           headers={[
             { content: "IMSI" },
+            { content: "Network Slice" },
+            { content: "Device Group" },
             {
               content: "Actions",
               className:"u-align--right",
@@ -182,8 +170,6 @@ export default function Subscribers() {
       {modalData?.action == CREATE && <CreateSubscriberModal closeFn={() => setModalData(null)} />}
       {modalData?.action == EDIT && <EditSubscriberModal
                                       subscriber={modalData.subscriber}
-                                      previousNetworkSlice={modalData.networkSliceName || ""}
-                                      previousDeviceGroup={modalData.deviceGroupName || ""}
                                       token={auth.user?.authToken ?? ""}
                                       closeFn={() => setModalData(null)}
                                     />

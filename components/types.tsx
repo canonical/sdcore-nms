@@ -89,6 +89,15 @@ export type SubscriberAuthData = {
   sequenceNumber: string;
 }
 
+export type SubscriberTableData = {
+  rawImsi: string;
+  opc: string;
+  key: string;
+  sequenceNumber: string;
+  networkSliceName: string;
+  deviceGroupName: string;
+}
+
 export type User = {
   exp: number
   role: number
