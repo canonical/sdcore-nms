@@ -5,7 +5,7 @@ import { generateOpc } from "@/utils/sim_configuration/generateOpc";
 import { generateSqn } from "@/utils/sim_configuration/generateSqn";
 import { generateUniqueImsi } from "@/utils/sim_configuration/generateImsi";
 import { getNetworkSlice, getNetworkSlices } from "@/utils/networkSliceOperations";
-import { NetworkSlice, SubscriberAuthData } from "@/components/types";
+import { NetworkSlice, SubscriberAuthData, SubscriberTableData } from "@/components/types";
 import { queryKeys } from "@/utils/queryKeys";
 import { useAuth } from "@/utils/auth"
 import { useFormik } from "formik";
@@ -394,14 +394,12 @@ export function CreateSubscriberModal({ closeFn }: createNewSubscriberModalProps
 };
 
 type editSubscriberModalProps = {
-  subscriber: SubscriberAuthData;
-  previousNetworkSlice: string;
-  previousDeviceGroup: string;
+  subscriber: SubscriberTableData;
   token: string;
   closeFn: () => void;
 }
 
-export function EditSubscriberModal({ subscriber, previousNetworkSlice, previousDeviceGroup, token, closeFn }: editSubscriberModalProps) {
+export function EditSubscriberModal({ subscriber, token, closeFn }: editSubscriberModalProps) {
   const handleSubmit = async (values: SubscriberFormValues) => {
     const subscriberAuthData: SubscriberAuthData = {  
       rawImsi: values.plmnId + values.msin,
@@ -411,7 +409,7 @@ export function EditSubscriberModal({ subscriber, previousNetworkSlice, previous
     }
     await editSubscriber({
       subscriberData: subscriberAuthData,
-      previousDeviceGroup: previousDeviceGroup,
+      previousDeviceGroup: subscriber.deviceGroupName,
       newDeviceGroupName: values.deviceGroupName,
       token: token,
     });
@@ -423,13 +421,13 @@ export function EditSubscriberModal({ subscriber, previousNetworkSlice, previous
     opc: subscriber.opc,
     key: subscriber.key,
     sequenceNumber: subscriber.sequenceNumber,
-    networkSliceName: previousNetworkSlice,
-    deviceGroupName: previousDeviceGroup,
+    networkSliceName: subscriber.networkSliceName,
+    deviceGroupName: subscriber.deviceGroupName,
   };
 
   const networkSliceQuery = useQuery<NetworkSlice, Error>({
-    queryKey: [queryKeys.networkSlice, token, previousNetworkSlice],
-    queryFn: () => getNetworkSlice(previousNetworkSlice, token ?? ""),
+    queryKey: [queryKeys.networkSlice, token, subscriber.networkSliceName],
+    queryFn: () => getNetworkSlice(subscriber.networkSliceName, token ?? ""),
     enabled: token ? true : false,
   })
   const networkSlice = (networkSliceQuery.data as NetworkSlice) || null;
