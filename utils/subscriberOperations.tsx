@@ -1,7 +1,6 @@
 import { apiPostDeviceGroup, getDeviceGroup, getDeviceGroups } from "@/utils/deviceGroupOperations";
-import { is404NotFoundError, OperationError, WebconsoleApiError }  from "@/utils/errors";
+import {is404NotFoundError, is409ConflictError, OperationError, WebconsoleApiError} from "@/utils/errors";
 import { DeviceGroup, SubscriberAuthData, SubscriberData, SubscriberId, SubscriberTableData } from "@/components/types";
-import { getNetworkSlices } from "./networkSliceOperations";
 
 
 function isValidSubscriberRawImsi(rawImsi: string): boolean {
@@ -33,13 +32,30 @@ async function apiGetSubscriber(rawImsi: string, token: string): Promise<Respons
     throw new OperationError(`Error getting subscriber: Invalid imsi provided ${rawImsi}.`);
   }
   try {
-    return await fetch(`/api/subscriber/imsi-${rawImsi}`, {
+    const response = await fetch(`/api/subscriber/imsi-${rawImsi}`, {
       method: "GET",
       headers: {
         "Authorization": "Bearer " + token,
         "Content-Type": "application/json",
       },
     });
+
+    if (response.status === 404) {
+      throw new WebconsoleApiError(404, "Subscriber not found");
+    }
+
+    if (!response.ok) {
+      var respData;
+      try {
+        respData = await response.json();
+      } catch {
+        respData = { error: "Malformed JSON response" };
+      }
+      throw new WebconsoleApiError(response.status, respData.error || "Unknown error");
+    }
+
+    return response;
+
   } catch (error) {
     console.error(`Error retrieving subscriber ${rawImsi}: ${error}`);
     throw error;
@@ -59,9 +75,19 @@ async function apiPostSubscriber(rawImsi: string, subscriberData: SubscriberAuth
       },
       body: JSON.stringify(subscriberData),
     });
+
+    if (response.status === 409) {
+      throw new WebconsoleApiError(409, "Subscriber already exists");
+    }
+
     if (!response.ok) {
-      const respData = await response.json();
-      throw new WebconsoleApiError(response.status, respData.error);
+      var respData;
+      try {
+        respData = await response.json();
+      } catch {
+        respData = { error: "Malformed JSON response" };
+      }
+      throw new WebconsoleApiError(response.status, respData.error || "Unknown error");
     }
   } catch (error) {
     console.error(`Error in POST subscriber ${rawImsi}: ${error}`);
@@ -131,8 +157,9 @@ async function getSubscriberAuthData(ueId: string, token: string): Promise<Subsc
     const rawImsi = ueId.split("-")[1];
     const response = await apiGetSubscriber(rawImsi, token);
     const subscriber = await response.json();
-    if (!response.ok) {
-      throw new WebconsoleApiError(response.status, subscriber.error);
+    if (!subscriber) {
+      console.error(`Subscriber data is null or undefined for IMSI ${rawImsi}`);
+      throw new Error(`Empty subscriber data for IMSI ${rawImsi}`);
     }
 
     const subscriberData = subscriber as SubscriberData;
@@ -144,6 +171,10 @@ async function getSubscriberAuthData(ueId: string, token: string): Promise<Subsc
     }
     return subscriberAuthData;
   } catch (error) {
+    if (is404NotFoundError(error)) {
+      console.error(`Subscriber with IMSI ${ueId.split("-")[1]} does not exist.`);
+      throw error
+    }
     console.error(`Error retrieving subscriber ${ueId}: ${error}`);
     throw error;
   }
@@ -163,9 +194,14 @@ export async function filterSubscribers(subscribers: string[], token: string): P
 
 async function doesSubscriberExist(rawImsi: string, token: string) : Promise<boolean>{
   try {
-    const subscribers: SubscriberId[] = await apiGetAllSubscribersIds(token);
-    return subscribers.some(subscriber => subscriber.ueId.split("-")[1] === rawImsi);
+    const response = await apiGetSubscriber(rawImsi, token);
+    return response.ok;
   } catch (error) {
+
+    if (is404NotFoundError(error)) {
+      return false;
+    }
+
     console.error("Error retrieving subscribers:", error);
     throw error;
   }
@@ -185,7 +221,7 @@ export async function createSubscriber({
   try {
     const exists = await doesSubscriberExist(subscriberData.rawImsi, token);
     if (exists){
-      throw new OperationError("Subscriber already exist.");
+      throw new OperationError(`Subscriber with IMSI ${subscriberData.rawImsi} already exists.`);
     }
 
     var existingDeviceGroupData = await getDeviceGroup(deviceGroupName, token);
@@ -196,6 +232,11 @@ export async function createSubscriber({
     await apiPostDeviceGroup(deviceGroupName, existingDeviceGroupData, token);
 
   } catch (error) {
+    if (is409ConflictError(error)) {
+      console.debug(`Subscriber with IMSI ${subscriberData.rawImsi} already exists.`);
+      throw error;
+    }
+
     console.error(`Failed to create subscriber ${subscriberData.rawImsi} : ${error}`);
     throw error;
   }
@@ -221,7 +262,6 @@ export async function editSubscriber({
     if (!exists){
       throw new OperationError("Subscriber does not exist.");
     }
-    await apiPostSubscriber(subscriberData.rawImsi, subscriberData, token);
     if (previousDeviceGroup != newDeviceGroupName) {
       await updatePreviousDeviceGroup(subscriberData.rawImsi, previousDeviceGroup, token);
     }
