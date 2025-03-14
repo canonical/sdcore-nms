@@ -270,34 +270,37 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
         <fieldset><legend></legend>
           <Row>
             <Col size={4}>* IMSI</Col>
-            <Col size={1}>
-              <div style={{ lineHeight: "36px", color: isEdit || !selectedSlice ? "#999" : "inherit"}}>
-              {
-                isEdit ?
-                  `${previousSlice?.["site-info"]?.plmn?.mcc || ""}${previousSlice?.["site-info"]?.plmn?.mnc || ""}`
-                : `${selectedSlice?.["site-info"]?.plmn?.mcc || "000"}${selectedSlice?.["site-info"]?.plmn?.mnc || "00"}`
-              }
-              </div>
+            <Col size={8}>
+              <Row className="p-form__control" style={{ display : "flex" }}>
+                <Col size={2}>
+                  <label className="p-form__label" style={{color: isEdit || !selectedSlice ? "#999" : "inherit"}}>
+                  {
+                    isEdit ?
+                      `${previousSlice?.["site-info"]?.plmn?.mcc || ""}${previousSlice?.["site-info"]?.plmn?.mnc || ""}`
+                    : `${selectedSlice?.["site-info"]?.plmn?.mcc || "000"}${selectedSlice?.["site-info"]?.plmn?.mnc || "000"}`
+                  }
+                  </label>
+                </Col>
+                <Col size={isEdit ? 6 : 4}>
+                  <Input
+                    id="msin"
+                    type="text"
+                    required
+                    disabled={isEdit}
+                    placeholder="0100007487"
+                    {...formik.getFieldProps("msin")}
+                    error={formik.touched.msin && formik.errors.msin ? formik.errors.msin : imsiError }
+                  />
+                </Col>
+                {!isEdit ? 
+                  <Col size={2}><div className="u-align--right">
+                    <Button appearance="positive" type="button" onClick={handleGenerateImsi} >
+                      Generate
+                    </Button>
+                </div></Col> : null
+                }
+              </Row>
             </Col>
-            <Col size={isEdit ? 7 : 5}>
-            <Input
-              id="msin"
-              type="text"
-              required
-              stacked
-              disabled={isEdit}
-              placeholder="0100007487"
-              {...formik.getFieldProps("msin")}
-              error={formik.touched.msin && formik.errors.msin ? formik.errors.msin : imsiError }
-            />
-            </Col> 
-            {!isEdit ? 
-              <Col size={2}><div className="u-align--right">
-                <Button appearance="positive" type="button" onClick={handleGenerateImsi} >
-                  Generate
-                </Button>
-              </div></Col> : null
-            }
           </Row>
         </fieldset>
         <fieldset><legend>Authentication</legend>
