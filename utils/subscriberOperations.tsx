@@ -1,5 +1,5 @@
 import { apiPostDeviceGroup, getDeviceGroup, getDeviceGroups } from "@/utils/deviceGroupOperations";
-import {is404NotFoundError, is409ConflictError, OperationError, WebconsoleApiError} from "@/utils/errors";
+import {is404NotFoundError, is409ConflictError, OperationError, WebconsoleApiError } from "@/utils/errors";
 import { DeviceGroup, SubscriberAuthData, SubscriberData, SubscriberId, SubscriberTableData } from "@/components/types";
 
 
