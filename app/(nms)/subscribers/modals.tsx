@@ -411,10 +411,10 @@ export function EditSubscriberModal({ subscriber, token, closeFn }: editSubscrib
       sequenceNumber: values.sequenceNumber
     }
     await editSubscriber({
-      subscriberData: subscriberAuthData,
+      imsi: subscriberAuthData.rawImsi,
       previousDeviceGroup: subscriber.deviceGroupName,
       newDeviceGroupName: values.deviceGroupName,
-      token: token,
+      token: token
     });
   };
 
