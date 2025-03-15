@@ -105,7 +105,8 @@ export default function Subscribers() {
     );
   }
 
-  const tableContent: MainTableRow[] = subscribers.map((subscriber) => {
+  const sortedSubscribers = [...subscribers].sort((a, b) => a.rawImsi.localeCompare(b.rawImsi));
+  const tableContent: MainTableRow[] = sortedSubscribers.map((subscriber) => {
     return {
       key: subscriber.rawImsi,
       columns: [
@@ -153,8 +154,6 @@ export default function Subscribers() {
       </PageHeader>
       <PageContent colSize={8}>
         <MainTable
-          defaultSort='"abcd"'
-          defaultSortDirection="ascending"
           headers={[
             { content: "IMSI" },
             { content: "Network Slice" },
