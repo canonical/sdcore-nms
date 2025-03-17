@@ -2,7 +2,7 @@
 
 import { ChangeEvent, useState,  } from "react"
 import { Input, PasswordToggle, Button, Form, LoginPageLayout } from "@canonical/react-components";
-import { is401UnauthorizedError } from "@/utils/errors"
+import { is401UnauthorizedError, is404NotFound } from "@/utils/errors"
 import { getStatus, login } from "@/utils/accountQueries"
 import { statusResponse } from "@/components/types"
 import { useCookies } from "react-cookie"
@@ -10,18 +10,15 @@ import { useMutation, useQuery } from "@tanstack/react-query"
 import { useRouter } from "next/navigation"
 
 import ErrorNotification from "@/components/ErrorNotification";
+import Loader from "@/components/Loader";
 
 
-export default function LoginPage() {
+interface LoginModalProps {}
+
+const LoginModal: React.FC<LoginModalProps> = () => {
     const router = useRouter()
     const [cookies, setCookie, removeCookie] = useCookies(['user_token']);
-    const statusQuery = useQuery<statusResponse, Error>({
-        queryKey: ['status'],
-        queryFn: getStatus,
-    })
-    if (statusQuery.data && !statusQuery.data.initialized) {
-        router.push("/initialize")
-    }
+
     const mutation = useMutation({
         mutationFn: login,
         onSuccess: (result) => {
@@ -51,7 +48,7 @@ export default function LoginPage() {
             <LoginPageLayout
                 logo={{
                     src: 'https://assets.ubuntu.com/v1/82818827-CoF_white.svg',
-                    title: 'Network Management System',
+                    title: 'NMS',
                     url: '#'
                 }}
                 title="Log in"
@@ -86,5 +83,31 @@ export default function LoginPage() {
                 </Form>
             </LoginPageLayout>
         </>
+    )
+}
+export default function LoginPage() {
+    const router = useRouter()
+    const statusQuery = useQuery<statusResponse, Error>({
+        queryKey: ['status'],
+        queryFn: getStatus,
+        retry: false,
+    })
+
+    if (statusQuery.status == "pending") {
+        return <Loader/>
+    }
+    
+    if (statusQuery.isError) {
+        if (statusQuery.error && is404NotFound(statusQuery.error)) {
+            return (<><ErrorNotification error={"Endpoint not found. Please enable authentication to use the NMS."} /></>);
+        } else {
+            return (<><ErrorNotification error={"An unexpected error occurred."} /></>);
+        }
+    } else if (statusQuery.isSuccess && !statusQuery.data?.initialized) {
+         router.push("/initialize");
+    }
+    
+    return (
+        <><LoginModal /></>
     )
 }

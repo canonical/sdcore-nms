@@ -11,26 +11,15 @@ import { useRouter } from "next/navigation"
 import { useState, ChangeEvent } from "react"
 
 import ErrorNotification from "@/components/ErrorNotification";
+import Loader from "@/components/Loader";
 
+interface InitializeModalProps {}
 
-export default function Initialize() {
+const InitializeModal: React.FC<InitializeModalProps> = () => {
     const router = useRouter()
     const [cookies, setCookie, removeCookie] = useCookies(['user_token']);
     const [errorText, setErrorText] = useState<string>("")
-    const statusQuery = useQuery<statusResponse, Error>({
-        queryKey: ['status'],
-        queryFn: getStatus
-    })
-    if (statusQuery.status === "error"){
-        if (is404NotFound(statusQuery.error)){
-            setErrorText("Endpoint not found.");
-        } else {
-            setErrorText("An unexpected error occurred.");
-        }
-    }
-    if (statusQuery.status !== "error" && statusQuery.data && statusQuery.data.initialized) {
-        router.push("/login")
-    }
+
     const loginMutation = useMutation({
         mutationFn: login,
         onSuccess: (result) => {
@@ -120,5 +109,33 @@ export default function Initialize() {
                 </Form>
             </LoginPageLayout>
         </>
+    )
+}
+
+export default function Initialize() {
+    const router = useRouter()
+    const statusQuery = useQuery<statusResponse, Error>({
+        queryKey: ['status'],
+        queryFn: getStatus,
+        retry: false
+    })
+
+    if (statusQuery.status == "pending") {
+        return <Loader/>
+    }
+    
+    if (statusQuery.status === "error"){
+        if (is404NotFound(statusQuery.error)){
+            return (<><ErrorNotification error={"Endpoint not found. Please enable authentication to use the NMS."} /></>);
+        } else {
+            return (<><ErrorNotification error={"An unexpected error occurred."} /></>);
+        }
+    }
+    if (statusQuery.data && statusQuery.data.initialized) {
+        router.push("/login")
+    }
+    
+    return (
+        <><InitializeModal /></>
     )
 }

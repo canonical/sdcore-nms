@@ -60,14 +60,13 @@ export async function changePassword(changePasswordForm: { authToken: string, us
 export async function getStatus() {
     try{
         const response = await fetch("/status")
-        const respData = await response.json();
         if (!response.ok) {
-            throw new WebconsoleApiError(response.status, respData.error);
+            throw new WebconsoleApiError(response.status,"");
         }
+        const respData = await response.json();
         return respData
     } catch (error) {
         console.error(`Error fetching webconsole status: ${error}`);
-        throw error;
     }
 }
 
