@@ -130,8 +130,7 @@ async function getSubscriberAuthData(ueId: string, token: string): Promise<Subsc
     const rawImsi = ueId.split("-")[1];
     const response = await apiGetSubscriber(rawImsi, token);
     if (!response.ok) {
-      console.error(`Error retrieving subscriber data for ${rawImsi}: ${response.status}`);
-      throw new WebconsoleApiError(response.status, `Error retrieving subscriber data from for Imsi ${rawImsi}`);
+      throw new WebconsoleApiError(response.status, `Error retrieving subscriber data for Imsi ${rawImsi}`);
     }
     const subscriberData: SubscriberData = await response.json();
     if (!subscriberData || !subscriberData.ueId || !subscriberData.AuthenticationSubscription) {
@@ -167,14 +166,15 @@ export async function filterSubscribers(subscribers: string[], token: string): P
 async function doesSubscriberExist(rawImsi: string, token: string) : Promise<boolean>{
   try {
     const response = await apiGetSubscriber(rawImsi, token);
-    return response.ok;
-  } catch (error) {
-
-    if (is404NotFoundError(error)) {
+    if (response.ok) {
+      return true;
+    } else if (response.status === 404) {
       return false;
+    } else {
+      throw new WebconsoleApiError(response.status, `Error retrieving subscriber data for Imsi ${rawImsi}`);
     }
-
-    console.error("Error retrieving subscribers:", error);
+  } catch (error) {
+    console.error("Error retrieving subscriber:", error);
     throw error;
   }
 }
