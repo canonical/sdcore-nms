@@ -78,7 +78,7 @@ export default function Initialize() {
                     title: 'NMS',
                     url: '#'
                 }}
-                title="Initialize Network Management Service"
+                title="Initialize Network Management System"
             >
                 <Form>
                     <h4>Create the initial admin user</h4>

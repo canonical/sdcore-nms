@@ -4,4 +4,5 @@ export const queryKeys = {
   subscribers: "subscribers",
   upfs: "upfs",
   gnbs: "gnbs",
+  users: "users",
 };

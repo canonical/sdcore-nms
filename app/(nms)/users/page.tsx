@@ -16,6 +16,7 @@ import Loader from "@/components/Loader"
 import PageContent from "@/components/PageContent"
 import PageHeader from "@/components/PageHeader"
 import SyncOutlinedIcon from "@mui/icons-material/SyncOutlined";
+import { queryKeys } from "@/utils/queryKeys"
 
 
 const CREATE_USER = "create user" as const;
@@ -32,7 +33,7 @@ export default function Users() {
   const auth = useAuth()
   const router = useRouter()
   const query = useQuery<UserEntry[], Error>({
-    queryKey: ['users', auth.user?.authToken],
+    queryKey: [queryKeys.users, auth.user?.authToken],
     queryFn: () => listUsers({ authToken: auth.user ? auth.user.authToken : "" }),
     enabled: auth.user ? true : false,
   })

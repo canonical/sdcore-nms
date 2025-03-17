@@ -71,7 +71,7 @@ export async function getStatus() {
     }
 }
 
-export async function login(userForm: { username: string, password: string }) {
+export async function login(userForm: { username: string, password: string }) : Promise<string> {
     try {
         const response = await fetch("/login", {
             method: "POST",

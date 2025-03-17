@@ -1,7 +1,7 @@
 import { Button, Form, Input, Modal, PasswordToggle } from "@canonical/react-components"
 import { ChangeEvent, useState } from "react"
 import { changePassword, deleteUser, postUser } from "@/utils/accountQueries"
-import { is401UnauthorizedError, is403ForbiddenError } from "@/utils/errors"
+import { is401UnauthorizedError, is403ForbiddenError, is409ConflictError } from "@/utils/errors"
 import { passwordIsValid } from "@/utils/utils"
 import { useAuth } from "@/utils/auth"
 import { UserEntry } from "@/components/types"
@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 
 import ErrorNotification from "@/components/ErrorNotification"
+import { queryKeys } from "@/utils/queryKeys"
 
 
 type accountDeleteActionModalProps = {
@@ -21,7 +22,7 @@ export function DeleteModal({ user, closeFn }: accountDeleteActionModalProps) {
   const deleteMutation = useMutation({
     mutationFn: deleteUser,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] })
+      queryClient.invalidateQueries({ queryKey: [queryKeys.users] })
       closeFn()
     },
     onError: (error) => {
@@ -54,7 +55,7 @@ export function ChangePasswordModal({ user, closeFn }: accountChangePasswordActi
     mutationFn: changePassword,
     onSuccess: () => {
       setErrorText("")
-      queryClient.invalidateQueries({ queryKey: ['users'] })
+      queryClient.invalidateQueries({ queryKey: [queryKeys.users] })
       closeFn()
     },
     onError: (error) => {
@@ -94,21 +95,21 @@ export function ChangePasswordModal({ user, closeFn }: accountChangePasswordActi
             label="Username"
             type="text"
             value={user.username}
-            disabled={true}
+            disabled
           />
           <PasswordToggle
             help="Password must have 8 or more characters, must include at least one capital letter, one lowercase letter, and either a number or a symbol."
             id="password1"
             label="Password"
             onChange={handlePassword1Change}
-            required={true}
+            required
             error={password1Error}
           />
           <PasswordToggle
             id="password2"
             label="Password"
             onChange={handlePassword2Change}
-            required={true}
+            required
             error={password2Error}
           />
         </div>
@@ -128,14 +129,19 @@ export function CreateUserModal({ closeFn }: createNewAccountModalProps) {
   const mutation = useMutation({
     mutationFn: postUser,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["users"] })
+      queryClient.invalidateQueries({ queryKey: [queryKeys.users] })
       setErrorText("")
       closeFn()
     },
     onError: (error: Error) => {
       if (is401UnauthorizedError(error)) { auth.logout(); }
       if (is403ForbiddenError(error)) { router.push("/") }
-      setErrorText("Failed to create user")
+      if (is409ConflictError(error)) { 
+        setErrorText("User already exists")
+      }
+      else {
+        setErrorText("Failed to create user")
+      }
     }
   })
   const [username, setUsername] = useState<string>("")
@@ -151,7 +157,7 @@ export function CreateUserModal({ closeFn }: createNewAccountModalProps) {
   const handlePassword2Change = (event: ChangeEvent<HTMLInputElement>) => { setPassword2(event.target.value) }
   return (
     <Modal
-      title="Create New User"
+      title="Create user"
       buttonRow={
         <>
           <Button
@@ -164,13 +170,14 @@ export function CreateUserModal({ closeFn }: createNewAccountModalProps) {
           <Button onClick={closeFn}>Cancel</Button>
         </>
       }>
+      {errorText && <ErrorNotification error={errorText}/>}
       <Form>
         <div className="p-form__group row">
           <Input
             id="InputUsername"
             label="Username"
             type="text"
-            required={true}
+            required
             onChange={handleUsernameChange}
           />
           <PasswordToggle
@@ -178,19 +185,18 @@ export function CreateUserModal({ closeFn }: createNewAccountModalProps) {
             id="password1"
             label="Password"
             onChange={handlePassword1Change}
-            required={true}
+            required
             error={password1Error}
           />
           <PasswordToggle
             id="password2"
             label="Password"
             onChange={handlePassword2Change}
-            required={true}
+            required
             error={password2Error}
           />
         </div>
       </Form>
-      {errorText && <ErrorNotification error={errorText}/>}
     </Modal>
   )
 }
