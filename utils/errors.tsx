@@ -24,6 +24,11 @@ export function is404NotFoundError(error: Error | unknown): boolean {
   return (error instanceof WebconsoleApiError && error.status === 404);
 }
 
+export function is409ConflictError(error: Error | unknown): boolean {
+  return (error instanceof WebconsoleApiError && error.status === 409);
+}
+
+
 export class OperationError extends Error {
 
   constructor(message: string) {
