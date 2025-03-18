@@ -1,4 +1,4 @@
-import { Button, Form, Input, ConfirmationButton, Modal, Select } from "@canonical/react-components"
+import { Button, Form, Input, Modal } from "@canonical/react-components"
 import { editGnb } from "@/utils/gnbOperations";
 import { GnbItem } from "@/components/types";
 import { useAuth } from "@/utils/auth";
@@ -6,7 +6,7 @@ import { queryKeys } from "@/utils/queryKeys";
 import { useQueryClient } from "@tanstack/react-query"
 import { useFormik } from "formik";
 import { useState } from "react"
-import { OperationError, is401UnauthorizedError}  from "@/utils/errors";
+import { is401UnauthorizedError}  from "@/utils/errors";
 
 import * as Yup from "yup";
 import ErrorNotification from "@/components/ErrorNotification";
@@ -40,7 +40,6 @@ const GnbSchema = Yup.object().shape({
 interface GnbModalProps {
     title: string;
     initialValues: GnbFormValues;
-    isEdit?: boolean;
     onSubmit: (values: any) => void;
     closeFn: () => void
 }
@@ -149,7 +148,6 @@ export const GnbModal: React.FC<GnbModalProps> = ({
         <GnbModal
           title={"Edit gNB: " + `${gnb["name"]}`}
           initialValues={initialValues}
-          isEdit={true}
           onSubmit={handleSubmit}
           closeFn={closeFn}
         />

@@ -14,10 +14,7 @@ export async function getGnbList(token: string): Promise<GnbItem[]> {
     if (!response.ok) {
       throw new WebconsoleApiError(response.status, gnbList.error);
     }
-    return gnbList.map((gnb: GnbItem) => ({
-      ...gnb,
-      tac: Number(gnb.tac),
-    }));
+    return gnbList;
   } catch (error) {
     console.error(`Error retrieving gNB list ${error}`);
     throw error;
@@ -45,7 +42,6 @@ export async function editGnb({
       },
       body: JSON.stringify(
         {
-          "name": name,
           "tac": tac,
         }
       ),
