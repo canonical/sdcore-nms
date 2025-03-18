@@ -2,8 +2,9 @@
 
 import { ChangeEvent, useState,  } from "react"
 import { Input, PasswordToggle, Button, Form, LoginPageLayout } from "@canonical/react-components";
-import { is401UnauthorizedError, is404NotFound } from "@/utils/errors"
+import { is401UnauthorizedError, is404NotFoundError } from "@/utils/errors"
 import { getStatus, login } from "@/utils/accountQueries"
+import { queryKeys } from "@/utils/queryKeys";
 import { statusResponse } from "@/components/types"
 import { useCookies } from "react-cookie"
 import { useMutation, useQuery } from "@tanstack/react-query"
@@ -48,7 +49,7 @@ const LoginModal: React.FC<LoginModalProps> = () => {
             <LoginPageLayout
                 logo={{
                     src: 'https://assets.ubuntu.com/v1/82818827-CoF_white.svg',
-                    title: 'NMS',
+                    title: 'Network Management System',
                     url: '#'
                 }}
                 title="Log in"
@@ -85,20 +86,19 @@ const LoginModal: React.FC<LoginModalProps> = () => {
         </>
     )
 }
+
 export default function LoginPage() {
     const router = useRouter()
     const statusQuery = useQuery<statusResponse, Error>({
-        queryKey: ['status'],
+        queryKey: [queryKeys.status],
         queryFn: getStatus,
         retry: false,
     })
-
     if (statusQuery.status == "pending") {
         return <Loader/>
     }
-    
     if (statusQuery.isError) {
-        if (statusQuery.error && is404NotFound(statusQuery.error)) {
+        if (statusQuery.error && is404NotFoundError(statusQuery.error)) {
             return (<><ErrorNotification error={"Endpoint not found. Please enable authentication to use the NMS."} /></>);
         } else {
             return (<><ErrorNotification error={"An unexpected error occurred."} /></>);
@@ -106,7 +106,6 @@ export default function LoginPage() {
     } else if (statusQuery.isSuccess && !statusQuery.data?.initialized) {
          router.push("/initialize");
     }
-    
     return (
         <><LoginModal /></>
     )

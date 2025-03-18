@@ -6,6 +6,7 @@ export const queryKeys = {
   networkSliceNames: "network-slices-names",
   filteredSubscribers: "filtered-subscribers",
   subscribers: "subscribers",
+  status: "status",
   upfs: "upfs",
   gnbs: "gnbs",
   users: "users",

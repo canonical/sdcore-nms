@@ -88,6 +88,7 @@ export function ChangePasswordModal({ user, closeFn }: accountChangePasswordActi
         </>
       }
     >
+      {errorText && <ErrorNotification error={errorText}/>}
       <Form>
         <div className="p-form__group row">
           <Input
@@ -95,26 +96,25 @@ export function ChangePasswordModal({ user, closeFn }: accountChangePasswordActi
             label="Username"
             type="text"
             value={user.username}
-            disabled
+            disabled={true}
           />
           <PasswordToggle
             help="Password must have 8 or more characters, must include at least one capital letter, one lowercase letter, and either a number or a symbol."
             id="password1"
             label="Password"
             onChange={handlePassword1Change}
-            required
+            required={true}
             error={password1Error}
           />
           <PasswordToggle
             id="password2"
             label="Password"
             onChange={handlePassword2Change}
-            required
+            required={true}
             error={password2Error}
           />
         </div>
       </Form>
-      {errorText && <ErrorNotification error={errorText}/>}
     </Modal>
   )
 }
@@ -137,10 +137,10 @@ export function CreateUserModal({ closeFn }: createNewAccountModalProps) {
       if (is401UnauthorizedError(error)) { auth.logout(); }
       if (is403ForbiddenError(error)) { router.push("/") }
       if (is409ConflictError(error)) { 
-        setErrorText("User already exists")
+        setErrorText("User already exists.")
       }
       else {
-        setErrorText("Failed to create user")
+        setErrorText("An unexpected error occurred.")
       }
     }
   })
@@ -177,7 +177,7 @@ export function CreateUserModal({ closeFn }: createNewAccountModalProps) {
             id="InputUsername"
             label="Username"
             type="text"
-            required
+            required={true}
             onChange={handleUsernameChange}
           />
           <PasswordToggle
@@ -185,14 +185,14 @@ export function CreateUserModal({ closeFn }: createNewAccountModalProps) {
             id="password1"
             label="Password"
             onChange={handlePassword1Change}
-            required
+            required={true}
             error={password1Error}
           />
           <PasswordToggle
             id="password2"
             label="Password"
             onChange={handlePassword2Change}
-            required
+            required={true}
             error={password2Error}
           />
         </div>

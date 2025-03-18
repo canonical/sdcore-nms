@@ -2,38 +2,41 @@
 
 import { Input, PasswordToggle, Button, Form, LoginPageLayout } from "@canonical/react-components";
 import { getStatus, login, postFirstUser } from "@/utils/accountQueries"
-import { is401UnauthorizedError, is404NotFound } from "@/utils/errors";
+import { is401UnauthorizedError, is404NotFoundError } from "@/utils/errors";
 import { passwordIsValid } from "@/utils/utils"
+import { queryKeys } from "@/utils/queryKeys";
 import { statusResponse } from "@/components/types"
 import { useCookies } from "react-cookie"
-import { useMutation, useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useRouter } from "next/navigation"
 import { useState, ChangeEvent } from "react"
 
 import ErrorNotification from "@/components/ErrorNotification";
 import Loader from "@/components/Loader";
 
+
 interface InitializeModalProps {}
 
 const InitializeModal: React.FC<InitializeModalProps> = () => {
-    const router = useRouter()
+    const router = useRouter();
     const [cookies, setCookie, removeCookie] = useCookies(['user_token']);
-    const [errorText, setErrorText] = useState<string>("")
+    const [errorText, setErrorText] = useState<string>("");
+    const queryClient = useQueryClient();
 
     const loginMutation = useMutation({
         mutationFn: login,
         onSuccess: (result) => {
-            setErrorText("")
+            setErrorText("");
             setCookie('user_token', result, {
                 sameSite: true,
                 secure: true,
                 expires: new Date(new Date().getTime() + 60 * 60 * 1000),
             })
-            router.push('/network-configuration')
+            router.push('/network-configuration');
         },
         onError: (error: Error) => {
             if (is401UnauthorizedError(error)) {
-                setErrorText("Incorrect username or password. Please, try again.")
+                setErrorText("Incorrect username or password. Please, try again.");
             } else {
                 setErrorText("An unexpected error occurred.");
             }
@@ -43,7 +46,10 @@ const InitializeModal: React.FC<InitializeModalProps> = () => {
         mutationFn: postFirstUser,
         onSuccess: () => {
             setErrorText("")
-            loginMutation.mutate({ username: username, password: password1 })
+            loginMutation.mutate({ username: username, password: password1 });
+            setTimeout(async () => { // Wait 100 ms before invalidating due to a race condition
+                await queryClient.invalidateQueries({ queryKey: [queryKeys.status] });
+              }, 100);
         },
         onError: (e: Error) => {
             setErrorText("An unexpected error occurred.")
@@ -115,7 +121,7 @@ const InitializeModal: React.FC<InitializeModalProps> = () => {
 export default function Initialize() {
     const router = useRouter()
     const statusQuery = useQuery<statusResponse, Error>({
-        queryKey: ['status'],
+        queryKey: [queryKeys.status],
         queryFn: getStatus,
         retry: false
     })
@@ -123,9 +129,8 @@ export default function Initialize() {
     if (statusQuery.status == "pending") {
         return <Loader/>
     }
-    
     if (statusQuery.status === "error"){
-        if (is404NotFound(statusQuery.error)){
+        if (is404NotFoundError(statusQuery.error)){
             return (<><ErrorNotification error={"Endpoint not found. Please enable authentication to use the NMS."} /></>);
         } else {
             return (<><ErrorNotification error={"An unexpected error occurred."} /></>);
@@ -134,7 +139,6 @@ export default function Initialize() {
     if (statusQuery.data && statusQuery.data.initialized) {
         router.push("/login")
     }
-    
     return (
         <><InitializeModal /></>
     )

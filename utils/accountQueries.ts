@@ -61,7 +61,7 @@ export async function getStatus() {
     try{
         const response = await fetch("/status")
         if (!response.ok) {
-            throw new WebconsoleApiError(response.status,"");
+            throw new WebconsoleApiError(response.status, "Failed to get status");
         }
         const respData = await response.json();
         return respData
