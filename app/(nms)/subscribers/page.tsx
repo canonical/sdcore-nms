@@ -1,280 +1,178 @@
 "use client";
 
-import React, { useState } from "react";
-import {
-  Button,
-  MainTable,
-  ConfirmationButton,
-} from "@canonical/react-components";
-import SubscriberModal from "@/components/SubscriberModal";
-import { deleteSubscriber } from "@/utils/callSubscriberApi";
-import { getSubscribers } from "@/utils/getSubscribers";
-import { getDeviceGroups } from "@/utils/deviceGroupOperations";
-import { getNetworkSlices } from "@/utils/networkSliceOperations";
-import SyncOutlinedIcon from "@mui/icons-material/SyncOutlined";
-import Loader from "@/components/Loader";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Button, MainTable } from "@canonical/react-components"
+import { apiGetAllDeviceGroupNames } from "@/utils/deviceGroupOperations";
+import { apiGetAllNetworkSlices } from "@/utils/networkSliceOperations";
+import { getSubscribersTableData } from "@/utils/subscriberOperations";
+import { CreateSubscriberModal, DeleteSubscriberButton, EditSubscriberModal } from "@/app/(nms)/subscribers/modals";
+import { SubscriberTableData } from "@/components/types";
+import { is401UnauthorizedError }  from "@/utils/errors";
+import { MainTableRow } from "@canonical/react-components/dist/components/MainTable/MainTable"
 import { queryKeys } from "@/utils/queryKeys";
-import PageHeader from "@/components/PageHeader";
-import PageContent from "@/components/PageContent";
-import { useAuth } from "@/utils/auth";
-import {handleRefresh} from "@/utils/refreshQueries";
-import { Subscriber } from "@/components/types";
-import { is401UnauthorizedError } from "@/utils/errors";
+import { useAuth } from "@/utils/auth"
+import { useQuery } from "@tanstack/react-query"
+import { useRouter } from "next/navigation";
+import { useState } from "react"
+
+import EmptyStatePage from "@/components/EmptyStatePage";
 import ErrorNotification from "@/components/ErrorNotification";
+import Loader from "@/components/Loader"
+import PageContent from "@/components/PageContent"
+import PageHeader from "@/components/PageHeader"
+import SyncOutlinedIcon from "@mui/icons-material/SyncOutlined";
 
 
-const addSubscriber = async (newSubscriber: Subscriber, token: string | undefined) => {
-  const response = await fetch("/api/subscribers", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(newSubscriber),
-  });
-  if (!response.ok) {
-    const errorBody = await response.json().catch(() => ({}));
-    throw new Error(
-        errorBody.message || "Failed to add subscriber"
-    );
-  }
-  return response.json();
-};
+const CREATE = "create" as const;
+const EDIT = "edit" as const;
 
-const Subscribers = () => {
-  const queryClient = useQueryClient();
-  const [isCreateModalVisible, setCreateModalVisible] = useState(false);
-  const [isEditModalVisible, setEditModalVisible] = useState(false);
-  const [subscriber, setSubscriber] = useState<Subscriber | undefined>(undefined);
+type modalData = {
+  subscriber: SubscriberTableData;
+  action: typeof CREATE | typeof EDIT;
+}
+
+export default function Subscribers() {
+  const [modalData, setModalData] = useState<modalData | null>(null);
   const auth = useAuth()
+  const router = useRouter();
 
-  const { data: subscribers = [], isLoading: isSubscribersLoading, status: subscribersQueryStatus, error: subscribersQueryError } = useQuery({
+  const networkSlicesQuery = useQuery<string[], Error>({
+    queryKey: [queryKeys.networkSliceNames, auth.user?.authToken],
+    queryFn: () => apiGetAllNetworkSlices(auth.user?.authToken ?? ""),
+    enabled: auth.user ? true : false,
+  })
+
+  const deviceGroupQuery = useQuery<string[], Error>({
+    queryKey: [queryKeys.deviceGroupNames, auth.user?.authToken],
+    queryFn: () => apiGetAllDeviceGroupNames(auth.user?.authToken ?? ""),
+    enabled: auth.user ? true : false,
+  })
+
+  const subscribersQuery = useQuery<SubscriberTableData[], Error>({
     queryKey: [queryKeys.subscribers, auth.user?.authToken],
-    queryFn: () => getSubscribers(auth.user?.authToken || ""),
-    enabled: Boolean(auth.user),
-  });
+    queryFn: () => getSubscribersTableData(auth.user?.authToken ?? ""),
+    enabled: auth.user ? true : false,
+  })
 
-  // Mutation to add a subscriber
-  const addSubscriberMutation = useMutation({
-    mutationFn: (newSubscriber: Subscriber) => addSubscriber(newSubscriber, auth.user?.authToken || ""),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: [queryKeys.subscribers, auth.user?.authToken ?? ""],
-        refetchActive: true,
-      });
-      // Close model
-      setCreateModalVisible(false);
-    },
-  });
+  const queries = [networkSlicesQuery, deviceGroupQuery, subscribersQuery];
+  if (queries.some(q => q.status === "pending") ) { return <Loader/> }
 
-  const handleCreateSubscriber = async (newSubscriber: Subscriber) => {
-    try {
-      await addSubscriberMutation.mutateAsync(newSubscriber);
-    } catch (error) {
-      console.error("Error adding subscriber:", error);
-    }
-  };
-
-  const editSubscriber = async (updatedSubscriber: Subscriber, token: string | undefined) => {
-    const response = await fetch(`/api/subscribers/${updatedSubscriber.ueId}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(updatedSubscriber),
-    });
-
-    if (!response.ok) {
-      const errorBody = await response.json().catch(() => ({}));
-      throw new Error(errorBody.message || "Failed to edit subscriber");
-    }
-
-    return response.json();
-  };
-
-  const editSubscriberMutation = useMutation({
-    mutationFn: (updatedSubscriber: Subscriber) =>
-      editSubscriber(updatedSubscriber, auth.user?.authToken || ""),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: [queryKeys.subscribers, auth.user?.authToken ?? ""],
-        refetchActive: true,
-      });
-      // Close model
-      setEditModalVisible(false);
-    },
-    onError: (error) => {
-      console.error("Error editing subscriber:", error);
-    },
-  });
-
-  const deleteSubscriberWithImsi = async (subscriberImsi: string) => {
-     await deleteSubscriber(subscriberImsi, auth.user?.authToken || "");
-  };
-
-  const deleteSubscriberMutation = useMutation({
-    mutationFn: async (subscriberImsi: string) => {
-      await deleteSubscriberWithImsi(subscriberImsi);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: [queryKeys.subscribers, auth.user?.authToken ?? ""],
-        refetchActive: true,
-      });
-      // Invalidate queries does not work in the first attempt
-      // Hence, window is reloaded.
-      window.location.reload();
-    },
-    onError: (error) => {
-      if (is401UnauthorizedError(error)) { auth.logout(); }
-    },
-  });
-
-  const handleEditSubscriber = async (updatedSubscriber: Subscriber) => {
-    try {
-      editSubscriberMutation.mutate(updatedSubscriber);
-    } catch (error) {
-      console.error("Error editing subscriber:", error);
-    }
-  };
-
-  const handleConfirmDelete = async (subscriberImsi: string) => {
-    try {
-      deleteSubscriberMutation.mutate(subscriberImsi);
-    } catch (error) {
-      console.error("Error deleting subscriber:", error);
-    }
-  }
-
-  const { data: deviceGroups = [], isLoading: isDeviceGroupsLoading } = useQuery({
-    queryKey: [queryKeys.deviceGroups, auth.user?.authToken],
-    queryFn: () => getDeviceGroups(auth.user?.authToken || ""),
-    enabled: Boolean(auth.user),
-  });
-
-  const { data: slices = [], isLoading: isSlicesLoading } = useQuery({
-    queryKey: [queryKeys.networkSlices, auth.user?.authToken],
-    queryFn: () => getNetworkSlices(auth.user?.authToken || ""),
-    enabled: Boolean(auth.user),
-  });
-
-  if (subscribersQueryStatus == "error") {
-    if (is401UnauthorizedError(subscribersQueryError)) {
-      auth.logout()
+  if (queries.some(q => q.status === "error")) {
+    if (queries.some(q => is401UnauthorizedError(q.error))) {
+      auth.logout();
     }
     return (<><ErrorNotification error={"Failed to retrieve subscribers."} /></>);
   }
 
-  const toggleCreateModal = () => setCreateModalVisible((prev) => !prev);
-  const toggleEditModal = () => setEditModalVisible((prev) => !prev);
-
-  const handleEditButton = (subscriber: any) => {
-    setSubscriber(subscriber);
-    toggleEditModal();
+  const networkSlices = networkSlicesQuery.data || [];
+  if (networkSlices.length === 0) {
+    return (
+      <>
+        <EmptyStatePage
+          title="No subscriber available"
+          message="To create a subscriber, first create a network slice and a device group."
+          onClick={() => router.push("/network-configuration")}
+          buttonText="Go to the &quot;Network Slices&quot; page"
+        ></EmptyStatePage>
+      </>
+    );
   }
 
-  const getEditButton = (subscriber: any) => {
-    return <Button
-      appearance=""
-      className="u-no-margin--bottom"
-      shiftClickEnabled
-      showShiftClickHint
-      onClick={() => { handleEditButton(subscriber) }}
-    >
-      Edit
-    </Button>
+  const deviceGroups = deviceGroupQuery.data || [];
+  if (deviceGroups.length === 0) {
+    return (
+      <>
+        <EmptyStatePage
+          title="No subscriber available"
+          message="To create a subscriber, first create a device group."
+          onClick={() => router.push("/device-groups")}
+          buttonText="Go to the &quot;Device Groups&quot; page"
+        ></EmptyStatePage>
+      </>
+    );
   }
 
-  const getDeleteButton = (imsi: string) => {
-    return <ConfirmationButton
-      appearance="negative"
-      className="u-no-margin--bottom"
-      shiftClickEnabled
-      showShiftClickHint
-      confirmationModalProps={{
-        title: "Confirm Delete",
-        confirmButtonLabel: "Delete",
-        onConfirm: () => handleConfirmDelete(imsi),
-        children: (
-          <p>
-            This will permanently delete the subscriber{" "}
-            <b>{imsi}</b>
-            <br />
-            This action cannot be undone.
-          </p>
-        ),
-      }}
-    >
-      Delete
-    </ConfirmationButton>
+  const subscribers = subscribersQuery.data || [];
+  if (subscribers.length === 0) {
+    return (
+      <>
+        <EmptyStatePage
+          title="No subscriber available"
+          onClick={() => setModalData({ subscriber: {} as SubscriberTableData, action: CREATE })}
+          buttonText="Create"
+        ></EmptyStatePage>
+        {modalData?.action == CREATE && <CreateSubscriberModal closeFn={() => setModalData(null)} />}
+      </>
+    );
   }
 
-  const tableContent = subscribers.map((subscriber) => {
-    const rawIMSI = subscriber.ueId.split("-")[1];
+  const sortedSubscribers = [...subscribers].sort((a, b) => a.rawImsi.localeCompare(b.rawImsi));
+  const tableContent: MainTableRow[] = sortedSubscribers.map((subscriber) => {
     return {
-      key: rawIMSI,
+      key: subscriber.rawImsi,
       columns: [
-        { content: rawIMSI },
+        { content: subscriber.rawImsi },
+        { content: subscriber.networkSliceName },
+        { content: subscriber.deviceGroupName },
         {
-          content: (
-            <div className="u-align--right">
-              {getEditButton(subscriber)}
-              {getDeleteButton(rawIMSI)}
-            </div>
-          ),
+          content:
+          <div>
+            <Button
+              appearance=""
+              className="u-no-margin--bottom"
+              onClick={() => {
+                setModalData({
+                  subscriber: subscriber,
+                  action: EDIT,
+                });
+              }}
+              title="Edit"
+            >
+              Edit
+            </Button>
+            <DeleteSubscriberButton rawImsi={subscriber.rawImsi} />
+          </div>,
+          className:"u-align--right",
         },
       ],
     };
   });
 
-  if (isSubscribersLoading || isDeviceGroupsLoading || isSlicesLoading) {
-    return <Loader/>;
-  }
-
   return (
     <>
-      <PageHeader title={`Subscribers (${subscribers.length})`}>
+      <PageHeader title={`Subscribers (${subscribers.length})`} colSize={10}>
         <Button
           hasIcon
           appearance="base"
-          onClick={() => handleRefresh(queryClient, auth.user?.authToken)}
-          title="refresh subscriber list"
+          onClick={() => { subscribersQuery.refetch(), deviceGroupQuery.refetch(), networkSlicesQuery.refetch() }}
+          title="Refresh subscriber list"
         >
           <SyncOutlinedIcon style={{ color: "#666" }} />
         </Button>
-        <Button appearance="positive" onClick={toggleCreateModal}>
+        <Button appearance="positive" onClick={() => setModalData({ subscriber: {} as SubscriberTableData, action: CREATE })}>
           Create
         </Button>
       </PageHeader>
-      <PageContent>
+      <PageContent colSize={8}>
         <MainTable
-          defaultSort='"abcd"'
-          defaultSortDirection="ascending"
           headers={[
             { content: "IMSI" },
-            { content: "Actions", className: "u-align--right" },
+            { content: "Network Slice" },
+            { content: "Device Group" },
+            {
+              content: "Actions",
+              className:"u-align--right",
+            },
           ]}
           rows={tableContent}
         />
       </PageContent>
-      {isCreateModalVisible && (
-          <SubscriberModal
-              toggleModal={toggleCreateModal}
-              onSubmit={(newSubscriber: any) => handleCreateSubscriber(newSubscriber)}
-              slices={slices}
-              deviceGroups={deviceGroups}
-          />)
+      {modalData?.action == CREATE && <CreateSubscriberModal closeFn={() => setModalData(null)} />}
+      {modalData?.action == EDIT && <EditSubscriberModal
+                                      subscriber={modalData.subscriber}
+                                      token={auth.user?.authToken ?? ""}
+                                      closeFn={() => setModalData(null)}
+                                    />
       }
-      {isEditModalVisible &&
-        <SubscriberModal toggleModal={toggleEditModal}
-                         subscriber={subscriber}
-                         slices={slices}
-                         deviceGroups={deviceGroups}
-                         onSubmit={(updatedSubscriber: any) => handleEditSubscriber(updatedSubscriber)}
-        />}
     </>
-  );
-};
-export default Subscribers;
+  )
+}
