@@ -67,6 +67,7 @@ export async function getStatus() {
         return respData
     } catch (error) {
         console.error(`Error fetching webconsole status: ${error}`);
+        throw error;
     }
 }
 

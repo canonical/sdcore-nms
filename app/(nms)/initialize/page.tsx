@@ -129,14 +129,13 @@ export default function Initialize() {
     if (statusQuery.status == "pending") {
         return <Loader/>
     }
-    if (statusQuery.status === "error"){
-        if (is404NotFoundError(statusQuery.error)){
+    if (statusQuery.isError) {
+        if (statusQuery.error && is404NotFoundError(statusQuery.error)) {
             return (<><ErrorNotification error={"Endpoint not found. Please enable authentication to use the NMS."} /></>);
         } else {
             return (<><ErrorNotification error={"An unexpected error occurred."} /></>);
         }
-    }
-    if (statusQuery.data && statusQuery.data.initialized) {
+    } else if (statusQuery.isSuccess && statusQuery.data?.initialized) {
         router.push("/login")
     }
     return (
