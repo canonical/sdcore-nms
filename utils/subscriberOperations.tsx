@@ -1,7 +1,6 @@
 import { apiPostDeviceGroup, getDeviceGroup, getDeviceGroups } from "@/utils/deviceGroupOperations";
-import { is404NotFoundError, OperationError, WebconsoleApiError }  from "@/utils/errors";
+import {is404NotFoundError, is409ConflictError, OperationError, WebconsoleApiError } from "@/utils/errors";
 import { DeviceGroup, SubscriberAuthData, SubscriberData, SubscriberId, SubscriberTableData } from "@/components/types";
-import { getNetworkSlices } from "./networkSliceOperations";
 
 
 function isValidSubscriberRawImsi(rawImsi: string): boolean {
@@ -130,12 +129,15 @@ async function getSubscriberAuthData(ueId: string, token: string): Promise<Subsc
   try {
     const rawImsi = ueId.split("-")[1];
     const response = await apiGetSubscriber(rawImsi, token);
-    const subscriber = await response.json();
     if (!response.ok) {
-      throw new WebconsoleApiError(response.status, subscriber.error);
+      throw new WebconsoleApiError(response.status, `Error retrieving subscriber data for Imsi ${rawImsi}`);
+    }
+    const subscriberData: SubscriberData = await response.json();
+    if (!subscriberData || !subscriberData.ueId || !subscriberData.AuthenticationSubscription) {
+      console.error(`Subscriber data is invalid for IMSI ${rawImsi}`);
+      throw new Error(`Invalid subscriber data for IMSI ${rawImsi}`);
     }
 
-    const subscriberData = subscriber as SubscriberData;
     const subscriberAuthData : SubscriberAuthData = {
       rawImsi: subscriberData.ueId.split("-")[1],
       opc: subscriberData.AuthenticationSubscription?.opc?.opcValue ?? "",
@@ -144,7 +146,7 @@ async function getSubscriberAuthData(ueId: string, token: string): Promise<Subsc
     }
     return subscriberAuthData;
   } catch (error) {
-    console.error(`Error retrieving subscriber ${ueId}: ${error}`);
+    console.error(`Error retrieving subscriber authentication data for ${ueId}: ${error}`);
     throw error;
   }
 };
@@ -163,10 +165,16 @@ export async function filterSubscribers(subscribers: string[], token: string): P
 
 async function doesSubscriberExist(rawImsi: string, token: string) : Promise<boolean>{
   try {
-    const subscribers: SubscriberId[] = await apiGetAllSubscribersIds(token);
-    return subscribers.some(subscriber => subscriber.ueId.split("-")[1] === rawImsi);
+    const response = await apiGetSubscriber(rawImsi, token);
+    if (response.ok) {
+      return true;
+    } else if (response.status === 404) {
+      return false;
+    } else {
+      throw new WebconsoleApiError(response.status, `Error retrieving subscriber data for Imsi ${rawImsi}`);
+    }
   } catch (error) {
-    console.error("Error retrieving subscribers:", error);
+    console.error("Error retrieving subscriber:", error);
     throw error;
   }
 }
@@ -183,13 +191,16 @@ export async function createSubscriber({
   token
 }: CreateSubscriberArgs) : Promise<void> {
   try {
-    const exists = await doesSubscriberExist(subscriberData.rawImsi, token);
-    if (exists){
-      throw new OperationError("Subscriber already exist.");
+    var existingDeviceGroupData = await getDeviceGroup(deviceGroupName, token);
+    try {
+      await apiPostSubscriber(subscriberData.rawImsi, subscriberData, token);
+    } catch (error) {
+      if (is409ConflictError(error)) {
+        throw new OperationError(`Subscriber with IMSI ${subscriberData.rawImsi} already exists.`);
+      }
+      throw error;
     }
 
-    var existingDeviceGroupData = await getDeviceGroup(deviceGroupName, token);
-    await apiPostSubscriber(subscriberData.rawImsi, subscriberData, token);
     if (!existingDeviceGroupData["imsis"].includes(subscriberData.rawImsi)) {
       existingDeviceGroupData["imsis"].push(subscriberData.rawImsi);
     }
@@ -203,34 +214,33 @@ export async function createSubscriber({
 
 
 interface EditSubscriberArgs {
-  subscriberData: SubscriberAuthData;
+  imsi: string;
   previousDeviceGroup: string;
   newDeviceGroupName: string;
-  token: string
+  token: string;
 }
 
 export async function editSubscriber({
-  subscriberData,
+  imsi,
   previousDeviceGroup,
   newDeviceGroupName,
   token
 }: EditSubscriberArgs) : Promise<void> {
   try {
     var newDeviceGroupData = await getDeviceGroup(newDeviceGroupName, token);
-    const exists = await doesSubscriberExist(subscriberData.rawImsi, token);
+    const exists = await doesSubscriberExist(imsi, token);
     if (!exists){
       throw new OperationError("Subscriber does not exist.");
     }
-    await apiPostSubscriber(subscriberData.rawImsi, subscriberData, token);
     if (previousDeviceGroup != newDeviceGroupName) {
-      await updatePreviousDeviceGroup(subscriberData.rawImsi, previousDeviceGroup, token);
+      await updatePreviousDeviceGroup(imsi, previousDeviceGroup, token);
     }
-    if (!newDeviceGroupData.imsis.includes(subscriberData.rawImsi)) {
-      newDeviceGroupData.imsis.push(subscriberData.rawImsi);
+    if (!newDeviceGroupData.imsis.includes(imsi)) {
+      newDeviceGroupData.imsis.push(imsi);
     }
     await apiPostDeviceGroup(newDeviceGroupName, newDeviceGroupData, token);
   } catch (error) {
-    console.error(`Failed to edit subscriber ${subscriberData.rawImsi} : ${error}`);
+    console.error(`Failed to edit subscriber ${imsi} : ${error}`);
     throw error;
   }
 };
