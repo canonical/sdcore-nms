@@ -35,7 +35,7 @@ export default function DeviceGroups() {
   const router = useRouter();
 
   const networkSlicesQuery = useQuery<string[], Error>({
-    queryKey: [queryKeys.networkSlices, auth.user?.authToken],
+    queryKey: [queryKeys.networkSliceNames, auth.user?.authToken],
     queryFn: () => apiGetAllNetworkSlices(auth.user?.authToken ?? ""),
     enabled: auth.user ? true : false,
   })
@@ -147,7 +147,7 @@ export default function DeviceGroups() {
         <Button
           hasIcon
           appearance="base"
-          onClick={() => { deviceGroupQuery.refetch() }}
+          onClick={() => { deviceGroupQuery.refetch(), networkSlicesQuery.refetch() }}
           title="Refresh device group list"
         >
           <SyncOutlinedIcon style={{ color: "#666" }} />

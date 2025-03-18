@@ -26,7 +26,7 @@ export const apiGetAllNetworkSlices = async (token: string): Promise<string[]> =
   }
 };
 
-export async function apiGetNetworkSlice (name: string, token: string): Promise<Response> {
+async function apiGetNetworkSlice (name: string, token: string): Promise<Response> {
   if (!isValidNetworkSliceName(name)) {
     throw new OperationError(`Error getting network slice: Invalid name provided ${name}.`);
   }
@@ -180,16 +180,25 @@ export async function getNetworkSlices (token: string): Promise<NetworkSlice[]> 
   try {
     const sliceNames = await apiGetAllNetworkSlices(token);
     const sliceDetailsPromises = sliceNames.map(async (sliceName: string) => {
-      const detailResponse = await apiGetNetworkSlice(sliceName, token);
-      const networkSliceData = await detailResponse.json();
-      if (!detailResponse.ok) {
-        throw new WebconsoleApiError(detailResponse.status, networkSliceData.error);
-      }
-      return networkSliceData;
+      return await getNetworkSlice(sliceName, token);
     });
     return await Promise.all(sliceDetailsPromises);
   } catch (error) {
     console.error(`Failed to get network slices: ${error}`);
+    throw error;
+  }
+};
+
+export async function getNetworkSlice(name: string, token: string): Promise<NetworkSlice> {
+  try {
+    const detailResponse = await apiGetNetworkSlice(name, token);
+    const networkSliceData = await detailResponse.json();
+    if (!detailResponse.ok) {
+      throw new WebconsoleApiError(detailResponse.status, networkSliceData.error);
+    }
+    return networkSliceData;
+  } catch (error) {
+    console.error(`Failed to get network slice ${name}: ${error}`);
     throw error;
   }
 };

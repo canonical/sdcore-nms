@@ -50,10 +50,53 @@ export type DeviceGroup = {
   };
 };
 
-export type Subscriber = {
+export type SubscriberId = {
   plmnID: string;
   ueId: string;
 };
+
+export type SubscriberData = {
+  plmnID: string;
+  ueId: string,
+  AuthenticationSubscription: {
+    authenticationMethod: string;
+    permanentKey: {
+      permanentKeyValue: string;
+      encryptionKey: number;
+      encryptionAlgorithm: number;
+    },
+    sequenceNumber: string;
+    authenticationManagementField: string;
+    milenage: {
+      op: {
+        opValue: string;
+        encryptionKey: number;
+        encryptionAlgorithm: number;
+      }
+    },
+    opc: {
+      opcValue: string;
+      encryptionKey: number;
+      encryptionAlgorithm: number;
+    }
+  },
+}
+
+export type SubscriberAuthData = {
+  rawImsi: string;
+  opc: string;
+  key: string;
+  sequenceNumber: string;
+}
+
+export type SubscriberTableData = {
+  rawImsi: string;
+  opc: string;
+  key: string;
+  sequenceNumber: string;
+  networkSliceName: string;
+  deviceGroupName: string;
+}
 
 export type User = {
   exp: number
