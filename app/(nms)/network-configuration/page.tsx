@@ -101,7 +101,7 @@ export default function NetworkSlices() {
   const tableContent: MainTableRow[] = networkSlices.map((networkSlice) => {
     const upf = networkSlice["site-info"]?.["upf"];
     const gNodeBs = networkSlice["site-info"]?.gNodeBs || [];
-    const gNodeBList = [...gNodeBs.map((gNodeB, index) => `${gNodeB.name} (tac: ${gNodeB.tac})`)];
+    const gNodeBList = [...gNodeBs.map((gNodeB, index) => `${gNodeB.name} (TAC: ${gNodeB.tac})`)];
     return {
       key: networkSlice["slice-name"],
       columns: [

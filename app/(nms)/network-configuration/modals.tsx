@@ -264,8 +264,8 @@ export const NetworkSliceModal: React.FC<NetworkSliceModalProps> = ({
               disabled: true,
               value: "",
             },
-            ...gnbItems.map((gnb) => ({
-              label: `${gnb.name} (tac:${gnb.tac})`,
+            ...gnbItems.filter( gnb => gnb.tac ).map((gnb) => ({
+              label: `${gnb.name} (TAC: ${gnb.tac})`,
               value: `${gnb.name}:${gnb.tac}`,
             })),
           ]}
