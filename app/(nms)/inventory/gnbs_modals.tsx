@@ -20,7 +20,7 @@ interface GnbFormValues {
 const GnbSchema = Yup.object().shape({
     name: Yup.string()
     .min(1)
-    .max(20, "Name must not exceed 20 characters")
+    .max(32, "Name must not exceed 32 characters")
     .matches(/^[a-zA-Z][a-zA-Z0-9-_]+$/, {
     message: (
         <>
@@ -68,8 +68,6 @@ export const GnbModal: React.FC<GnbModalProps> = ({
         } catch (error) {
           if (is401UnauthorizedError(error)) {
               auth.logout();
-          } else if (error instanceof OperationError) {
-            setApiError(error.message);
           } else {
             setApiError("An unexpected error occurred.");
           }

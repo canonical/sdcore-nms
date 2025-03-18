@@ -14,7 +14,7 @@ import ErrorNotification from "@/components/ErrorNotification";
 import Loader from "@/components/Loader"
 import PageHeader from "@/components/PageHeader"
 import SyncOutlinedIcon from "@mui/icons-material/SyncOutlined";
-import { EditGnbModal } from "./gnbs_modals";
+import { EditGnbModal } from "@/app/(nms)/inventory/gnbs_modals";
 
 const EDIT = "edit" as const;
 

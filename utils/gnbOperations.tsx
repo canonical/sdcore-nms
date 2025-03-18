@@ -1,26 +1,6 @@
 import { GnbItem } from "@/components/types";
 import { WebconsoleApiError } from "@/utils/errors";
 
-export async function apiPutGnb (name: string, gnbData: any, token: string): Promise<void>{
-  try {
-    const response = await fetch(`/config/v1/inventory/gnb/${name}`, {
-      method: "PUT",
-      headers: {
-        "Authorization": "Bearer " + token,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(gnbData),
-    });
-    const respData = await response.json();
-    if (!response.ok) {
-      throw new WebconsoleApiError(response.status, respData.error);
-    }
-  } catch (error) {
-    console.error(`Error in PUT gNB ${name}: ${error}`);
-    throw error;
-  }
-};
-
 export async function getGnbList(token: string): Promise<GnbItem[]> {
   try {
     const response = await fetch("/config/v1/inventory/gnb", {
@@ -57,13 +37,25 @@ export async function editGnb({
 }: EditGnbArgs): Promise<void>{
 
   try {
-    const gnbData = {
-      "name": name,
-      "tac": tac,
-    };
-  await apiPutGnb(name, gnbData, token);
-  } catch (error: unknown) {
-    console.error(`Failed to edit gNB ${name} : ${error}`);
+    const response = await fetch(`/config/v1/inventory/gnb/${name}`, {
+      method: "PUT",
+      headers: {
+        "Authorization": "Bearer " + token,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(
+        {
+          "name": name,
+          "tac": tac,
+        }
+      ),
+    });
+    const respData = await response.json();
+    if (!response.ok) {
+      throw new WebconsoleApiError(response.status, respData.error);
+    }
+  } catch (error) {
+    console.error(`Error in PUT gNB ${name}: ${error}`);
     throw error;
   }
 };
