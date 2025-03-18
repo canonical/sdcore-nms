@@ -136,7 +136,7 @@ export const GnbModal: React.FC<GnbModalProps> = ({
     const handleSubmit = async (values: GnbFormValues) => {
       await editGnb({
           name: values.name,
-          tac: values.tac.toString(),
+          tac: values.tac,
           token: auth.user ? auth.user.authToken : ""
         });
     };

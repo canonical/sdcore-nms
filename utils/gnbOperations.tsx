@@ -46,7 +46,7 @@ export async function getGnbList(token: string): Promise<GnbItem[]> {
 
 interface EditGnbArgs {
   name: string;
-  tac: string;
+  tac: number;
   token: string;
 }
 
