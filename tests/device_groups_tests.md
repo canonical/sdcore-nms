@@ -2,79 +2,46 @@
 
 This document outlines test cases for creating, editing, and deleting a Device Groups.
 
----
-
-### 1. Test Empty State: No Device groups, no Network Slices
-**Precondition**: There are no Network slices or Device groups registered in the NMS
-
-#### 1.1. Device groups page
-- **Action**: Go to the Device groups page
-- **Expected**: we should see:
-  - Empty state message: No device group available
-  - Button: `Go to "Network Slices" page`
-  - Table is not displayed
-
-#### 1.2. Button
-- **Action**: Click on the  `Go to "Network Slices" page`
-- **Expected**: We are redictected to the Network Slices page
-
-### 2. Test Empty State: No Device groups, Network Slices exists
-**Precondition**: There are Device groups registered in the NMS. There is at least one Network
-Slice registered in the NMS.
-
-#### 2.1. Device groups page
-- **Action**: Go to the Device groups page
-- **Expected**: we should see:
-  - Empty state message: No device group available
-  - Button: `Create`
-  - Table is not displayed
-
-#### 2.2. Button
-- **Action**: Click on the `Create` button
-- **Expected**: create Device group modal appears
-
----
-
 ## Creating a Device Group
 
 **Precondition**: There is at least one Network Slice registered in the NMS.
 
-### 3. Test Create Device Group Modal
+### 1. Test Create Device Group Modal
 
 **Precondition**: Create Device group modal is open
 
-#### 3.1. Default Values
-- **Expected**: only the folowing values are selected by default:
+#### 1.1. Default Values
+- **Expected**: only the folowing values are set by default:
 
   - **DNS** : `8.8.8.8`
   - **MTU**: `1456`
   - **5QI**: `1: GBR - Conversational Voice`
   - **ARP**: `6`
 
-#### 3.2. Placeholder hints
+#### 1.2. Placeholder hints
 - **Expected**: only the following fields contain the following placeholder:
   - **Name**: `default`
   - **Subscriber IP pool**: `172.250.1.0/16`
   - **MBR Downstream**: `20`
   - **MBR Updstream**: `5`
 
-#### 3.3. Form Validation Errors
+#### 1.3. Form Validation Errors
 
-- **Action**: Invalid values are introduced in the form
+- **Action**: Introduce invalid values in the form.
 - **Expected**: 
-    - An error is displayed next to the field
+    - An error is displayed below the field.
     - The `Submit` button is disabled.  
 
 These are invalid values for the form:
 
-- **Invalid Name**:
-  - The name starts with a number (ex. `1device-group`)
-  - The name contains invalid characters (`! # $ .`)
-  - The name is longer than 20 characters
-- **UE IP Pool**: Not in CIDR format
-- **DNS**: Not a valid IP address
+- **Name**:
+  - The name starts with a number (ex. `1device-group`).
+  - The name contains invalid characters (`! # $ .`).
+  - The name is longer than 20 characters.
+- **UE IP Pool**: Not in CIDR format.
+- **DNS**: Not a valid IP address.
 - **MTU**:
-  - Greater than `65535`
+  - Greater than `65,535`
   - Less than `1200`
 
 - **MBR (Maximum Bit Rate) Downstream**:
@@ -84,18 +51,19 @@ These are invalid values for the form:
   - Greater than `1,000,000`
   - Less than `0`
 
-#### 3.4. Dropdown elements
+#### 1.4. Dropdown elements
 
-- **Action**: click in the each dropdown
+- **Action**: Click on the each dropdown.
 - **Expected**: 
-    - The list is displayed
-    - We can select any element that we want
+  - The list is displayed
+  - We can select any element that we want
 
-Tests the following dropdows
+Tests the following dropdows:
 
 - **Network Slice**
   - Test that the elements correspond to the actual networks slices
-  - Test one element and more elements in the list
+  - Test one element in the list
+  - Test more than one element in the list
 - **5QI**: contains the following options:
   - 1: GBR - Conversational Voice
   - 2: GBR - Conversational Video
@@ -103,18 +71,21 @@ Tests the following dropdows
 - **ARP**: contains a list from 1 to 15
 
 
-### 4. Test Device Group creation flow
+### 2. Test Device Group creation flow
 
 - **Action**: 
   - Open the Create Device Group Modal
   - Fill all the fields with valid values
   - Click on the `Submit` button
-- **Expected**: 
+- **Expected**:
+  - The `Submit` button is not enabled until all the fields are filled in.
   - The device group is created
   - The device group appears in the table with the correct attributes
   - There is no need to refresh to display the device group
 
-### 5. Test Create a Device group with duplicate name 
+### 3. Test Create a Device group with duplicate name
+
+- **Precondition**: There is at least one Device Group registered in the NMS.
 - **Action**:
   - Open the Create Device Group Modal
   - Use a name of a device group that already exists
@@ -124,26 +95,27 @@ Tests the following dropdows
   - An error is shown in the modal
   - The Device Group is not created
 
----
-
 ## Editing a Device Group
 
-**Precondition**: Edit Device group modal is open
+**Precondition**:
+  - There is at least one Network Slice registered in the NMS.
+  - There is at least one Device Group registered in the NMS.
+  - Edit Device group modal is open
 
-### 6. Edit device group modal
+### 4. Edit device group modal
 - **Expected**: 
   - All the fields are prefilled with existing values.
-  - The Submit button remains disabled until a valid change is field is made.
+  - The Submit button remains disabled until a valid change in any field is made.
 
-#### 6.2 Not editable fields
+#### 4.1. Not editable fields
 - **Expected**: the following fields cannot be edited.
   - Name
   - Network Slice
 
-#### 6.3. Form Validation Errors
-- **Action**: Invalid values are introduced in the form
+#### 4.2. Form Validation Errors
+- **Action**: Introduce invalid values in the form
 - **Expected**: 
-    - An error is displayed next to the field
+    - An error is displayed below the field
     - The `Submit` button is disabled.  
 
 These are invalid values for the form:
@@ -151,7 +123,7 @@ These are invalid values for the form:
 - **UE IP Pool**: Not in CIDR format
 - **DNS**: Not a valid IP address
 - **MTU**:
-  - Greater than `65535`
+  - Greater than `65,535`
   - Less than `1200`
 
 - **MBR (Maximum Bit Rate) Downstream**:
@@ -162,8 +134,8 @@ These are invalid values for the form:
   - Greater than `1,000,000`
   - Less than `0`
 
-#### 6.4. Dropdown elements
-- **Action**: click in the each dropdown
+#### 4.3. Dropdown elements
+- **Action**: click on the each dropdown
 - **Expected**: 
     - The list is displayed
     - We can select any element that we want
@@ -176,33 +148,35 @@ Tests the following dropdows
   - 9: Non-GBR
 - **ARP**: contains a list from 1 to 15
 
-### 7. Test Device Group edition flow
+### 5. Test Device Group edition flow
 - **Action**: 
   - Open the Edit Device Group Modal
   - Change all the fields with valid values
   - Click on the `Submit` button
-- **Expected**: 
+- **Expected**:
   - The device group is edited
   - The device group appears in the table with the correct attributes
   - There is no need to refresh to display the device group update
 
----
 
 ## Deleting a Device Group
 
-**Precondition**: at least there is one device group
+**Precondition**:
+  - There is at least one Network Slice registered in the NMS.
+  - There is at least one Device Group registered in the NMS.
 
+### 6. Delete a device group that contains a Subscriber
 
-### 8. Delete a device group that contains a subscriber
+**Precondition**: add a Subscriber and associate it to the Device Group under test.
 
-#### 8.1 Without using shift
+#### 6.1. Without using shift
 - **Action**: 
   - Click on the `Delete` button
 - **Expected**:
   - A warning modal is displayed.
   - The device group cannot be deleted
 
-#### 8.2 Using shift
+#### 6.2. Using shift
 - **Action**:
   - Click on the `Delete` button using `shift` at the same time
 - **Expected**: 
@@ -210,10 +184,11 @@ Tests the following dropdows
   - The device group cannot be deleted
 
 
+### 7. Delete a device group that does not contain a subscriber
 
-### 9. Delete a device group that does not contain a subscriber
+**Precondition**: the Device Group under test does not have any Subscriber associated.
 
-#### 9.2 Without using shift
+#### 7.1. Without using shift
 - **Action**: 
   - Click on the `Delete` button
 - **Expected**:
@@ -221,9 +196,42 @@ Tests the following dropdows
   - When clicking in the delete button the device group is deleted
   - The device group is inmmediately removed from the table
 
-#### 9.1 Using shift
+#### 7.2. Using shift
 - **Action**:
   - Click on the `Delete` button using `shift` at the same time
 - **Expected**: 
   - The device group is deleted
   - The device group is inmmediately removed from the table
+
+
+### 8. Test Empty State: No Device groups, no Network Slices
+**Precondition**: 
+- There are no Network Slices registered in the NMS.
+- There are no Device Groups registered in the NMS.
+
+#### 8.1. Device groups page
+- **Action**: Go to the Device groups page
+- **Expected**: we should see:
+  - Empty state message: No device group available
+  - Button: `Go to "Network Slices" page`
+  - Table is not displayed
+
+#### 8.2. Button
+- **Action**: Click on the  `Go to "Network Slices" page`
+- **Expected**: We are redictected to the Network Slices page
+
+### 9. Test Empty State: No Device groups, Network Slices exists
+**Precondition**: 
+- There is at least one Network Slices registered in the NMS.
+- There are no Device Groups registered in the NMS.
+
+#### 9.1. Device groups page
+- **Action**: Go to the Device groups page
+- **Expected**: we should see:
+  - Empty state message: No device group available
+  - Button: `Create`
+  - Table is not displayed
+
+#### 9.2. Button
+- **Action**: Click on the `Create` button
+- **Expected**: create Device group modal appears

@@ -16,7 +16,6 @@ Each Markdown file contains test cases for a specific section of the application
 |-----------------------------------|----------------|
 | `network_slices_tests.md`         | Network Slices Page |
 | `device_groups_tests.md`          | Device Groups Page |
-| `subscribers_tests.md`            | Subscribers Page |
 
 ## How to Execute Manual Tests
 These are not automated tests, so they need to be run manually on a running NMS: either trough a SD-Core deployment or a [local deployment for development](/sdcore-nms/CONTRIBUTING.md).
