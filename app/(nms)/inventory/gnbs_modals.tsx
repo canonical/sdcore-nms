@@ -1,7 +1,9 @@
 import { Button, Form, Input, ConfirmationButton, Modal, Select } from "@canonical/react-components"
 import { editGnb } from "@/utils/gnbOperations";
 import { GnbItem } from "@/components/types";
-import { useAuth } from "@/utils/auth"
+import { useAuth } from "@/utils/auth";
+import { queryKeys } from "@/utils/queryKeys";
+import { useQueryClient } from "@tanstack/react-query"
 import { useFormik } from "formik";
 import { useState } from "react"
 import { OperationError, is401UnauthorizedError}  from "@/utils/errors";
@@ -51,6 +53,7 @@ export const GnbModal: React.FC<GnbModalProps> = ({
   }) => {
     const auth = useAuth()
     const [apiError, setApiError] = useState<string | null>(null);
+    const queryClient = useQueryClient()
   
     const formik = useFormik<GnbFormValues>({
       initialValues,
@@ -59,6 +62,9 @@ export const GnbModal: React.FC<GnbModalProps> = ({
         try {
           onSubmit({ ...values, });
           closeFn();
+          setTimeout(async () => { // Wait 100 ms before invalidating due to a race condition
+            await queryClient.invalidateQueries({ queryKey: [queryKeys.gnbs] });
+          }, 100);
         } catch (error) {
           if (is401UnauthorizedError(error)) {
               auth.logout();
