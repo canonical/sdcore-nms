@@ -93,32 +93,47 @@ export const GnbModal: React.FC<GnbModalProps> = ({
         }
       >
         {apiError && <ErrorNotification error={apiError} />}
-        <Form>
-          <Input
-            id="name"
-            label="Name"
-            type="text"
-            required
-            stacked
-            disabled
-            placeholder="default-gnb"
-            {...formik.getFieldProps("name")}
-            error={formik.touched.name ? formik.errors.name : null}
-          />
-          <Input
-            id="tac"
-            label="TAC"
-            help="Tracking Area Code"
-            type="number"
-            required
-            stacked
-            min={1}
-            max={16777215}
-            placeholder="1"
-            {...formik.getFieldProps("tac")}
-            error={formik.touched.tac ? formik.errors.tac : null}
-          />
-        </Form>
+        <Form className="p-form p-form--stacked">
+          <div className="p-form__group row" style={{gridTemplateColumns: 'repeat(12,minmax(0,1fr))'}}>
+            <div className="col-4">
+              <label htmlFor="name" className="p-form__label is-required">Name</label>
+            </div>
+
+            <div className="col-8">
+              <div className="p-form__control">
+              <Input
+                id="name"
+                type="text"
+                required
+                disabled
+                placeholder="default-gnb"
+                {...formik.getFieldProps("name")}
+                error={formik.touched.name ? formik.errors.name : null}
+              />
+              </div>
+            </div>
+          </div>
+          <div className="p-form__group row" style={{gridTemplateColumns: 'repeat(12,minmax(0,1fr))'}}>
+            <div className="col-4">
+              <label htmlFor="tac" className="p-form__label is-required">TAC</label>
+            </div>
+            <div className="col-8">
+              <div className="p-form__control">
+              <Input
+                id="tac"
+                help="Tracking Area Code"
+                type="number"
+                required
+                min={1}
+                max={16777215}
+                placeholder="1"
+                {...formik.getFieldProps("tac")}
+                error={formik.touched.tac ? formik.errors.tac : null}
+              />
+            </div>
+          </div>
+        </div>
+      </Form>
       </Modal>
     );
   };
