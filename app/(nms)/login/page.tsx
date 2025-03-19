@@ -68,7 +68,7 @@ const LoginModal: React.FC<LoginModalProps> = () => {
                         required={true}
                         onChange={handlePasswordChange}
                     />
-                    {errorText && <ErrorNotification error={ errorText}/>}
+                    {errorText && <ErrorNotification error={errorText}/>}
                     <Button
                         appearance="positive"
                         disabled={password.length == 0 || username.length == 0}

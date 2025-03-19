@@ -18,7 +18,7 @@ export async function listUsers(params: { authToken: string }): Promise<UserEntr
 }
 
 export async function deleteUser(params: { authToken: string, username: string }) {
-    try{
+    try {
         const response = await fetch("/config/v1/account/" + params.username, {
             method: 'DELETE',
             headers: {
@@ -37,7 +37,7 @@ export async function deleteUser(params: { authToken: string, username: string }
 }
 
 export async function changePassword(changePasswordForm: { authToken: string, username: string, password: string }) {
-    try{
+    try {
         const response = await fetch("/config/v1/account/" + changePasswordForm.username + "/change_password", {
             method: "POST",
             headers: {
@@ -58,7 +58,7 @@ export async function changePassword(changePasswordForm: { authToken: string, us
 }
 
 export async function getStatus() {
-    try{
+    try {
         const response = await fetch("/status")
         if (!response.ok) {
             throw new WebconsoleApiError(response.status, "Failed to get status");
@@ -90,7 +90,7 @@ export async function login(userForm: { username: string, password: string }) : 
 }
 
 export async function postFirstUser(userForm: { username: string, password: string }) {
-    try{
+    try {
         const response = await fetch("/config/v1/account", {
             method: "POST",
             body: JSON.stringify({ "username": userForm.username, "password": userForm.password })
