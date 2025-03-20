@@ -1,24 +1,25 @@
 "use client"
 
+import { ChangeEvent, useState,  } from "react"
+import { Input, PasswordToggle, Button, Form, LoginPageLayout } from "@canonical/react-components";
+import { is401UnauthorizedError, is404NotFoundError } from "@/utils/errors"
 import { getStatus, login } from "@/utils/accountQueries"
-import { useMutation, useQuery } from "@tanstack/react-query"
-import { useState, ChangeEvent } from "react"
-import { useCookies } from "react-cookie"
-import { useRouter } from "next/navigation"
+import { queryKeys } from "@/utils/queryKeys";
 import { statusResponse } from "@/components/types"
-import { Input, PasswordToggle, Button, Form, Notification, LoginPageLayout } from "@canonical/react-components";
+import { useCookies } from "react-cookie"
+import { useMutation, useQuery } from "@tanstack/react-query"
+import { useRouter } from "next/navigation"
+
+import ErrorNotification from "@/components/ErrorNotification";
+import Loader from "@/components/Loader";
 
 
-export default function LoginPage() {
+interface LoginModalProps {}
+
+const LoginModal: React.FC<LoginModalProps> = () => {
     const router = useRouter()
     const [cookies, setCookie, removeCookie] = useCookies(['user_token']);
-    const statusQuery = useQuery<statusResponse, Error>({
-        queryKey: ['status'],
-        queryFn: getStatus,
-    })
-    if (statusQuery.data && !statusQuery.data.initialized) {
-        router.push("/initialize")
-    }
+
     const mutation = useMutation({
         mutationFn: login,
         onSuccess: (result) => {
@@ -29,8 +30,12 @@ export default function LoginPage() {
             })
             router.push('/')
         },
-        onError: (e: Error) => {
-            setErrorText(e.message)
+        onError: (error: Error) => {
+            if (is401UnauthorizedError(error)) {
+                setErrorText("Incorrect username or password. Please, try again.")
+            } else {
+                setErrorText("An unexpected error occurred.");
+            }
         }
     })
 
@@ -44,7 +49,7 @@ export default function LoginPage() {
             <LoginPageLayout
                 logo={{
                     src: 'https://assets.ubuntu.com/v1/82818827-CoF_white.svg',
-                    title: 'Network Management Service',
+                    title: 'Network Management System',
                     url: '#'
                 }}
                 title="Log in"
@@ -63,14 +68,7 @@ export default function LoginPage() {
                         required={true}
                         onChange={handlePasswordChange}
                     />
-                    {errorText &&
-                        <Notification
-                            severity="negative"
-                            title="Error"
-                        >
-                            {errorText.split("error: ")}
-                        </Notification>
-                    }
+                    {errorText && <ErrorNotification error={errorText}/>}
                     <Button
                         appearance="positive"
                         disabled={password.length == 0 || username.length == 0}
@@ -86,5 +84,29 @@ export default function LoginPage() {
                 </Form>
             </LoginPageLayout>
         </>
+    )
+}
+
+export default function LoginPage() {
+    const router = useRouter()
+    const statusQuery = useQuery<statusResponse, Error>({
+        queryKey: [queryKeys.status],
+        queryFn: getStatus,
+        retry: false,
+    })
+    if (statusQuery.status == "pending") {
+        return <Loader/>
+    }
+    if (statusQuery.isError) {
+        if (statusQuery.error && is404NotFoundError(statusQuery.error)) {
+            return (<><ErrorNotification error={"Endpoint not found. Please enable authentication to use the NMS."} /></>);
+        } else {
+            return (<><ErrorNotification error={"An unexpected error occurred."} /></>);
+        }
+    } else if (statusQuery.isSuccess && !statusQuery.data?.initialized) {
+         router.push("/initialize");
+    }
+    return (
+        <><LoginModal /></>
     )
 }

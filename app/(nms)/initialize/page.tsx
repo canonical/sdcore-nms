@@ -1,50 +1,58 @@
 "use client"
 
-import { useState, ChangeEvent } from "react"
-import { getStatus, login, postFirstUser } from "@/utils/accountQueries"
-import { useMutation, useQuery } from "@tanstack/react-query"
-import { useRouter } from "next/navigation"
-import { passwordIsValid } from "@/utils/utils"
-import { useAuth } from "@/utils/auth"
-import { useCookies } from "react-cookie"
-import { statusResponse } from "@/components/types"
 import { Input, PasswordToggle, Button, Form, LoginPageLayout } from "@canonical/react-components";
+import { getStatus, login, postFirstUser } from "@/utils/accountQueries"
+import { is401UnauthorizedError, is404NotFoundError } from "@/utils/errors";
+import { passwordIsValid } from "@/utils/utils"
+import { queryKeys } from "@/utils/queryKeys";
+import { statusResponse } from "@/components/types"
+import { useCookies } from "react-cookie"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useRouter } from "next/navigation"
+import { useState, ChangeEvent } from "react"
+
+import ErrorNotification from "@/components/ErrorNotification";
+import Loader from "@/components/Loader";
 
 
-export default function Initialize() {
-    const router = useRouter()
-    const auth = useAuth()
+interface InitializeModalProps {}
+
+const InitializeModal: React.FC<InitializeModalProps> = () => {
+    const router = useRouter();
     const [cookies, setCookie, removeCookie] = useCookies(['user_token']);
-    const statusQuery = useQuery<statusResponse, Error>({
-        queryKey: ['status'],
-        queryFn: getStatus
-    })
-    if (statusQuery.data && statusQuery.data.initialized) {
-        router.push("/login")
-    }
+    const [errorText, setErrorText] = useState<string>("");
+    const queryClient = useQueryClient();
+
     const loginMutation = useMutation({
         mutationFn: login,
         onSuccess: (result) => {
-            setErrorText("")
+            setErrorText("");
             setCookie('user_token', result, {
                 sameSite: true,
                 secure: true,
                 expires: new Date(new Date().getTime() + 60 * 60 * 1000),
             })
-            router.push('/network-configuration')
+            router.push('/network-configuration');
         },
-        onError: (e: Error) => {
-            setErrorText(e.message)
+        onError: (error: Error) => {
+            if (is401UnauthorizedError(error)) {
+                setErrorText("Incorrect username or password. Please, try again.");
+            } else {
+                setErrorText("An unexpected error occurred.");
+            }
         }
     })
     const postUserMutation = useMutation({
         mutationFn: postFirstUser,
         onSuccess: () => {
             setErrorText("")
-            loginMutation.mutate({ username: username, password: password1 })
+            loginMutation.mutate({ username: username, password: password1 });
+            setTimeout(async () => { // Wait 100 ms before invalidating due to a race condition
+                await queryClient.invalidateQueries({ queryKey: [queryKeys.status] });
+              }, 100);
         },
         onError: (e: Error) => {
-            setErrorText(e.message)
+            setErrorText("An unexpected error occurred.")
         }
     })
     const [username, setUsername] = useState<string>("")
@@ -54,7 +62,6 @@ export default function Initialize() {
     const password1Error = password1 && !passwordIsValid(password1) ? "Password is not valid" : ""
     const password2Error = password2 && !passwordsMatch ? "Passwords do not match" : ""
 
-    const [errorText, setErrorText] = useState<string>("")
     const handleUsernameChange = (event: ChangeEvent<HTMLInputElement>) => { setUsername(event.target.value) }
     const handlePassword1Change = (event: ChangeEvent<HTMLInputElement>) => { setPassword1(event.target.value) }
     const handlePassword2Change = (event: ChangeEvent<HTMLInputElement>) => { setPassword2(event.target.value) }
@@ -66,10 +73,11 @@ export default function Initialize() {
                     title: 'NMS',
                     url: '#'
                 }}
-                title="Initialize Network Management Service"
+                title="Initialize Network Management System"
             >
                 <Form>
                     <h4>Create the initial admin user</h4>
+                    {errorText && <ErrorNotification error={errorText}/>}
                     <Input
                         id="InputUsername"
                         label="Username"
@@ -107,5 +115,30 @@ export default function Initialize() {
                 </Form>
             </LoginPageLayout>
         </>
+    )
+}
+
+export default function Initialize() {
+    const router = useRouter()
+    const statusQuery = useQuery<statusResponse, Error>({
+        queryKey: [queryKeys.status],
+        queryFn: getStatus,
+        retry: false
+    })
+
+    if (statusQuery.status == "pending") {
+        return <Loader/>
+    }
+    if (statusQuery.isError) {
+        if (statusQuery.error && is404NotFoundError(statusQuery.error)) {
+            return (<><ErrorNotification error={"Endpoint not found. Please enable authentication to use the NMS."} /></>);
+        } else {
+            return (<><ErrorNotification error={"An unexpected error occurred."} /></>);
+        }
+    } else if (statusQuery.isSuccess && statusQuery.data?.initialized) {
+        router.push("/login")
+    }
+    return (
+        <><InitializeModal /></>
     )
 }
