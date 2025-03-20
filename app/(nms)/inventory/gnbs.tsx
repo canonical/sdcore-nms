@@ -14,9 +14,17 @@ import ErrorNotification from "@/components/ErrorNotification";
 import Loader from "@/components/Loader"
 import PageHeader from "@/components/PageHeader"
 import SyncOutlinedIcon from "@mui/icons-material/SyncOutlined";
+import { EditGnbModal } from "@/app/(nms)/inventory/gnbs_modals";
 
+const EDIT = "edit" as const;
+
+type modalData = {
+  gnb: GnbItem
+  action: typeof EDIT;
+}
 
 export default function GnbTable() {
+  const [modalData, setModalData] = useState<modalData | null>(null);
   const auth = useAuth()
   const [showNotification, setShowNotification] = useState(true);
 
@@ -38,7 +46,26 @@ export default function GnbTable() {
       key: gnb.name,
       columns: [
         { content: gnb.name },
-        { content: gnb.tac},
+        { content: gnb.tac || "" },
+        {
+          content:
+          <div>
+            <Button
+              appearance=""
+              className="u-no-margin--bottom"
+              onClick={() => {
+                setModalData({
+                  gnb: gnb,
+                  action: EDIT,
+                });
+              }}
+              title="Edit"
+            >
+              Edit
+            </Button>
+          </div>,
+          className:"u-align--right",
+        },
       ]
     };
   });
@@ -74,9 +101,14 @@ export default function GnbTable() {
         headers={[
           { content: "Name" },
           { content: "TAC" },
+          {
+            content: "Actions",
+            className:"u-align--right",
+          },
         ]}
         rows={tableContent}
       />
+      {modalData?.action == EDIT && <EditGnbModal gnb={modalData.gnb} closeFn={() => setModalData(null)} />}
     </>
   )
 }
