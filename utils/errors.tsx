@@ -28,7 +28,6 @@ export function is409ConflictError(error: Error | unknown): boolean {
   return (error instanceof WebconsoleApiError && error.status === 409);
 }
 
-
 export class OperationError extends Error {
 
   constructor(message: string) {
