@@ -1,7 +1,10 @@
-import { apiPostNetworkSlice, getNetworkSlice, getNetworkSlices } from "@/utils/networkSliceOperations";
+import {
+  apiPostNetworkSlice,
+  getNetworkSlice,
+  getNetworkSlices,
+} from "@/utils/networkSliceOperations";
 import { NetworkSlice, DeviceGroup } from "@/components/types";
 import { WebconsoleApiError, OperationError } from "@/utils/errors";
-
 
 const FIVEQI_MAP = new Map<number, { pdb: number; pelr: number }>([
   [1, { pdb: 100, pelr: 2 }],
@@ -9,7 +12,9 @@ const FIVEQI_MAP = new Map<number, { pdb: number; pelr: number }>([
   [9, { pdb: 300, pelr: 6 }],
 ]);
 
-export const getQosCharacteristics = (qci: number): { pdb: number; pelr: number } | null => {
+export const getQosCharacteristics = (
+  qci: number,
+): { pdb: number; pelr: number } | null => {
   return FIVEQI_MAP.get(qci) || null;
 };
 
@@ -17,12 +22,14 @@ function isValidDeviceGroupName(name: string): boolean {
   return /^[a-zA-Z][a-zA-Z0-9-_]+$/.test(name);
 }
 
-export async function apiGetAllDeviceGroupNames(token: string): Promise<string[]> {
+export async function apiGetAllDeviceGroupNames(
+  token: string,
+): Promise<string[]> {
   try {
     const response = await fetch(`/config/v1/device-group/`, {
       method: "GET",
       headers: {
-        "Authorization": "Bearer " + token,
+        Authorization: "Bearer " + token,
         "Content-Type": "application/json",
       },
     });
@@ -30,41 +37,51 @@ export async function apiGetAllDeviceGroupNames(token: string): Promise<string[]
     if (!response.ok) {
       throw new WebconsoleApiError(response.status, respData.error);
     }
-    return respData
+    return respData;
   } catch (error) {
     console.error(`Error retrieving device group list: ${error}`);
     throw error;
   }
-};
+}
 
-async function apiGetDeviceGroup(name: string, token: string): Promise<Response> {
+async function apiGetDeviceGroup(
+  name: string,
+  token: string,
+): Promise<Response> {
   if (!isValidDeviceGroupName(name)) {
-    throw new OperationError(`Error getting device group: Invalid name provided ${name}.`);
+    throw new OperationError(
+      `Error getting device group: Invalid name provided ${name}.`,
+    );
   }
   try {
     return await fetch(`/config/v1/device-group/${name}`, {
       method: "GET",
       headers: {
-        "Authorization": "Bearer " + token,
+        Authorization: "Bearer " + token,
         "Content-Type": "application/json",
       },
     });
-
   } catch (error) {
     console.error(`Error retrieving device group: ${error}`);
     throw error;
   }
-};
+}
 
-export async function apiPostDeviceGroup(name: string, deviceGroupData: any, token: string): Promise<void> {
+export async function apiPostDeviceGroup(
+  name: string,
+  deviceGroupData: any,
+  token: string,
+): Promise<void> {
   if (!isValidDeviceGroupName(name)) {
-    throw new OperationError(`Error updating device group: Invalid name provided ${name}.`);
+    throw new OperationError(
+      `Error updating device group: Invalid name provided ${name}.`,
+    );
   }
   try {
     const response = await fetch(`/config/v1/device-group/${name}`, {
       method: "POST",
       headers: {
-        "Authorization": "Bearer " + token,
+        Authorization: "Bearer " + token,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(deviceGroupData),
@@ -77,8 +94,7 @@ export async function apiPostDeviceGroup(name: string, deviceGroupData: any, tok
     console.error(`Error in POST device group ${name}: ${error}`);
     throw error;
   }
-};
-
+}
 
 interface CreateDeviceGroupArgs {
   name: string;
@@ -103,9 +119,8 @@ export async function createDeviceGroup({
   networkSliceName,
   qos5qi,
   qosArp,
-  token
+  token,
 }: CreateDeviceGroupArgs): Promise<void> {
-
   const qosCharacteristics = getQosCharacteristics(qos5qi);
   if (!qosCharacteristics) {
     console.error(`invalid QoS 5QI ${qos5qi}`);
@@ -113,7 +128,7 @@ export async function createDeviceGroup({
   }
   const deviceGroupData = {
     "site-info": "demo",
-    "imsis": [],
+    imsis: [],
     "ip-domain-name": "pool1",
     "ip-domain-expanded": {
       dnn: "internet",
@@ -142,7 +157,10 @@ export async function createDeviceGroup({
     }
     if (getDeviceGroupResponse.status !== 404) {
       const deviceGroupData = await getDeviceGroupResponse.json();
-      throw new WebconsoleApiError(getDeviceGroupResponse.status, deviceGroupData.error);
+      throw new WebconsoleApiError(
+        getDeviceGroupResponse.status,
+        deviceGroupData.error,
+      );
     }
 
     await apiPostDeviceGroup(name, deviceGroupData, token);
@@ -155,12 +173,11 @@ export async function createDeviceGroup({
       existingSliceData["site-device-group"].push(name);
       await apiPostNetworkSlice(networkSliceName, existingSliceData, token);
     }
-
   } catch (error: unknown) {
     console.error(`Failed to create device group ${name} : ${error}`);
     throw error;
   }
-};
+}
 
 interface EditDeviceGroupArgs {
   name: string;
@@ -183,20 +200,20 @@ export async function editDeviceGroup({
   MBRDownstreamBps,
   qos5qi,
   qosArp,
-  token
+  token,
 }: EditDeviceGroupArgs): Promise<void> {
-    const qosCharacteristics = getQosCharacteristics(qos5qi);
-    if (!qosCharacteristics) {
-      console.error(`invalid QoS 5QI ${qos5qi}`);
-      throw new OperationError("Failed to create device group: invalid QoS 5QI");
-    }
+  const qosCharacteristics = getQosCharacteristics(qos5qi);
+  if (!qosCharacteristics) {
+    console.error(`invalid QoS 5QI ${qos5qi}`);
+    throw new OperationError("Failed to create device group: invalid QoS 5QI");
+  }
   try {
-    const currentConfig = await getDeviceGroup(name, token)
-    var imsis = currentConfig["imsis"]
+    const currentConfig = await getDeviceGroup(name, token);
+    var imsis = currentConfig["imsis"];
 
     const deviceGroupData = {
       "site-info": "demo",
-      "imsis": imsis,
+      imsis: imsis,
       "ip-domain-name": "pool1",
       "ip-domain-expanded": {
         dnn: "internet",
@@ -219,12 +236,11 @@ export async function editDeviceGroup({
     };
 
     await apiPostDeviceGroup(name, deviceGroupData, token);
-
   } catch (error: unknown) {
     console.error(`Failed to edit device group ${name} : ${error}`);
     throw error;
   }
-};
+}
 
 export async function getDeviceGroups(token: string): Promise<DeviceGroup[]> {
   try {
@@ -233,18 +249,24 @@ export async function getDeviceGroups(token: string): Promise<DeviceGroup[]> {
     const deviceGroups = await Promise.all(
       deviceGroupNames.map(async (deviceGroupName: string) => {
         const deviceGroup = await getDeviceGroup(deviceGroupName, token);
-        const networkSliceName = findDeviceGroupNetworkSlice(deviceGroupName, networkSlices);
+        const networkSliceName = findDeviceGroupNetworkSlice(
+          deviceGroupName,
+          networkSlices,
+        );
         return { ...deviceGroup, "network-slice": networkSliceName };
-      })
+      }),
     );
-    return deviceGroups
+    return deviceGroups;
   } catch (error) {
     console.error(`Failed to get device groups: ${error}`);
     throw error;
   }
-};
+}
 
-export async function getDeviceGroup(deviceGroupName: string, token: string): Promise<DeviceGroup> {
+export async function getDeviceGroup(
+  deviceGroupName: string,
+  token: string,
+): Promise<DeviceGroup> {
   try {
     const response = await apiGetDeviceGroup(deviceGroupName, token);
     const deviceGroup = await response.json();
@@ -255,32 +277,41 @@ export async function getDeviceGroup(deviceGroupName: string, token: string): Pr
       deviceGroup["imsis"] = [];
     }
     return deviceGroup as DeviceGroup;
-
   } catch (error) {
     console.error(`Failed to get device group ${deviceGroupName} : ${error}`);
     throw error;
   }
-};
+}
 
-const findDeviceGroupNetworkSlice = (deviceGroupName: string, networkSlices: NetworkSlice[]): string => {
+const findDeviceGroupNetworkSlice = (
+  deviceGroupName: string,
+  networkSlices: NetworkSlice[],
+): string => {
   for (const networkSlice of networkSlices) {
-    if (networkSlice["site-device-group"] && networkSlice["site-device-group"].includes(deviceGroupName)) {
+    if (
+      networkSlice["site-device-group"] &&
+      networkSlice["site-device-group"].includes(deviceGroupName)
+    ) {
       return networkSlice["slice-name"];
     }
   }
   return "";
-}
+};
 
-
-export async function deleteDeviceGroup(name: string, token: string): Promise<void> {
+export async function deleteDeviceGroup(
+  name: string,
+  token: string,
+): Promise<void> {
   if (!isValidDeviceGroupName(name)) {
-    throw new OperationError(`Error deleting device group: Invalid name provided ${name}.`);
+    throw new OperationError(
+      `Error deleting device group: Invalid name provided ${name}.`,
+    );
   }
   try {
     const response = await fetch(`/config/v1/device-group/${name}`, {
       method: "DELETE",
       headers: {
-        "Authorization": "Bearer " + token,
+        Authorization: "Bearer " + token,
         "Content-Type": "application/json",
       },
     });
@@ -292,4 +323,4 @@ export async function deleteDeviceGroup(name: string, token: string): Promise<vo
     console.error(`Failed to delete device group ${name} : ${error}`);
     throw error;
   }
-};
+}

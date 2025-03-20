@@ -5,7 +5,6 @@ export const metadata: Metadata = {
   description: "Aether SD-Core NMS",
 };
 
-
 export default function RootLayout({
   children,
 }: {

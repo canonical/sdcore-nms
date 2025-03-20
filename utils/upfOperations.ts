@@ -1,13 +1,12 @@
 import { UpfItem } from "@/components/types";
 import { WebconsoleApiError } from "@/utils/errors";
 
-
 export async function getUpfList(token: string): Promise<UpfItem[]> {
   try {
     const response = await fetch("/config/v1/inventory/upf", {
       method: "GET",
       headers: {
-        "Authorization": "Bearer " + token,
+        Authorization: "Bearer " + token,
         "Content-Type": "application/json",
       },
     });
@@ -20,4 +19,4 @@ export async function getUpfList(token: string): Promise<UpfItem[]> {
     console.error(`Error retrieving UPF list ${error}`);
     throw error;
   }
-};
+}

@@ -7,6 +7,7 @@ A Network Management System for managing the Aether SD-Core 5G core network.
 ## Usage
 
 The NMS has a swagger UI page that rus by default on `localhost`. If the NMS will run remotely, set the following environment.
+
 ```console
 export WEBUI_ENDPOINT=<NMS-ip>:5000
 ```

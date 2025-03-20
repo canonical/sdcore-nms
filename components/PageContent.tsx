@@ -7,13 +7,11 @@ interface Props {
   colSize?: ColSize;
 }
 
-const PageContent: FC<Props> = ({ children, colSize = 6}) => {
+const PageContent: FC<Props> = ({ children, colSize = 6 }) => {
   return (
     <Row>
       <Col size={colSize}>
-        <div className="p-panel__content">
-            {children}
-        </div>
+        <div className="p-panel__content">{children}</div>
       </Col>
     </Row>
   );

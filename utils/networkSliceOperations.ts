@@ -1,17 +1,18 @@
 import { GnbItem, NetworkSlice, UpfItem } from "@/components/types";
 import { OperationError, WebconsoleApiError } from "@/utils/errors";
 
-
 function isValidNetworkSliceName(name: string): boolean {
   return /^[a-zA-Z][a-zA-Z0-9-_]+$/.test(name);
 }
 
-export const apiGetAllNetworkSlices = async (token: string): Promise<string[]> => {
+export const apiGetAllNetworkSlices = async (
+  token: string,
+): Promise<string[]> => {
   try {
     const response = await fetch(`/config/v1/network-slice`, {
       method: "GET",
       headers: {
-        "Authorization": "Bearer " + token,
+        Authorization: "Bearer " + token,
         "Content-Type": "application/json",
       },
     });
@@ -26,15 +27,20 @@ export const apiGetAllNetworkSlices = async (token: string): Promise<string[]> =
   }
 };
 
-async function apiGetNetworkSlice (name: string, token: string): Promise<Response> {
+async function apiGetNetworkSlice(
+  name: string,
+  token: string,
+): Promise<Response> {
   if (!isValidNetworkSliceName(name)) {
-    throw new OperationError(`Error getting network slice: Invalid name provided ${name}.`);
+    throw new OperationError(
+      `Error getting network slice: Invalid name provided ${name}.`,
+    );
   }
   try {
     return await fetch(`/config/v1/network-slice/${name}`, {
       method: "GET",
       headers: {
-        "Authorization": "Bearer " + token,
+        Authorization: "Bearer " + token,
         "Content-Type": "application/json",
       },
     });
@@ -42,17 +48,23 @@ async function apiGetNetworkSlice (name: string, token: string): Promise<Respons
     console.error(`Error retrieving network slice ${name}: ${error}`);
     throw error;
   }
-};
+}
 
-export async function apiPostNetworkSlice (name: string, sliceData: any, token: string): Promise<void>{
+export async function apiPostNetworkSlice(
+  name: string,
+  sliceData: any,
+  token: string,
+): Promise<void> {
   if (!isValidNetworkSliceName(name)) {
-    throw new OperationError(`Error updating network slice: Invalid name provided ${name}.`);
+    throw new OperationError(
+      `Error updating network slice: Invalid name provided ${name}.`,
+    );
   }
   try {
     const response = await fetch(`/config/v1/network-slice/${name}`, {
       method: "POST",
       headers: {
-        "Authorization": "Bearer " + token,
+        Authorization: "Bearer " + token,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(sliceData),
@@ -65,14 +77,14 @@ export async function apiPostNetworkSlice (name: string, sliceData: any, token: 
     console.error(`Error in POST network slice ${name}: ${error}`);
     throw error;
   }
-};
+}
 
 interface CreateNetworkSliceArgs {
   name: string;
   mcc: string;
   mnc: string;
   sst: string;
-  upf : UpfItem;
+  upf: UpfItem;
   gnbList: GnbItem[];
   token: string;
 }
@@ -84,7 +96,7 @@ export async function createNetworkSlice({
   sst,
   upf,
   gnbList,
-  token
+  token,
 }: CreateNetworkSliceArgs): Promise<void> {
   const sliceData = {
     "slice-id": {
@@ -107,22 +119,24 @@ export async function createNetworkSlice({
   };
 
   try {
-    const getNetworkSliceResponse = await apiGetNetworkSlice(name, token)
+    const getNetworkSliceResponse = await apiGetNetworkSlice(name, token);
     if (getNetworkSliceResponse.ok) {
       throw new OperationError("Network slice already exists.");
     }
 
     if (getNetworkSliceResponse.status !== 404) {
       const networkSliceData = await getNetworkSliceResponse.json();
-      throw new WebconsoleApiError(getNetworkSliceResponse.status, networkSliceData.error);
+      throw new WebconsoleApiError(
+        getNetworkSliceResponse.status,
+        networkSliceData.error,
+      );
     }
     await apiPostNetworkSlice(name, sliceData, token);
   } catch (error: unknown) {
     console.error(`Failed to create network slice ${name} : ${error}`);
     throw error;
   }
-};
-
+}
 
 interface EditNetworkSliceArgs {
   name: string;
@@ -131,7 +145,7 @@ interface EditNetworkSliceArgs {
   sst: string;
   upf: UpfItem;
   gnbList: GnbItem[];
-  token: string
+  token: string;
 }
 
 export async function editNetworkSlice({
@@ -141,9 +155,8 @@ export async function editNetworkSlice({
   sst,
   upf,
   gnbList,
-  token
-}: EditNetworkSliceArgs): Promise<void>{
-
+  token,
+}: EditNetworkSliceArgs): Promise<void> {
   try {
     const getSliceResponse = await apiGetNetworkSlice(name, token);
     const sliceData = await getSliceResponse.json();
@@ -169,14 +182,14 @@ export async function editNetworkSlice({
         },
       },
     };
-  await apiPostNetworkSlice(name, sliceUpdate, token);
+    await apiPostNetworkSlice(name, sliceUpdate, token);
   } catch (error: unknown) {
     console.error(`Failed to edit network slice ${name} : ${error}`);
     throw error;
   }
-};
+}
 
-export async function getNetworkSlices (token: string): Promise<NetworkSlice[]> {
+export async function getNetworkSlices(token: string): Promise<NetworkSlice[]> {
   try {
     const sliceNames = await apiGetAllNetworkSlices(token);
     const sliceDetailsPromises = sliceNames.map(async (sliceName: string) => {
@@ -187,31 +200,42 @@ export async function getNetworkSlices (token: string): Promise<NetworkSlice[]> 
     console.error(`Failed to get network slices: ${error}`);
     throw error;
   }
-};
+}
 
-export async function getNetworkSlice(name: string, token: string): Promise<NetworkSlice> {
+export async function getNetworkSlice(
+  name: string,
+  token: string,
+): Promise<NetworkSlice> {
   try {
     const detailResponse = await apiGetNetworkSlice(name, token);
     const networkSliceData = await detailResponse.json();
     if (!detailResponse.ok) {
-      throw new WebconsoleApiError(detailResponse.status, networkSliceData.error);
+      throw new WebconsoleApiError(
+        detailResponse.status,
+        networkSliceData.error,
+      );
     }
     return networkSliceData;
   } catch (error) {
     console.error(`Failed to get network slice ${name}: ${error}`);
     throw error;
   }
-};
+}
 
-export async function deleteNetworkSlice(name: string, token: string): Promise<void> {
+export async function deleteNetworkSlice(
+  name: string,
+  token: string,
+): Promise<void> {
   if (!isValidNetworkSliceName(name)) {
-    throw new OperationError(`Error deleting network slice: Invalid name provided ${name}.`);
+    throw new OperationError(
+      `Error deleting network slice: Invalid name provided ${name}.`,
+    );
   }
   try {
     const response = await fetch(`/config/v1/network-slice/${name}`, {
       method: "DELETE",
       headers: {
-        "Authorization": "Bearer " + token,
+        Authorization: "Bearer " + token,
         "Content-Type": "application/json",
       },
     });
@@ -223,4 +247,4 @@ export async function deleteNetworkSlice(name: string, token: string): Promise<v
     console.error(`Error deleting network slice ${name} ${error}`);
     throw error;
   }
-};
+}

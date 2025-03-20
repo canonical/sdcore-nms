@@ -3,15 +3,15 @@ import { Button, Icon } from "@canonical/react-components";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/utils/auth";
 import classnames from "classnames";
-import TuneOutlinedIcon from '@mui/icons-material/TuneOutlined';
-import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
-import Logo from "@/components/Logo"
+import TuneOutlinedIcon from "@mui/icons-material/TuneOutlined";
+import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
+import Logo from "@/components/Logo";
 
 const Navigation: FC = () => {
   const pathname = usePathname();
   const [isCollapsed, setCollapsed] = useState(false);
 
-  const auth = useAuth()
+  const auth = useAuth();
   const softToggleMenu = () => {
     if (window.innerWidth < 620) {
       setCollapsed((prev) => !prev);
@@ -23,8 +23,8 @@ const Navigation: FC = () => {
     e.stopPropagation();
   };
 
-  if (pathname == '/login' || pathname == '/initialize') {
-    return <></>
+  if (pathname == "/login" || pathname == "/initialize") {
+    return <></>;
   }
 
   return (
@@ -140,22 +140,24 @@ const Navigation: FC = () => {
                       Inventory
                     </a>
                   </li>
-                  {auth.user?.role == 1 && <li className="p-side-navigation__item">
-                    <a
-                      className="p-side-navigation__link"
-                      href={`/users`}
-                      title={`Users`}
-                      aria-current={
-                        pathname === "/users" ? "page" : undefined
-                      }
-                    >
-                      <Icon
-                        className="is-light p-side-navigation__icon"
-                        name="user-group"
-                      />{" "}
-                      Users
-                    </a>
-                  </li>}
+                  {auth.user?.role == 1 && (
+                    <li className="p-side-navigation__item">
+                      <a
+                        className="p-side-navigation__link"
+                        href={`/users`}
+                        title={`Users`}
+                        aria-current={
+                          pathname === "/users" ? "page" : undefined
+                        }
+                      >
+                        <Icon
+                          className="is-light p-side-navigation__icon"
+                          name="user-group"
+                        />{" "}
+                        Users
+                      </a>
+                    </li>
+                  )}
                 </ul>
                 <ul className="p-side-navigation__list">
                   <li>
@@ -223,8 +225,9 @@ const Navigation: FC = () => {
             <div className="sidenav-toggle-wrapper">
               <Button
                 appearance="base"
-                aria-label={`${isCollapsed ? "expand" : "collapse"
-                  } main navigation`}
+                aria-label={`${
+                  isCollapsed ? "expand" : "collapse"
+                } main navigation`}
                 hasIcon
                 dense
                 className="sidenav-toggle is-dark u-no-margin l-navigation-collapse-toggle u-hide--small"

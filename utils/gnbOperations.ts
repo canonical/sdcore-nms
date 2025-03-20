@@ -6,7 +6,7 @@ export async function getGnbList(token: string): Promise<GnbItem[]> {
     const response = await fetch("/config/v1/inventory/gnb", {
       method: "GET",
       headers: {
-        "Authorization": "Bearer " + token,
+        Authorization: "Bearer " + token,
         "Content-Type": "application/json",
       },
     });
@@ -19,7 +19,7 @@ export async function getGnbList(token: string): Promise<GnbItem[]> {
     console.error(`Error retrieving gNB list ${error}`);
     throw error;
   }
-};
+}
 
 interface EditGnbArgs {
   name: string;
@@ -30,21 +30,18 @@ interface EditGnbArgs {
 export async function editGnb({
   name,
   tac,
-  token
-}: EditGnbArgs): Promise<void>{
-
+  token,
+}: EditGnbArgs): Promise<void> {
   try {
     const response = await fetch(`/config/v1/inventory/gnb/${name}`, {
       method: "PUT",
       headers: {
-        "Authorization": "Bearer " + token,
+        Authorization: "Bearer " + token,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(
-        {
-          "tac": tac,
-        }
-      ),
+      body: JSON.stringify({
+        tac: tac,
+      }),
     });
     const respData = await response.json();
     if (!response.ok) {
@@ -54,4 +51,4 @@ export async function editGnb({
     console.error(`Error in PUT gNB ${name}: ${error}`);
     throw error;
   }
-};
+}

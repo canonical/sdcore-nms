@@ -1,7 +1,7 @@
 import { FC, ReactNode } from "react";
 import PageHeader from "@/components/PageHeader";
 import PageContent from "@/components/PageContent";
-import { Button, EmptyState } from "@canonical/react-components"
+import { Button, EmptyState } from "@canonical/react-components";
 
 interface Props {
   title: string;
@@ -11,7 +11,13 @@ interface Props {
   buttonText: string;
 }
 
-const EmptyStatePage: FC<Props> = ({ title, image = "", message = "", onClick, buttonText }) => {
+const EmptyStatePage: FC<Props> = ({
+  title,
+  image = "",
+  message = "",
+  onClick,
+  buttonText,
+}) => {
   return (
     <>
       <PageHeader title={""}>
@@ -22,7 +28,9 @@ const EmptyStatePage: FC<Props> = ({ title, image = "", message = "", onClick, b
           <br />
           <p>{message}</p>
           <>
-            <Button appearance="positive" onClick={onClick}>{buttonText}</Button>
+            <Button appearance="positive" onClick={onClick}>
+              {buttonText}
+            </Button>
           </>
         </EmptyState>
       </PageContent>

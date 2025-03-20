@@ -1,5 +1,5 @@
 import React from "react";
-import { Notification } from "@canonical/react-components"
+import { Notification } from "@canonical/react-components";
 
 interface ErrorNotificationProps {
   error?: string | null;

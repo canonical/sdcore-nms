@@ -11,7 +11,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Navigation from "@/components/Navigation";
 import React from "react";
 
-
 const inter = Inter({ subsets: ["latin"] });
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -21,9 +20,9 @@ const queryClient = new QueryClient({
           return false;
         }
         return failureCount < 3;
-      }
-    }
-  }
+      },
+    },
+  },
 });
 
 export default function RootLayout({
@@ -32,7 +31,7 @@ export default function RootLayout({
   children: React.ReactNode;
   noLayout?: boolean;
 }) {
-  useAuth()
+  useAuth();
 
   return (
     <CookiesProvider>
@@ -51,9 +50,7 @@ export default function RootLayout({
               <div className="l-application" role="presentation">
                 <Navigation />
                 <main className="l-main">
-                  <div className="p-panel">
-                    {children}
-                  </div>
+                  <div className="p-panel">{children}</div>
                   <footer className="l-footer--sticky p-strip--light">
                     <Row>
                       <p>
@@ -63,7 +60,10 @@ export default function RootLayout({
                       </p>
                       <List
                         items={[
-                          <a key="Legal information" href="https://ubuntu.com/legal">
+                          <a
+                            key="Legal information"
+                            href="https://ubuntu.com/legal"
+                          >
                             Legal information
                           </a>,
                         ]}
@@ -75,8 +75,8 @@ export default function RootLayout({
               </div>
             </AuthProvider>
           </QueryClientProvider>
-        </body >
-      </html >
+        </body>
+      </html>
     </CookiesProvider>
   );
 }

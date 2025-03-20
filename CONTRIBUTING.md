@@ -1,7 +1,7 @@
 # Contributing
 
 NMS is the frontend code for SD-Core's [`Webconsole`](https://github.com/omec-project/webconsole/).
-It is based on the [`Next.js`](https://nextjs.org/) React framework.  In order to produce the final
+It is based on the [`Next.js`](https://nextjs.org/) React framework. In order to produce the final
 binary that will be used to serve the frontend for SD-Core, we statically export the project in this repository, embed it in the `Webconsole` application, and build the project together. The final webserver
 binary is the output of `Webconsole`'s build command.
 

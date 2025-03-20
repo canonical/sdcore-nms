@@ -1,19 +1,29 @@
 import { apiGetAllDeviceGroupNames } from "@/utils/deviceGroupOperations";
-import { Button, Form, Input, ConfirmationButton, Modal, Select } from "@canonical/react-components"
-import { createNetworkSlice, editNetworkSlice, deleteNetworkSlice } from "@/utils/networkSliceOperations";
+import {
+  Button,
+  Form,
+  Input,
+  ConfirmationButton,
+  Modal,
+  Select,
+} from "@canonical/react-components";
+import {
+  createNetworkSlice,
+  editNetworkSlice,
+  deleteNetworkSlice,
+} from "@/utils/networkSliceOperations";
 import { getGnbList } from "@/utils/gnbOperations";
 import { getUpfList } from "@/utils/upfOperations";
 import { GnbItem, NetworkSlice, UpfItem } from "@/components/types";
 import { queryKeys } from "@/utils/queryKeys";
-import { useAuth } from "@/utils/auth"
+import { useAuth } from "@/utils/auth";
 import { useFormik } from "formik";
-import { useQuery, useQueryClient } from "@tanstack/react-query"
-import { useState } from "react"
-import { OperationError, is401UnauthorizedError}  from "@/utils/errors";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { OperationError, is401UnauthorizedError } from "@/utils/errors";
 
 import * as Yup from "yup";
 import ErrorNotification from "@/components/ErrorNotification";
-
 
 interface NetworkSliceFormValues {
   name: string;
@@ -25,50 +35,49 @@ interface NetworkSliceFormValues {
 }
 
 const NetworkSliceSchema = Yup.object().shape({
-    name: Yup.string()
-      .min(1)
-      .max(20, "Name must not exceed 20 characters")
-      .matches(/^[a-zA-Z][a-zA-Z0-9-_]+$/, {
-        message: (
-          <>
-            Name must start with a letter. <br />
-            Only alphanumeric characters, dashes, and underscores.
-          </>
-        ),
-        })
-      .required("Name is required."),
-    mcc: Yup.string()
-      .matches(/^\d{3}$/, "MCC must be 3 digits.")
-      .length(3)
-      .required("MCC is required."),
-    mnc: Yup.string()
-      .matches(/^\d{2,3}$/, "MNC must be 2 or 3 digits.")
-      .min(2)
-      .max(3)
-      .required("MNC is required."),
-    sst: Yup.string()
-      .required("SST is required."),
-    upf: Yup.object()
-      .shape({ hostname: Yup.string().required("A UPF hostname is required.") })
-      .shape({ port: Yup.string().required("A UPF port is required.") })
-      .required("Selecting a UPF is required."),
-    gnbList: Yup.array()
-      .required("Selecting at least 1 gNodeB is required.")
-      .of(
-          Yup.object().shape({
-            name: Yup.string().required("gNodeB name is required."),
-            tac: Yup.string().required("gNodeB TAC is required."),
-          })
-      )
-      .min(1)
-  });
+  name: Yup.string()
+    .min(1)
+    .max(20, "Name must not exceed 20 characters")
+    .matches(/^[a-zA-Z][a-zA-Z0-9-_]+$/, {
+      message: (
+        <>
+          Name must start with a letter. <br />
+          Only alphanumeric characters, dashes, and underscores.
+        </>
+      ),
+    })
+    .required("Name is required."),
+  mcc: Yup.string()
+    .matches(/^\d{3}$/, "MCC must be 3 digits.")
+    .length(3)
+    .required("MCC is required."),
+  mnc: Yup.string()
+    .matches(/^\d{2,3}$/, "MNC must be 2 or 3 digits.")
+    .min(2)
+    .max(3)
+    .required("MNC is required."),
+  sst: Yup.string().required("SST is required."),
+  upf: Yup.object()
+    .shape({ hostname: Yup.string().required("A UPF hostname is required.") })
+    .shape({ port: Yup.string().required("A UPF port is required.") })
+    .required("Selecting a UPF is required."),
+  gnbList: Yup.array()
+    .required("Selecting at least 1 gNodeB is required.")
+    .of(
+      Yup.object().shape({
+        name: Yup.string().required("gNodeB name is required."),
+        tac: Yup.string().required("gNodeB TAC is required."),
+      }),
+    )
+    .min(1),
+});
 
 interface NetworkSliceModalProps {
   title: string;
   initialValues: NetworkSliceFormValues;
   isEdit?: boolean;
   onSubmit: (values: any) => void;
-  closeFn: () => void
+  closeFn: () => void;
 }
 
 export const NetworkSliceModal: React.FC<NetworkSliceModalProps> = ({
@@ -78,26 +87,31 @@ export const NetworkSliceModal: React.FC<NetworkSliceModalProps> = ({
   onSubmit,
   closeFn,
 }) => {
-  const auth = useAuth()
+  const auth = useAuth();
   const [apiError, setApiError] = useState<string | null>(null);
   const [gnbApiError, setGnbApiError] = useState<string | null>(null);
   const [upfApiError, setUpfApiError] = useState<string | null>(null);
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   const formik = useFormik<NetworkSliceFormValues>({
     initialValues,
     validationSchema: NetworkSliceSchema,
     onSubmit: async (values) => {
       try {
-        await onSubmit({...values,});
+        await onSubmit({ ...values });
         closeFn();
-        setTimeout(async () => { // Wait 100 ms before invalidating due to a race condition
-          await queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
-          await queryClient.invalidateQueries({ queryKey: [queryKeys.networkSliceNames] });
+        setTimeout(async () => {
+          // Wait 100 ms before invalidating due to a race condition
+          await queryClient.invalidateQueries({
+            queryKey: [queryKeys.networkSlices],
+          });
+          await queryClient.invalidateQueries({
+            queryKey: [queryKeys.networkSliceNames],
+          });
         }, 100);
       } catch (error) {
         if (is401UnauthorizedError(error)) {
-            auth.logout();
+          auth.logout();
         } else if (error instanceof OperationError) {
           setApiError(error.message);
         } else {
@@ -110,17 +124,17 @@ export const NetworkSliceModal: React.FC<NetworkSliceModalProps> = ({
   const upfQuery = useQuery<UpfItem[], Error>({
     queryKey: [queryKeys.upfs, auth.user?.authToken],
     queryFn: () => getUpfList(auth.user!.authToken),
-    enabled: auth.user ? true : false
+    enabled: auth.user ? true : false,
   });
 
   const gnbsQuery = useQuery<GnbItem[], Error>({
     queryKey: [queryKeys.gnbs, auth.user?.authToken],
     queryFn: () => getGnbList(auth.user?.authToken ?? ""),
     enabled: auth.user ? true : false,
-  })
+  });
 
-  const upfItems = upfQuery.data || [] as UpfItem[];
-  const gnbItems = gnbsQuery.data || [] as GnbItem[];
+  const upfItems = upfQuery.data || ([] as UpfItem[]);
+  const gnbItems = gnbsQuery.data || ([] as GnbItem[]);
 
   if (upfQuery.isError) {
     setUpfApiError("Failed to retrieve UPFs.");
@@ -137,16 +151,23 @@ export const NetworkSliceModal: React.FC<NetworkSliceModalProps> = ({
   }
 
   const handleUpfChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const upf = upfItems.find((item: UpfItem) => e.target.value === `${item.hostname}:${item.port}`);
+    const upf = upfItems.find(
+      (item: UpfItem) => e.target.value === `${item.hostname}:${item.port}`,
+    );
     void formik.setFieldValue("upf", upf);
   };
 
   const getUpfValueAsString = () => {
-    return formik.values.upf?.hostname ? `${formik.values.upf.hostname}:${formik.values.upf.port}` : "";
+    return formik.values.upf?.hostname
+      ? `${formik.values.upf.hostname}:${formik.values.upf.port}`
+      : "";
   };
 
   const handleGnbChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedValues = Array.from(e.target.selectedOptions, (option) => option.value);
+    const selectedValues = Array.from(
+      e.target.selectedOptions,
+      (option) => option.value,
+    );
     const selectedGnbItems = selectedValues.map((value) => {
       const [name, tac] = value.split(":");
       return { name, tac: Number(tac) };
@@ -156,19 +177,19 @@ export const NetworkSliceModal: React.FC<NetworkSliceModalProps> = ({
 
   return (
     <Modal
-      title={ title }
-      close={ closeFn }
+      title={title}
+      close={closeFn}
       buttonRow={
         <>
-        <Button
-          appearance="positive"
-          onClick={formik.submitForm}
-          disabled={!(formik.isValid && formik.dirty)}
-          loading={formik.isSubmitting}
-        >
-          Submit
-        </Button>
-        <Button onClick={closeFn}>Cancel</Button>
+          <Button
+            appearance="positive"
+            onClick={formik.submitForm}
+            disabled={!(formik.isValid && formik.dirty)}
+            loading={formik.isSubmitting}
+          >
+            Submit
+          </Button>
+          <Button onClick={closeFn}>Cancel</Button>
         </>
       }
     >
@@ -182,7 +203,7 @@ export const NetworkSliceModal: React.FC<NetworkSliceModalProps> = ({
           type="text"
           required
           stacked
-          disabled={ isEdit }
+          disabled={isEdit}
           placeholder="default"
           {...formik.getFieldProps("name")}
           error={formik.touched.name ? formik.errors.name : null}
@@ -195,7 +216,7 @@ export const NetworkSliceModal: React.FC<NetworkSliceModalProps> = ({
           required
           stacked
           placeholder="001"
-          disabled={ isEdit }
+          disabled={isEdit}
           {...formik.getFieldProps("mcc")}
           error={formik.touched.mcc ? formik.errors.mcc : null}
         />
@@ -207,7 +228,7 @@ export const NetworkSliceModal: React.FC<NetworkSliceModalProps> = ({
           required
           stacked
           placeholder="01"
-          disabled={ isEdit }
+          disabled={isEdit}
           {...formik.getFieldProps("mnc")}
           error={formik.touched.mnc ? formik.errors.mnc : null}
         />
@@ -231,13 +252,13 @@ export const NetworkSliceModal: React.FC<NetworkSliceModalProps> = ({
             },
           ]}
         />
-                <Select
+        <Select
           id="upf"
           label="UPF"
           required
           stacked
-          value={ getUpfValueAsString() }
-          onChange={ handleUpfChange }
+          value={getUpfValueAsString()}
+          onChange={handleUpfChange}
           options={[
             {
               label: "Select an option",
@@ -256,18 +277,20 @@ export const NetworkSliceModal: React.FC<NetworkSliceModalProps> = ({
           required
           stacked
           multiple
-          value={ formik.values.gnbList.map((gnb) => `${gnb.name}:${gnb.tac}`) }
-          onChange={ handleGnbChange }
+          value={formik.values.gnbList.map((gnb) => `${gnb.name}:${gnb.tac}`)}
+          onChange={handleGnbChange}
           options={[
             {
               label: "Select...",
               disabled: true,
               value: "",
             },
-            ...gnbItems.filter( gnb => gnb.tac ).map((gnb) => ({
-              label: `${gnb.name} (TAC: ${gnb.tac})`,
-              value: `${gnb.name}:${gnb.tac}`,
-            })),
+            ...gnbItems
+              .filter((gnb) => gnb.tac)
+              .map((gnb) => ({
+                label: `${gnb.name} (TAC: ${gnb.tac})`,
+                value: `${gnb.name}:${gnb.tac}`,
+              })),
           ]}
         />
       </Form>
@@ -275,13 +298,14 @@ export const NetworkSliceModal: React.FC<NetworkSliceModalProps> = ({
   );
 };
 
-
 type createNewNetworkSliceModalProps = {
-  closeFn: () => void
-}
+  closeFn: () => void;
+};
 
-export function CreateNetworkSliceModal({ closeFn }: createNewNetworkSliceModalProps) {
-  const auth = useAuth()
+export function CreateNetworkSliceModal({
+  closeFn,
+}: createNewNetworkSliceModalProps) {
+  const auth = useAuth();
   const handleSubmit = async (values: NetworkSliceFormValues) => {
     await createNetworkSlice({
       name: values.name,
@@ -290,7 +314,7 @@ export function CreateNetworkSliceModal({ closeFn }: createNewNetworkSliceModalP
       sst: values.sst,
       upf: values.upf,
       gnbList: values.gnbList,
-      token: auth.user ? auth.user.authToken : ""
+      token: auth.user ? auth.user.authToken : "",
     });
   };
 
@@ -313,32 +337,35 @@ export function CreateNetworkSliceModal({ closeFn }: createNewNetworkSliceModalP
       />
     </>
   );
-};
-
-type editNetworkSliceModalProps = {
-  networkSlice: NetworkSlice
-  closeFn: () => void
 }
 
-export function EditNetworkSliceModal({ networkSlice, closeFn }: editNetworkSliceModalProps) {
-  const auth = useAuth()
+type editNetworkSliceModalProps = {
+  networkSlice: NetworkSlice;
+  closeFn: () => void;
+};
+
+export function EditNetworkSliceModal({
+  networkSlice,
+  closeFn,
+}: editNetworkSliceModalProps) {
+  const auth = useAuth();
   const handleSubmit = async (values: NetworkSliceFormValues) => {
     await editNetworkSlice({
-        name: values.name,
-        mcc: values.mcc.toString(),
-        mnc: values.mnc.toString(),
-        sst: values.sst,
-        upf: values.upf,
-        gnbList: values.gnbList,
-        token: auth.user ? auth.user.authToken : ""
-      });
+      name: values.name,
+      mcc: values.mcc.toString(),
+      mnc: values.mnc.toString(),
+      sst: values.sst,
+      upf: values.upf,
+      gnbList: values.gnbList,
+      token: auth.user ? auth.user.authToken : "",
+    });
   };
   const getUpfFromNetworkSlice = () => {
     return {
       hostname: networkSlice["site-info"]?.["upf"]?.["upf-name"] || "",
       port: networkSlice["site-info"]?.["upf"]?.["upf-port"] || "",
     };
-  }
+  };
 
   const initialValues: NetworkSliceFormValues = {
     name: networkSlice?.["slice-name"] || "",
@@ -363,25 +390,31 @@ export function EditNetworkSliceModal({ networkSlice, closeFn }: editNetworkSlic
 }
 
 type deleteNetworkSliceModalProps = {
-  networkSliceName: string
-  deviceGroups: string[]
-}
+  networkSliceName: string;
+  deviceGroups: string[];
+};
 
-export const DeleteNetworkSliceButton: React.FC<deleteNetworkSliceModalProps> = ({
-  networkSliceName,
-  deviceGroups,
-}) => {
-  const auth = useAuth()
-  const queryClient = useQueryClient()
+export const DeleteNetworkSliceButton: React.FC<
+  deleteNetworkSliceModalProps
+> = ({ networkSliceName, deviceGroups }) => {
+  const auth = useAuth();
+  const queryClient = useQueryClient();
   const handleConfirmDelete = async (name: string) => {
     try {
       await deleteNetworkSlice(name, auth.user ? auth.user.authToken : "");
     } catch (error) {
-      if (is401UnauthorizedError(error)) { auth.logout(); }
+      if (is401UnauthorizedError(error)) {
+        auth.logout();
+      }
     }
-    setTimeout(async () => { // Wait 100 ms before invalidating due to a race condition
-      await queryClient.invalidateQueries({ queryKey: [queryKeys.networkSlices] });
-      await queryClient.invalidateQueries({ queryKey: [queryKeys.networkSliceNames] });
+    setTimeout(async () => {
+      // Wait 100 ms before invalidating due to a race condition
+      await queryClient.invalidateQueries({
+        queryKey: [queryKeys.networkSlices],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: [queryKeys.networkSliceNames],
+      });
     }, 100);
   };
 
@@ -389,17 +422,20 @@ export const DeleteNetworkSliceButton: React.FC<deleteNetworkSliceModalProps> = 
     queryKey: [queryKeys.deviceGroupNames, auth.user?.authToken],
     queryFn: () => apiGetAllDeviceGroupNames(auth.user?.authToken ?? ""),
     enabled: auth.user ? true : false,
-  })
+  });
 
-  if (deviceGroupQuery.status == "error" && is401UnauthorizedError(deviceGroupQuery.error)) {
+  if (
+    deviceGroupQuery.status == "error" &&
+    is401UnauthorizedError(deviceGroupQuery.error)
+  ) {
     auth.logout();
   }
 
   const existingDeviceGroups = deviceGroupQuery.data || [];
   const filteredDeviceGroups = () => {
     const deviceSet = new Set(existingDeviceGroups);
-    return deviceGroups.filter(deviceGroup => deviceSet.has(deviceGroup));
-  }
+    return deviceGroups.filter((deviceGroup) => deviceSet.has(deviceGroup));
+  };
 
   if (deviceGroups && filteredDeviceGroups().length > 0) {
     return (
@@ -410,8 +446,8 @@ export const DeleteNetworkSliceButton: React.FC<deleteNetworkSliceModalProps> = 
         confirmationModalProps={{
           title: "Warning",
           confirmButtonLabel: "Delete",
-          buttonRow: (null),
-          onConfirm: () => { },
+          buttonRow: null,
+          onConfirm: () => {},
           children: (
             <p>
               Network slice <b>{networkSliceName}</b> cannot be deleted.
@@ -425,7 +461,7 @@ export const DeleteNetworkSliceButton: React.FC<deleteNetworkSliceModalProps> = 
       >
         Delete
       </ConfirmationButton>
-    )
+    );
   }
   return (
     <ConfirmationButton
@@ -440,7 +476,8 @@ export const DeleteNetworkSliceButton: React.FC<deleteNetworkSliceModalProps> = 
         onConfirm: () => handleConfirmDelete(networkSliceName),
         children: (
           <p>
-            This will permanently delete the network slice <b>{networkSliceName}</b>.
+            This will permanently delete the network slice{" "}
+            <b>{networkSliceName}</b>.
             <br />
             You cannot undo this action.
           </p>
@@ -449,5 +486,5 @@ export const DeleteNetworkSliceButton: React.FC<deleteNetworkSliceModalProps> = 
     >
       Delete
     </ConfirmationButton>
-  )
-}
+  );
+};
