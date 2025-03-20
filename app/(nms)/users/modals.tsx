@@ -18,15 +18,18 @@ type accountDeleteActionModalProps = {
 }
 export function DeleteModal({ user, closeFn }: accountDeleteActionModalProps) {
   const auth = useAuth()
+  const [errorText, setErrorText] = useState<string>("")
   const queryClient = useQueryClient()
   const deleteMutation = useMutation({
     mutationFn: deleteUser,
     onSuccess: () => {
+      setErrorText("")
       queryClient.invalidateQueries({ queryKey: [queryKeys.users] })
       closeFn()
     },
     onError: (error) => {
       if (is401UnauthorizedError(error)) { auth.logout(); }
+      setErrorText("An unexpected error occurred.")
     },
   })
   return (
@@ -38,6 +41,7 @@ export function DeleteModal({ user, closeFn }: accountDeleteActionModalProps) {
           <Button onClick={closeFn}>Cancel</Button>
         </>
       }>
+      {errorText && <ErrorNotification error={errorText}/>}
       <p>Delete user {user.username}?</p>
       <p>This action is irreversible.</p>
     </Modal >
