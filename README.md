@@ -14,8 +14,8 @@ export WEBUI_ENDPOINT=<NMS-ip>:5000
 Run the NMS as follows:
 
 ```console
-docker pull ghcr.io/canonical/sdcore-nms:1.1.0
-docker run -it --env WEBUI_ENDPOINT  -v <path-to-config-file>:/config/webuicfg.yaml -p 5000:5000 ghcr.io/canonical/sdcore-nms:1.1.0
+docker pull ghcr.io/canonical/sdcore-nms:1.8.5
+docker run -it --env WEBUI_ENDPOINT  -v <path-to-config-file>:/config/webuicfg.yaml -p 5000:5000 ghcr.io/canonical/sdcore-nms:1.8.5
 ```
 
 An example of the config file can be found in `examples/config/webuicfg.yaml`
