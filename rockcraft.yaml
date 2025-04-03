@@ -1,6 +1,6 @@
 name: sdcore-nms
 base: ubuntu@24.04
-version: "1.1.0"
+version: "1.8.5"
 summary: SD-Core NMS
 description: |
   A Network Management System for managing the SD-Core 5G core network.
@@ -39,9 +39,9 @@ parts:
     plugin: go
     source: https://github.com/omec-project/webconsole.git
     source-type: git
-    source-tag: v1.8.5
+    source-tag: v${CRAFT_PROJECT_VERSION}
     build-snaps:
-      - go/1.21/stable
+      - go/1.24/stable
     go-buildtags:
       - ui
     stage-packages:
