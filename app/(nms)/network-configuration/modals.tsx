@@ -253,6 +253,7 @@ export const NetworkSliceModal: React.FC<NetworkSliceModalProps> = ({
         <Select
           id="gnbList"
           label="gNodeBs"
+          help="If gNB does not appear in the list, please check that a TAC is associated to it"
           required
           stacked
           multiple

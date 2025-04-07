@@ -19,12 +19,10 @@ interface GnbFormValues {
 
 const GnbSchema = Yup.object().shape({
     name: Yup.string()
-    .min(1)
-    .max(32, "Name must not exceed 32 characters")
-    .matches(/^[a-zA-Z][a-zA-Z0-9-_]+$/, {
+    .matches(/^[a-zA-Z][a-zA-Z0-9-_]{1,255}$/, {
     message: (
         <>
-        Name must start with a letter. <br />
+        Name must start with a letter and must not exceed 256 characters. <br />
         Only alphanumeric characters, dashes, and underscores.
         </>
     ),
