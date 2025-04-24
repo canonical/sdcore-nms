@@ -55,11 +55,14 @@ const DeviceGroupSchema = Yup.object().shape({
   dns: Yup.string()
       .required("IP is required")
       .test("is-ip", "Invalid IP Address.", (value) => value ? validateIp(value) : false),
-  mtu: Yup.number().min(1200).max(65535).required("Invalid MTU."),
+  mtu: Yup.number()
+      .min(1200, "MTU must be greater than or equal to 1,200.")
+      .max(65535, "MTU must be less than or equal to 65,535.")
+      .required("MTU must be between 1,200 and 65,535."),
   MBRDownstreamMbps: Yup.number()
       .min(0, "Value must be greater than or equal to 0.")
       .max(1000000, "Value must be less than or equal to 1,000,000.")
-      .required("Value should be between 0 and 1,000,000."),
+      .required("Value must be between 0 and 1,000,000."),
   MBRUpstreamMbps: Yup.number()
       .min(0, "Value must be greater than or equal to 0.")
       .max(1000000, "Value must be less than or equal to 1,000,000.")
@@ -209,6 +212,8 @@ export const DeviceGroupModal: React.FC<DeviceGroupModalProps> = ({
           type="number"
           required
           stacked
+          min={1200}
+          max={65535}
           defaultValue={1456}
           {...formik.getFieldProps("mtu")}
           error={formik.touched.mtu ? formik.errors.mtu : null}
@@ -221,6 +226,8 @@ export const DeviceGroupModal: React.FC<DeviceGroupModalProps> = ({
             type="number"
             required
             stacked
+            min={0}
+            max={1000000}
             placeholder="20"
             {...formik.getFieldProps("MBRDownstreamMbps")}
             error={
@@ -235,6 +242,8 @@ export const DeviceGroupModal: React.FC<DeviceGroupModalProps> = ({
             type="number"
             required
             stacked
+            min={0}
+            max={1000000}
             placeholder="5"
             {...formik.getFieldProps("MBRUpstreamMbps")}
             error={
