@@ -228,6 +228,7 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
         <Select
           id="network-slice"
           label="Network Slice"
+          help={isEdit ? "Only network slices using compatible MCC and MNC appear in the list" : ""}
           required
           stacked
           value={formik.values.networkSliceName}
