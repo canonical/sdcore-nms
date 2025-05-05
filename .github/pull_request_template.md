@@ -9,4 +9,5 @@ Please include a summary of the change. Please also include relevant motivation 
 - [ ] I have made corresponding changes to the documentation.
 - [ ] I have added tests that validate the behaviour of the software.
 - [ ] I validated that new and existing unit tests pass locally with my changes.
+- [ ] I have manually run the [frontend tests](/sdcore-nms/tests/README.md) for the feature that I am modifying.
 - [ ] Any dependent changes have been merged and published in downstream modules.
