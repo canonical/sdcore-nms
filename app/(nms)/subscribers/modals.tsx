@@ -493,3 +493,210 @@ export const DeleteSubscriberButton: React.FC<deleteSubscriberButtonProps> = ({r
     </ConfirmationButton>
   )
 }
+
+interface ViewSubscriberModalProps {
+  title: string;
+  initialValues: SubscriberFormValues;
+  isEdit?: boolean;
+  previousSlice?: NetworkSlice;
+  closeFn: () => void
+}
+
+const ViewExistingSubscriberModal: React.FC<ViewSubscriberModalProps> = ({
+  title,
+  initialValues,
+  isEdit = false,
+  previousSlice = null,
+  closeFn,
+}) => {
+  const auth = useAuth()
+  const [apiError, setApiError] = useState<string | null>(null);
+  const [imsiError, setImsiError] = useState<string | null>(null);
+
+  const formik = useFormik<SubscriberFormValues>({
+    initialValues,
+    validationSchema: SubscriberSchema,
+    onSubmit: async () => null,
+  });
+
+  return (
+    <Modal
+      title={title}
+      close={closeFn}
+      buttonRow={
+        <>
+        <Button onClick={closeFn}>Close</Button>
+        </>
+      }>
+      {apiError && <ErrorNotification error={apiError} />}
+      <Form>
+        <fieldset><legend></legend>
+          <Row>
+            <Col size={4}>IMSI</Col>
+            <Col size={8}>
+              <Row className="p-form__control" style={{ display : "flex" }}>
+                <Col size={2}>
+                  <label className="p-form__label" style={{color: "#999"}}>
+                  {`${previousSlice?.["site-info"]?.plmn?.mcc || ""}${previousSlice?.["site-info"]?.plmn?.mnc || ""}`}
+                  </label>
+                </Col>
+                <Col size={6}>
+                  <Input
+                    id="msin"
+                    type="text"
+                    required
+                    disabled
+                    placeholder="0100007487"
+                    {...formik.getFieldProps("msin")}
+                    error={formik.touched.msin && formik.errors.msin ? formik.errors.msin : imsiError }
+                  />
+                </Col>
+                <Col size={2}>
+                  <div className="u-align--right">
+                    <Button
+                      appearance="positive"
+                      type="button"
+                      onClick={() => {navigator.clipboard.writeText(formik.getFieldProps("msin").value)}}
+                    >
+                    Copy IMSI
+                    </Button>
+                  </div>
+                </Col>
+              </Row>
+            </Col>
+          </Row>
+        </fieldset>
+        <fieldset><legend>Authentication</legend>
+          <Row>
+            <Col size={4}>OPC</Col>
+            <Col size={8}>
+              <Row className="p-form__control">
+                <Col size={6}>
+                  <Input
+                    id="opc"
+                    type="text"
+                    required
+                    disabled
+                    placeholder="981d464c7c52eb6e5036234984ad0bcf"
+                    help="Operator code"
+                    {...formik.getFieldProps("opc")}
+                    error={formik.touched.opc ? formik.errors.opc : null}
+                  />
+                </Col>
+                <Col size={2}>
+                  <div className="u-align--right">
+                   <Button
+                      appearance="positive"
+                      type="button"
+                      onClick={() => {navigator.clipboard.writeText(formik.getFieldProps("opc").value)}}
+                    >
+                    Copy OPC
+                    </Button>
+                  </div>
+                </Col>
+              </Row>
+            </Col>
+          </Row>
+          <Row>
+            <Col size={4}>Key</Col>
+            <Col size={8}>
+              <Row className="p-form__control">
+                <Col size={6}>
+                  <Input
+                    id="key"
+                    type="text"
+                    required
+                    disabled
+                    placeholder="5122250214c33e723a5dd523fc145fc0"
+                    help="Permanent subscription key"
+                    {...formik.getFieldProps("key")}
+                    error={formik.touched.key ? formik.errors.key : null}
+                  />
+                </Col>
+                <Col size={2}>
+                  <div className="u-align--right">
+                    <Button
+                      appearance="positive"
+                      type="button"
+                      onClick={() => {navigator.clipboard.writeText(formik.getFieldProps("key").value)}}
+                    >
+                      Copy Key
+                    </Button>
+                  </div>
+                </Col>
+              </Row>
+            </Col>
+          </Row>
+          <Row>
+            <Col size={4}>Sequence Number</Col>
+            <Col size={8}>
+              <Row className="p-form__control">
+                <Col size={6}>
+                  <Input
+                    id="sequence-number"
+                    type="text"
+                    required
+                    disabled
+                    placeholder="16f3b3f70fc2"
+                    {...formik.getFieldProps("sequenceNumber")}
+                    error={
+                      formik.touched.sequenceNumber ? formik.errors.sequenceNumber : null
+                    }
+                  />
+                </Col>
+                <Col size={2}>
+                  <div className="u-align--right">
+                    <Button
+                      appearance="positive"
+                      type="button"
+                      onClick={() => {navigator.clipboard.writeText(formik.getFieldProps("sequenceNumber").value)}}
+                    >
+                      Copy SN
+                    </Button>
+                  </div>
+                </Col>
+              </Row>
+            </Col>
+          </Row>
+        </fieldset>
+      </Form>
+    </Modal>
+  )
+};
+
+type viewSubscriberModalProps = {
+  subscriber: SubscriberTableData;
+  token: string;
+  closeFn: () => void;
+}
+
+export function ViewSubscriberModal({ subscriber, token, closeFn }: viewSubscriberModalProps) {
+  const initialValues: SubscriberFormValues = {
+    plmnId: subscriber.rawImsi.slice(0, -10),
+    msin: subscriber.rawImsi.slice(-10),
+    opc: subscriber.opc,
+    key: subscriber.key,
+    sequenceNumber: subscriber.sequenceNumber,
+    networkSliceName: subscriber.networkSliceName,
+    deviceGroupName: subscriber.deviceGroupName,
+  };
+
+  const networkSliceQuery = useQuery<NetworkSlice, Error>({
+    queryKey: [queryKeys.networkSlice, token, subscriber.networkSliceName],
+    queryFn: () => getNetworkSlice(subscriber.networkSliceName, token ?? ""),
+    enabled: token ? true : false,
+  })
+  const networkSlice = (networkSliceQuery.data as NetworkSlice) || null;
+  console.error(networkSlice)
+  return (
+    <>
+      <ViewExistingSubscriberModal
+        title={"View subscriber: " + `${subscriber.rawImsi}`}
+        initialValues={initialValues}
+        isEdit={true}
+        previousSlice={networkSlice}
+        closeFn={closeFn}
+      />
+    </>
+  );
+}

@@ -4,7 +4,7 @@ import { Button, MainTable } from "@canonical/react-components"
 import { apiGetAllDeviceGroupNames } from "@/utils/deviceGroupOperations";
 import { apiGetAllNetworkSlices } from "@/utils/networkSliceOperations";
 import { getSubscribersTableData } from "@/utils/subscriberOperations";
-import { CreateSubscriberModal, DeleteSubscriberButton, EditSubscriberModal } from "@/app/(nms)/subscribers/modals";
+import { CreateSubscriberModal, DeleteSubscriberButton, EditSubscriberModal, ViewSubscriberModal } from "@/app/(nms)/subscribers/modals";
 import { SubscriberTableData } from "@/components/types";
 import { is401UnauthorizedError }  from "@/utils/errors";
 import { MainTableRow } from "@canonical/react-components/dist/components/MainTable/MainTable"
@@ -24,10 +24,11 @@ import SyncOutlinedIcon from "@mui/icons-material/SyncOutlined";
 
 const CREATE = "create" as const;
 const EDIT = "edit" as const;
+const VIEW = "view" as const;
 
 type modalData = {
   subscriber: SubscriberTableData;
-  action: typeof CREATE | typeof EDIT;
+  action: typeof CREATE | typeof EDIT | typeof VIEW;
 }
 
 export default function Subscribers() {
@@ -122,6 +123,19 @@ export default function Subscribers() {
               onClick={() => {
                 setModalData({
                   subscriber: subscriber,
+                  action: VIEW,
+                });
+              }}
+              title="View"
+            >
+              View
+            </Button>
+            <Button
+              appearance=""
+              className="u-no-margin--bottom"
+              onClick={() => {
+                setModalData({
+                  subscriber: subscriber,
                   action: EDIT,
                 });
               }}
@@ -168,6 +182,12 @@ export default function Subscribers() {
       </PageContent>
       {modalData?.action == CREATE && <CreateSubscriberModal closeFn={() => setModalData(null)} />}
       {modalData?.action == EDIT && <EditSubscriberModal
+                                      subscriber={modalData.subscriber}
+                                      token={auth.user?.authToken ?? ""}
+                                      closeFn={() => setModalData(null)}
+                                    />
+      }
+      {modalData?.action == VIEW && <ViewSubscriberModal
                                       subscriber={modalData.subscriber}
                                       token={auth.user?.authToken ?? ""}
                                       closeFn={() => setModalData(null)}
