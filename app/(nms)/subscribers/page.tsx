@@ -1,10 +1,10 @@
 "use client";
 
-import { Button, MainTable } from "@canonical/react-components"
+import { Button, ContextualMenu, MainTable } from "@canonical/react-components"
 import { apiGetAllDeviceGroupNames } from "@/utils/deviceGroupOperations";
 import { apiGetAllNetworkSlices } from "@/utils/networkSliceOperations";
 import { getSubscribersTableData } from "@/utils/subscriberOperations";
-import { CreateSubscriberModal, DeleteSubscriberButton, EditSubscriberModal, ViewSubscriberModal } from "@/app/(nms)/subscribers/modals";
+import { CreateSubscriberModal, DeleteSubscriberModal, EditSubscriberModal, ViewSubscriberModal } from "@/app/(nms)/subscribers/modals";
 import { SubscriberTableData } from "@/components/types";
 import { is401UnauthorizedError }  from "@/utils/errors";
 import { MainTableRow } from "@canonical/react-components/dist/components/MainTable/MainTable"
@@ -25,10 +25,11 @@ import SyncOutlinedIcon from "@mui/icons-material/SyncOutlined";
 const CREATE = "create" as const;
 const EDIT = "edit" as const;
 const VIEW = "view" as const;
+const DELETE = "delete" as const;
 
 type modalData = {
   subscriber: SubscriberTableData;
-  action: typeof CREATE | typeof EDIT | typeof VIEW;
+  action: typeof CREATE | typeof EDIT | typeof VIEW | typeof DELETE;
 }
 
 export default function Subscribers() {
@@ -116,36 +117,43 @@ export default function Subscribers() {
         { content: subscriber.deviceGroupName },
         {
           content:
-          <div>
-            <Button
-              appearance=""
-              className="u-no-margin--bottom"
-              onClick={() => {
-                setModalData({
-                  subscriber: subscriber,
-                  action: VIEW,
-                });
-              }}
-              title="View"
-            >
-              View
-            </Button>
-            <Button
-              appearance=""
-              className="u-no-margin--bottom"
-              onClick={() => {
-                setModalData({
-                  subscriber: subscriber,
-                  action: EDIT,
-                });
-              }}
-              title="Edit"
-            >
-              Edit
-            </Button>
-            <DeleteSubscriberButton rawImsi={subscriber.rawImsi} />
-          </div>,
-          className:"u-align--right",
+            <ContextualMenu
+              links={
+                [
+                  {
+                    children: "View",
+                    onClick: () => {
+                      setModalData({
+                        subscriber: subscriber,
+                        action: VIEW,
+                      })
+                    }
+                  },
+                  {
+                    children: "Edit",
+                    onClick: () => {
+                      setModalData({
+                        subscriber: subscriber,
+                        action: EDIT,
+                      })
+                    }
+                  },
+                  {
+                    children: "Delete",
+                    onClick: () => {
+                      setModalData({
+                        subscriber: subscriber,
+                        action: DELETE,
+                      })
+                    }
+                  },
+                ]
+              }
+              hasToggleIcon
+              position="right"
+            />,
+          className: "u-align--right",
+          hasOverflow: true
         },
       ],
     };
@@ -189,7 +197,11 @@ export default function Subscribers() {
       }
       {modalData?.action == VIEW && <ViewSubscriberModal
                                       subscriber={modalData.subscriber}
-                                      token={auth.user?.authToken ?? ""}
+                                      closeFn={() => setModalData(null)}
+                                    />
+      }
+      {modalData?.action == DELETE && <DeleteSubscriberModal
+                                      rawImsi={modalData.subscriber.rawImsi}
                                       closeFn={() => setModalData(null)}
                                     />
       }

@@ -10,7 +10,7 @@ import { queryKeys } from "@/utils/queryKeys";
 import { useAuth } from "@/utils/auth"
 import { useFormik } from "formik";
 import { useQueryClient } from "@tanstack/react-query"
-import { useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery } from "@tanstack/react-query"
 import { useState } from "react"
 import { OperationError, is401UnauthorizedError}  from "@/utils/errors";
 
@@ -268,7 +268,7 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
               : [])
           ]}
         />
-        <fieldset><legend></legend>
+        <fieldset><legend>Identity</legend>
           <Row>
             <Col size={4}>* IMSI</Col>
             <Col size={8}>
@@ -289,6 +289,7 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
                     required
                     disabled={isEdit}
                     placeholder="0100007487"
+                    help="Mobile Subscriber Identification Number"
                     {...formik.getFieldProps("msin")}
                     error={formik.touched.msin && formik.errors.msin ? formik.errors.msin : imsiError }
                   />
@@ -312,7 +313,7 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
               </Button>
             </div></div>
           }
-          <Input
+          <Input className="p-form__control" style={{ textTransform : "uppercase" }}
             id="opc"
             label="OPC"
             type="text"
@@ -324,7 +325,7 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
             {...formik.getFieldProps("opc")}
             error={formik.touched.opc ? formik.errors.opc : null}
           />
-          <Input
+          <Input className="p-form__control" style={{ textTransform : "uppercase" }}
             id="key"
             label="Key"
             type="text"
@@ -336,7 +337,7 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
             {...formik.getFieldProps("key")}
             error={formik.touched.key ? formik.errors.key : null}
           />
-          <Input
+          <Input className="p-form__control" style={{ textTransform : "uppercase" }}
             id="sequence-number"
             label="Sequence Number"
             type="text"
@@ -344,6 +345,7 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
             stacked
             disabled={isEdit}
             placeholder="16f3b3f70fc2"
+            help="Sequence Number"
             {...formik.getFieldProps("sequenceNumber")}
             error={
               formik.touched.sequenceNumber ? formik.errors.sequenceNumber : null
@@ -435,6 +437,7 @@ export function EditSubscriberModal({ subscriber, token, closeFn }: editSubscrib
     enabled: token ? true : false,
   })
   const networkSlice = (networkSliceQuery.data as NetworkSlice) || null;
+  console.error(networkSlice)
   return (
     <>
       <SubscriberModal
@@ -450,73 +453,57 @@ export function EditSubscriberModal({ subscriber, token, closeFn }: editSubscrib
 }
 
 type deleteSubscriberButtonProps = {
-  rawImsi: string;
+  rawImsi: string
+  closeFn: () => void
 }
 
-export const DeleteSubscriberButton: React.FC<deleteSubscriberButtonProps> = ({rawImsi}) => {
+export function DeleteSubscriberModal({ rawImsi, closeFn }: deleteSubscriberButtonProps) {
   const auth = useAuth()
+  const [errorText, setErrorText] = useState<string>("")
   const queryClient = useQueryClient()
-  const handleConfirmDelete = async (rawImsi: string) => {
-    try {
-      await deleteSubscriber(rawImsi, auth.user ? auth.user.authToken : "");
-    } catch (error) {
+  const deleteMutation = useMutation({
+    mutationFn: deleteSubscriber,
+    onSuccess: () => {
+      setErrorText("")
+      setTimeout(async () => { // Wait 100 ms before invalidating due to a race condition
+        await queryClient.invalidateQueries({ queryKey: [queryKeys.deviceGroups] });
+        await queryClient.invalidateQueries({ queryKey: [queryKeys.subscribers] });
+      }, 100);
+      closeFn()
+    },
+    onError: (error) => {
       if (is401UnauthorizedError(error)) { auth.logout(); }
-    }
-    setTimeout(async () => { // Wait 100 ms before invalidating due to a race condition
-      await queryClient.invalidateQueries({ queryKey: [queryKeys.deviceGroups] });
-      await queryClient.invalidateQueries({ queryKey: [queryKeys.subscribers] });
-    }, 100);
-  };
-
+      setErrorText("An unexpected error occurred.")
+    },
+  })
   return (
-    <ConfirmationButton
-      appearance="negative"
-      className="u-no-margin--bottom"
-      shiftClickEnabled
-      showShiftClickHint
-      title="Delete subscriber"
-      confirmationModalProps={{
-        title: `Delete subscriber ${rawImsi}`,
-        confirmButtonLabel: "Delete",
-        onConfirm: () => handleConfirmDelete(rawImsi),
-        children: (
-          <p>
-            This will permanently delete the subscriber <b>{rawImsi}</b>.
-            <br />
-            You cannot undo this action.
-          </p>
-        ),
-      }}
-    >
-      Delete
-    </ConfirmationButton>
+    <Modal
+      title="Confirm delete"
+      buttonRow={
+        <>
+          <Button appearance="negative" onClick={() => deleteMutation.mutate({ token: auth.user ? auth.user.authToken : "", rawImsi: rawImsi })}>Confirm</Button>
+          <Button onClick={closeFn}>Cancel</Button>
+        </>
+      }>
+      {errorText && <ErrorNotification error={errorText}/>}
+      <p>This will permanently delete the subscriber <b>{rawImsi}</b></p>
+      <p>You cannot undo this action.</p>
+    </Modal >
   )
 }
 
 interface ViewSubscriberModalProps {
   title: string;
-  initialValues: SubscriberFormValues;
-  isEdit?: boolean;
-  previousSlice?: NetworkSlice;
+  subscriberValues: SubscriberFormValues;
   closeFn: () => void
 }
 
 const ViewExistingSubscriberModal: React.FC<ViewSubscriberModalProps> = ({
   title,
-  initialValues,
-  isEdit = false,
-  previousSlice = null,
+  subscriberValues,
   closeFn,
 }) => {
-  const auth = useAuth()
-  const [apiError, setApiError] = useState<string | null>(null);
-  const [imsiError, setImsiError] = useState<string | null>(null);
-
-  const formik = useFormik<SubscriberFormValues>({
-    initialValues,
-    validationSchema: SubscriberSchema,
-    onSubmit: async () => null,
-  });
+  const [apiError, _] = useState<string | null>(null);
 
   return (
     <Modal
@@ -529,35 +516,30 @@ const ViewExistingSubscriberModal: React.FC<ViewSubscriberModalProps> = ({
       }>
       {apiError && <ErrorNotification error={apiError} />}
       <Form>
-        <fieldset><legend></legend>
+        <fieldset><legend>Identity</legend>
           <Row>
-            <Col size={4}>IMSI</Col>
-            <Col size={8}>
-              <Row className="p-form__control" style={{ display : "flex" }}>
-                <Col size={2}>
-                  <label className="p-form__label" style={{color: "#999"}}>
-                  {`${previousSlice?.["site-info"]?.plmn?.mcc || ""}${previousSlice?.["site-info"]?.plmn?.mnc || ""}`}
-                  </label>
-                </Col>
-                <Col size={6}>
+            <Col size={3}>IMSI</Col>
+            <Col size={9}>
+              <Row className="p-form__control">
+                <Col size={7}>
                   <Input
-                    id="msin"
+                    id="imsi"
                     type="text"
+                    inputMode="numeric"
                     required
                     disabled
-                    placeholder="0100007487"
-                    {...formik.getFieldProps("msin")}
-                    error={formik.touched.msin && formik.errors.msin ? formik.errors.msin : imsiError }
+                    help="International Mobile Subscriber Identity"
+                    value={subscriberValues.plmnId + subscriberValues.msin}
                   />
                 </Col>
                 <Col size={2}>
                   <div className="u-align--right">
-                    <Button
+                   <Button
                       appearance="positive"
                       type="button"
-                      onClick={() => {navigator.clipboard.writeText(formik.getFieldProps("msin").value)}}
+                      onClick={() => {navigator.clipboard.writeText(subscriberValues.plmnId + subscriberValues.msin)}}
                     >
-                    Copy IMSI
+                    Copy
                     </Button>
                   </div>
                 </Col>
@@ -567,19 +549,16 @@ const ViewExistingSubscriberModal: React.FC<ViewSubscriberModalProps> = ({
         </fieldset>
         <fieldset><legend>Authentication</legend>
           <Row>
-            <Col size={4}>OPC</Col>
-            <Col size={8}>
+            <Col size={3}>OPC</Col>
+            <Col size={9}>
               <Row className="p-form__control">
-                <Col size={6}>
-                  <Input
+                <Col size={7}>
+                  <Input className="p-form__control" style={{ textTransform : "uppercase" }}
                     id="opc"
                     type="text"
-                    required
                     disabled
-                    placeholder="981d464c7c52eb6e5036234984ad0bcf"
                     help="Operator code"
-                    {...formik.getFieldProps("opc")}
-                    error={formik.touched.opc ? formik.errors.opc : null}
+                    value={subscriberValues.opc}
                   />
                 </Col>
                 <Col size={2}>
@@ -587,9 +566,9 @@ const ViewExistingSubscriberModal: React.FC<ViewSubscriberModalProps> = ({
                    <Button
                       appearance="positive"
                       type="button"
-                      onClick={() => {navigator.clipboard.writeText(formik.getFieldProps("opc").value)}}
+                      onClick={() => {navigator.clipboard.writeText(subscriberValues.opc)}}
                     >
-                    Copy OPC
+                    Copy
                     </Button>
                   </div>
                 </Col>
@@ -597,19 +576,16 @@ const ViewExistingSubscriberModal: React.FC<ViewSubscriberModalProps> = ({
             </Col>
           </Row>
           <Row>
-            <Col size={4}>Key</Col>
-            <Col size={8}>
+            <Col size={3}>Key</Col>
+            <Col size={9}>
               <Row className="p-form__control">
-                <Col size={6}>
-                  <Input
+                <Col size={7}>
+                  <Input className="p-form__control" style={{ textTransform : "uppercase" }}
                     id="key"
                     type="text"
-                    required
                     disabled
-                    placeholder="5122250214c33e723a5dd523fc145fc0"
                     help="Permanent subscription key"
-                    {...formik.getFieldProps("key")}
-                    error={formik.touched.key ? formik.errors.key : null}
+                    value={subscriberValues.key}
                   />
                 </Col>
                 <Col size={2}>
@@ -617,9 +593,9 @@ const ViewExistingSubscriberModal: React.FC<ViewSubscriberModalProps> = ({
                     <Button
                       appearance="positive"
                       type="button"
-                      onClick={() => {navigator.clipboard.writeText(formik.getFieldProps("key").value)}}
+                      onClick={() => {navigator.clipboard.writeText(subscriberValues.key)}}
                     >
-                      Copy Key
+                      Copy
                     </Button>
                   </div>
                 </Col>
@@ -627,20 +603,16 @@ const ViewExistingSubscriberModal: React.FC<ViewSubscriberModalProps> = ({
             </Col>
           </Row>
           <Row>
-            <Col size={4}>Sequence Number</Col>
-            <Col size={8}>
+            <Col size={3}>Sequence Number</Col>
+            <Col size={9}>
               <Row className="p-form__control">
-                <Col size={6}>
-                  <Input
+                <Col size={7}>
+                  <Input className="p-form__control" style={{ textTransform : "uppercase" }}
                     id="sequence-number"
                     type="text"
-                    required
                     disabled
-                    placeholder="16f3b3f70fc2"
-                    {...formik.getFieldProps("sequenceNumber")}
-                    error={
-                      formik.touched.sequenceNumber ? formik.errors.sequenceNumber : null
-                    }
+                    help="Sequence Number"
+                    value={subscriberValues.sequenceNumber}
                   />
                 </Col>
                 <Col size={2}>
@@ -648,9 +620,9 @@ const ViewExistingSubscriberModal: React.FC<ViewSubscriberModalProps> = ({
                     <Button
                       appearance="positive"
                       type="button"
-                      onClick={() => {navigator.clipboard.writeText(formik.getFieldProps("sequenceNumber").value)}}
+                      onClick={() => {navigator.clipboard.writeText(subscriberValues.sequenceNumber)}}
                     >
-                      Copy SN
+                      Copy
                     </Button>
                   </div>
                 </Col>
@@ -665,12 +637,11 @@ const ViewExistingSubscriberModal: React.FC<ViewSubscriberModalProps> = ({
 
 type viewSubscriberModalProps = {
   subscriber: SubscriberTableData;
-  token: string;
   closeFn: () => void;
 }
 
-export function ViewSubscriberModal({ subscriber, token, closeFn }: viewSubscriberModalProps) {
-  const initialValues: SubscriberFormValues = {
+export function ViewSubscriberModal({ subscriber, closeFn }: viewSubscriberModalProps) {
+  const subscriberValues: SubscriberFormValues = {
     plmnId: subscriber.rawImsi.slice(0, -10),
     msin: subscriber.rawImsi.slice(-10),
     opc: subscriber.opc,
@@ -680,20 +651,11 @@ export function ViewSubscriberModal({ subscriber, token, closeFn }: viewSubscrib
     deviceGroupName: subscriber.deviceGroupName,
   };
 
-  const networkSliceQuery = useQuery<NetworkSlice, Error>({
-    queryKey: [queryKeys.networkSlice, token, subscriber.networkSliceName],
-    queryFn: () => getNetworkSlice(subscriber.networkSliceName, token ?? ""),
-    enabled: token ? true : false,
-  })
-  const networkSlice = (networkSliceQuery.data as NetworkSlice) || null;
-  console.error(networkSlice)
   return (
     <>
       <ViewExistingSubscriberModal
         title={"View subscriber: " + `${subscriber.rawImsi}`}
-        initialValues={initialValues}
-        isEdit={true}
-        previousSlice={networkSlice}
+        subscriberValues={subscriberValues}
         closeFn={closeFn}
       />
     </>
