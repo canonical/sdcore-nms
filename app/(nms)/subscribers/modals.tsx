@@ -435,7 +435,6 @@ export function EditSubscriberModal({ subscriber, token, closeFn }: editSubscrib
     enabled: token ? true : false,
   })
   const networkSlice = (networkSliceQuery.data as NetworkSlice) || null;
-  console.error(networkSlice)
   return (
     <>
       <SubscriberModal
