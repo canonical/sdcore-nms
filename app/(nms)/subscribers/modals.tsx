@@ -1,5 +1,5 @@
 import { apiGetAllDeviceGroupNames } from "@/utils/deviceGroupOperations";
-import { Button, Form, Input, ConfirmationButton, Modal, Select, Row, Col } from "@canonical/react-components"
+import { Button, CodeSnippet, Form, Input, Modal, Select, Row, Col } from "@canonical/react-components"
 import { createSubscriber, deleteSubscriber, editSubscriber } from "@/utils/subscriberOperations";
 import { generateOpc } from "@/utils/sim_configuration/generateOpc";
 import { generateSqn } from "@/utils/sim_configuration/generateSqn";
@@ -553,7 +553,7 @@ const ViewExistingSubscriberModal: React.FC<ViewSubscriberModalProps> = ({
             <Col size={9}>
               <Row className="p-form__control">
                 <Col size={7}>
-                  <Input className="p-form__control" style={{ textTransform : "uppercase" }}
+                  <Input className="p-form__control" style={{ textTransform: "uppercase" }}
                     id="opc"
                     type="text"
                     disabled
@@ -580,7 +580,7 @@ const ViewExistingSubscriberModal: React.FC<ViewSubscriberModalProps> = ({
             <Col size={9}>
               <Row className="p-form__control">
                 <Col size={7}>
-                  <Input className="p-form__control" style={{ textTransform : "uppercase" }}
+                  <Input className="p-form__control" style={{ textTransform: "uppercase" }}
                     id="key"
                     type="text"
                     disabled
@@ -607,11 +607,11 @@ const ViewExistingSubscriberModal: React.FC<ViewSubscriberModalProps> = ({
             <Col size={9}>
               <Row className="p-form__control">
                 <Col size={7}>
-                  <Input className="p-form__control" style={{ textTransform : "uppercase" }}
+                  <Input className="p-form__control" style={{ textTransform: "uppercase" }}
                     id="sequence-number"
                     type="text"
                     disabled
-                    help="Sequence Number"
+                    help="Sequence number"
                     value={subscriberValues.sequenceNumber}
                   />
                 </Col>
@@ -627,6 +627,30 @@ const ViewExistingSubscriberModal: React.FC<ViewSubscriberModalProps> = ({
                   </div>
                 </Col>
               </Row>
+            </Col>
+          </Row>
+        </fieldset>
+        <fieldset><legend>pySim Command</legend>
+          <Row className="p-form__control">
+            <Col size={10}>
+              <CodeSnippet style={{ opacity: 0.33, cursor: "not-allowed" }}
+                blocks={[{
+                  code: `pySim-prog.py --mcc ${subscriberValues.plmnId.substring(0,3)} --mnc ${subscriberValues.plmnId.substring(3)}
+--ki ${subscriberValues.key}
+--opc ${subscriberValues.opc}
+--imsi ${subscriberValues.plmnId+subscriberValues.msin}`
+                }]} />
+            </Col>
+            <Col size={2}>
+              <div className="u-align--right">
+                <Button
+                  appearance="positive"
+                  type="button"
+                  onClick={() => {navigator.clipboard.writeText(`pySim-prog.py --mcc ${subscriberValues.plmnId.substring(0,3)} --mnc ${subscriberValues.plmnId.substring(3)} --ki ${subscriberValues.key} --opc ${subscriberValues.opc} --imsi ${subscriberValues.plmnId+subscriberValues.msin}`)}}
+                >
+                Copy
+                </Button>
+              </div>
             </Col>
           </Row>
         </fieldset>
