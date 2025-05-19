@@ -60,6 +60,15 @@ To run lint check:
 npm run lint
 ```
 
+## Enabling copy to clipboard
+
+Since most browsers expose the Clipboard API only for secure contexts (HTTPS, for instance), it is required to enable it manually.
+
+### Google Chrome
+
+To enable Clipboard API for HTTP in Google Chrome, open the `chrome://flags` page, enable the `unsafely-treat-insecure-origin-as-secure`
+experimental feature and add the NMS endpoint in the whitelisted domains.
+
 ## Build
 
 There are 2 targets for building: the `webconsole` binary and the `sdcore-nms.rock` OCI image. The artifacts
