@@ -481,8 +481,17 @@ export function DeleteSubscriberModal({ rawImsi, closeFn }: deleteSubscriberButt
       title="Confirm delete"
       buttonRow={
         <>
-          <Button appearance="negative" onClick={() => deleteMutation.mutate({ token: auth.user ? auth.user.authToken : "", rawImsi: rawImsi })}>Confirm</Button>
-          <Button onClick={closeFn}>Cancel</Button>
+          <Button
+            appearance="negative"
+            onClick={() => deleteMutation.mutate({ token: auth.user ? auth.user.authToken : "", rawImsi: rawImsi })}
+          >
+            Confirm
+          </Button>
+          <Button
+            onClick={closeFn}
+          >
+            Cancel
+          </Button>
         </>
       }>
       {errorText && <ErrorNotification error={errorText}/>}
@@ -522,15 +531,7 @@ const ViewExistingSubscriberModal: React.FC<ViewSubscriberModalProps> = ({
             <Col size={9}>
               <Row className="p-form__control">
                 <Col size={7}>
-                  <Input
-                    id="imsi"
-                    type="text"
-                    inputMode="numeric"
-                    required
-                    disabled
-                    help="International Mobile Subscriber Identity"
-                    value={subscriberValues.plmnId + subscriberValues.msin}
-                  />
+                  <div>{subscriberValues.plmnId + subscriberValues.msin}</div>
                 </Col>
                 <Col size={2}>
                   <div className="u-align--right">
@@ -539,7 +540,7 @@ const ViewExistingSubscriberModal: React.FC<ViewSubscriberModalProps> = ({
                       type="button"
                       onClick={() => {navigator.clipboard.writeText(subscriberValues.plmnId + subscriberValues.msin)}}
                     >
-                    Copy
+                      Copy
                     </Button>
                   </div>
                 </Col>
@@ -553,13 +554,7 @@ const ViewExistingSubscriberModal: React.FC<ViewSubscriberModalProps> = ({
             <Col size={9}>
               <Row className="p-form__control">
                 <Col size={7}>
-                  <Input className="p-form__control" style={{ textTransform: "uppercase" }}
-                    id="opc"
-                    type="text"
-                    disabled
-                    help="Operator code"
-                    value={subscriberValues.opc}
-                  />
+                  <div>{subscriberValues.opc}</div>
                 </Col>
                 <Col size={2}>
                   <div className="u-align--right">
@@ -568,7 +563,7 @@ const ViewExistingSubscriberModal: React.FC<ViewSubscriberModalProps> = ({
                       type="button"
                       onClick={() => {navigator.clipboard.writeText(subscriberValues.opc)}}
                     >
-                    Copy
+                      Copy
                     </Button>
                   </div>
                 </Col>
@@ -580,13 +575,7 @@ const ViewExistingSubscriberModal: React.FC<ViewSubscriberModalProps> = ({
             <Col size={9}>
               <Row className="p-form__control">
                 <Col size={7}>
-                  <Input className="p-form__control" style={{ textTransform: "uppercase" }}
-                    id="key"
-                    type="text"
-                    disabled
-                    help="Permanent subscription key"
-                    value={subscriberValues.key}
-                  />
+                  <div>{subscriberValues.key}</div>
                 </Col>
                 <Col size={2}>
                   <div className="u-align--right">
@@ -607,13 +596,7 @@ const ViewExistingSubscriberModal: React.FC<ViewSubscriberModalProps> = ({
             <Col size={9}>
               <Row className="p-form__control">
                 <Col size={7}>
-                  <Input className="p-form__control" style={{ textTransform: "uppercase" }}
-                    id="sequence-number"
-                    type="text"
-                    disabled
-                    help="Sequence number"
-                    value={subscriberValues.sequenceNumber}
-                  />
+                  <div>{subscriberValues.sequenceNumber}</div>
                 </Col>
                 <Col size={2}>
                   <div className="u-align--right">
@@ -630,7 +613,7 @@ const ViewExistingSubscriberModal: React.FC<ViewSubscriberModalProps> = ({
             </Col>
           </Row>
         </fieldset>
-        <fieldset><legend>pySim Command</legend>
+        <fieldset><legend>pySim command</legend>
           <Row className="p-form__control">
             <Col size={10}>
               <CodeSnippet style={{ opacity: 0.33, cursor: "not-allowed" }}
@@ -638,7 +621,7 @@ const ViewExistingSubscriberModal: React.FC<ViewSubscriberModalProps> = ({
                   code: `pySim-prog.py --mcc ${subscriberValues.plmnId.substring(0,3)} --mnc ${subscriberValues.plmnId.substring(3)}
 --ki ${subscriberValues.key}
 --opc ${subscriberValues.opc}
---imsi ${subscriberValues.plmnId+subscriberValues.msin}`
+--imsi ${subscriberValues.plmnId+subscriberValues.msin} --num 0`
                 }]} />
             </Col>
             <Col size={2}>
@@ -646,7 +629,7 @@ const ViewExistingSubscriberModal: React.FC<ViewSubscriberModalProps> = ({
                 <Button
                   appearance="positive"
                   type="button"
-                  onClick={() => {navigator.clipboard.writeText(`pySim-prog.py --mcc ${subscriberValues.plmnId.substring(0,3)} --mnc ${subscriberValues.plmnId.substring(3)} --ki ${subscriberValues.key} --opc ${subscriberValues.opc} --imsi ${subscriberValues.plmnId+subscriberValues.msin}`)}}
+                  onClick={() => {navigator.clipboard.writeText(`pySim-prog.py --mcc ${subscriberValues.plmnId.substring(0,3)} --mnc ${subscriberValues.plmnId.substring(3)} --ki ${subscriberValues.key} --opc ${subscriberValues.opc} --imsi ${subscriberValues.plmnId+subscriberValues.msin} --num 0`)}}
                 >
                 Copy
                 </Button>
