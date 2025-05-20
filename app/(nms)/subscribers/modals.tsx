@@ -1,5 +1,5 @@
 import { apiGetAllDeviceGroupNames } from "@/utils/deviceGroupOperations";
-import { Button, CodeSnippet, Form, Input, Modal, Select, Row, Col } from "@canonical/react-components"
+import { Button, CodeSnippet, ConfirmationButton, Form, Input, Modal, Select, Row, Col } from "@canonical/react-components"
 import { createSubscriber, deleteSubscriber, editSubscriber } from "@/utils/subscriberOperations";
 import { generateOpc } from "@/utils/sim_configuration/generateOpc";
 import { generateSqn } from "@/utils/sim_configuration/generateSqn";
@@ -10,9 +10,10 @@ import { queryKeys } from "@/utils/queryKeys";
 import { useAuth } from "@/utils/auth"
 import { useFormik } from "formik";
 import { useQueryClient } from "@tanstack/react-query"
-import { useMutation, useQuery } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import { useState } from "react"
 import { OperationError, is401UnauthorizedError}  from "@/utils/errors";
+import "./styles.css";
 
 import ErrorNotification from "@/components/ErrorNotification";
 import * as Yup from "yup";
@@ -437,7 +438,6 @@ export function EditSubscriberModal({ subscriber, token, closeFn }: editSubscrib
     enabled: token ? true : false,
   })
   const networkSlice = (networkSliceQuery.data as NetworkSlice) || null;
-  console.error(networkSlice)
   return (
     <>
       <SubscriberModal
@@ -453,77 +453,75 @@ export function EditSubscriberModal({ subscriber, token, closeFn }: editSubscrib
 }
 
 type deleteSubscriberButtonProps = {
-  rawImsi: string
-  closeFn: () => void
+  rawImsi: string;
 }
 
-export function DeleteSubscriberModal({ rawImsi, closeFn }: deleteSubscriberButtonProps) {
+export const DeleteSubscriberButton: React.FC<deleteSubscriberButtonProps> = ({rawImsi}) => {
   const auth = useAuth()
-  const [errorText, setErrorText] = useState<string>("")
   const queryClient = useQueryClient()
-  const deleteMutation = useMutation({
-    mutationFn: deleteSubscriber,
-    onSuccess: () => {
-      setErrorText("")
-      setTimeout(async () => { // Wait 100 ms before invalidating due to a race condition
-        await queryClient.invalidateQueries({ queryKey: [queryKeys.deviceGroups] });
-        await queryClient.invalidateQueries({ queryKey: [queryKeys.subscribers] });
-      }, 100);
-      closeFn()
-    },
-    onError: (error) => {
+  const handleConfirmDelete = async (rawImsi: string) => {
+    console.error("I am here")
+    try {
+      await deleteSubscriber(rawImsi, auth.user ? auth.user.authToken : "");
+    } catch (error) {
       if (is401UnauthorizedError(error)) { auth.logout(); }
-      setErrorText("An unexpected error occurred.")
-    },
-  })
+    }
+    setTimeout(async () => { // Wait 100 ms before invalidating due to a race condition
+      await queryClient.invalidateQueries({ queryKey: [queryKeys.deviceGroups] });
+      await queryClient.invalidateQueries({ queryKey: [queryKeys.subscribers] });
+    }, 100);
+  };
+
   return (
-    <Modal
-      title="Confirm delete"
-      buttonRow={
-        <>
-          <Button
-            appearance="negative"
-            onClick={() => deleteMutation.mutate({ token: auth.user ? auth.user.authToken : "", rawImsi: rawImsi })}
-          >
-            Confirm
-          </Button>
-          <Button
-            onClick={closeFn}
-          >
-            Cancel
-          </Button>
-        </>
-      }>
-      {errorText && <ErrorNotification error={errorText}/>}
-      <p>This will permanently delete the subscriber <b>{rawImsi}</b></p>
-      <p>You cannot undo this action.</p>
-    </Modal >
+    <ConfirmationButton
+      className="p-contextual-menu__link customConfirmationDeleteButton"
+      shiftClickEnabled
+      showShiftClickHint
+      title="Delete subscriber"
+      confirmationModalProps={{
+        title: `Delete subscriber ${rawImsi}`,
+        confirmButtonLabel: "Delete",
+        onConfirm: () => {console.error("TEST"); handleConfirmDelete(rawImsi)},
+        children: (
+          <p>
+            This will permanently delete the subscriber <b>{rawImsi}</b>.
+            <br />
+            You cannot undo this action.
+          </p>
+        ),
+      }}
+    >
+      Delete
+    </ConfirmationButton>
   )
 }
 
-interface ViewSubscriberModalProps {
-  title: string;
-  subscriberValues: SubscriberFormValues;
+interface SubscriberViewValues {
+  rawImsi: string;
+  opc: string;
+  key: string;
+  sequenceNumber: string;
+}
+
+interface viewSubscriberModalProps {
+  subscriber: SubscriberViewValues;
   closeFn: () => void
 }
 
-const ViewExistingSubscriberModal: React.FC<ViewSubscriberModalProps> = ({
-  title,
-  subscriberValues,
+const ViewExistingSubscriberModal: React.FC<viewSubscriberModalProps> = ({
+  subscriber,
   closeFn,
 }) => {
-  const [apiError, _] = useState<string | null>(null);
 
   return (
     <Modal
-      title={title}
+      title={subscriber.rawImsi}
       close={closeFn}
       buttonRow={
         <>
         <Button onClick={closeFn}>Close</Button>
         </>
       }>
-      {apiError && <ErrorNotification error={apiError} />}
       <Form>
         <fieldset><legend>Identity</legend>
           <Row>
@@ -531,14 +529,14 @@ const ViewExistingSubscriberModal: React.FC<ViewSubscriberModalProps> = ({
             <Col size={9}>
               <Row className="p-form__control">
                 <Col size={7}>
-                  <div>{subscriberValues.plmnId + subscriberValues.msin}</div>
+                  <div>{subscriber.rawImsi}</div>
                 </Col>
                 <Col size={2}>
                   <div className="u-align--right">
                    <Button
                       appearance="positive"
                       type="button"
-                      onClick={() => {navigator.clipboard.writeText(subscriberValues.plmnId + subscriberValues.msin)}}
+                      onClick={() => {navigator.clipboard.writeText(subscriber.rawImsi)}}
                     >
                       Copy
                     </Button>
@@ -554,14 +552,14 @@ const ViewExistingSubscriberModal: React.FC<ViewSubscriberModalProps> = ({
             <Col size={9}>
               <Row className="p-form__control">
                 <Col size={7}>
-                  <div>{subscriberValues.opc}</div>
+                  <div>{subscriber.opc}</div>
                 </Col>
                 <Col size={2}>
                   <div className="u-align--right">
                    <Button
                       appearance="positive"
                       type="button"
-                      onClick={() => {navigator.clipboard.writeText(subscriberValues.opc)}}
+                      onClick={() => {navigator.clipboard.writeText(subscriber.opc)}}
                     >
                       Copy
                     </Button>
@@ -575,14 +573,14 @@ const ViewExistingSubscriberModal: React.FC<ViewSubscriberModalProps> = ({
             <Col size={9}>
               <Row className="p-form__control">
                 <Col size={7}>
-                  <div>{subscriberValues.key}</div>
+                  <div>{subscriber.key}</div>
                 </Col>
                 <Col size={2}>
                   <div className="u-align--right">
                     <Button
                       appearance="positive"
                       type="button"
-                      onClick={() => {navigator.clipboard.writeText(subscriberValues.key)}}
+                      onClick={() => {navigator.clipboard.writeText(subscriber.key)}}
                     >
                       Copy
                     </Button>
@@ -596,14 +594,14 @@ const ViewExistingSubscriberModal: React.FC<ViewSubscriberModalProps> = ({
             <Col size={9}>
               <Row className="p-form__control">
                 <Col size={7}>
-                  <div>{subscriberValues.sequenceNumber}</div>
+                  <div>{subscriber.sequenceNumber}</div>
                 </Col>
                 <Col size={2}>
                   <div className="u-align--right">
                     <Button
                       appearance="positive"
                       type="button"
-                      onClick={() => {navigator.clipboard.writeText(subscriberValues.sequenceNumber)}}
+                      onClick={() => {navigator.clipboard.writeText(subscriber.sequenceNumber)}}
                     >
                       Copy
                     </Button>
@@ -616,12 +614,12 @@ const ViewExistingSubscriberModal: React.FC<ViewSubscriberModalProps> = ({
         <fieldset><legend>pySim command</legend>
           <Row className="p-form__control">
             <Col size={10}>
-              <CodeSnippet style={{ opacity: 0.33, cursor: "not-allowed" }}
+              <CodeSnippet
                 blocks={[{
-                  code: `pySim-prog.py --mcc ${subscriberValues.plmnId.substring(0,3)} --mnc ${subscriberValues.plmnId.substring(3)}
---ki ${subscriberValues.key}
---opc ${subscriberValues.opc}
---imsi ${subscriberValues.plmnId+subscriberValues.msin} --num 0`
+                  code: `pySim-prog.py --mcc ${subscriber.rawImsi.substring(0,3)} --mnc ${subscriber.rawImsi.substring(3, subscriber.rawImsi.length-10)}
+--ki ${subscriber.key}
+--opc ${subscriber.opc}
+--imsi ${subscriber.rawImsi} --num 0`
                 }]} />
             </Col>
             <Col size={2}>
@@ -629,7 +627,7 @@ const ViewExistingSubscriberModal: React.FC<ViewSubscriberModalProps> = ({
                 <Button
                   appearance="positive"
                   type="button"
-                  onClick={() => {navigator.clipboard.writeText(`pySim-prog.py --mcc ${subscriberValues.plmnId.substring(0,3)} --mnc ${subscriberValues.plmnId.substring(3)} --ki ${subscriberValues.key} --opc ${subscriberValues.opc} --imsi ${subscriberValues.plmnId+subscriberValues.msin} --num 0`)}}
+                  onClick={() => {navigator.clipboard.writeText(`pySim-prog.py --mcc ${subscriber.rawImsi.substring(0,3)} --mnc ${subscriber.rawImsi.substring(3, subscriber.rawImsi.length-10)} --ki ${subscriber.key} --opc ${subscriber.opc} --imsi ${subscriber.rawImsi} --num 0`)}}
                 >
                 Copy
                 </Button>
@@ -642,27 +640,12 @@ const ViewExistingSubscriberModal: React.FC<ViewSubscriberModalProps> = ({
   )
 };
 
-type viewSubscriberModalProps = {
-  subscriber: SubscriberTableData;
-  closeFn: () => void;
-}
-
 export function ViewSubscriberModal({ subscriber, closeFn }: viewSubscriberModalProps) {
-  const subscriberValues: SubscriberFormValues = {
-    plmnId: subscriber.rawImsi.slice(0, -10),
-    msin: subscriber.rawImsi.slice(-10),
-    opc: subscriber.opc,
-    key: subscriber.key,
-    sequenceNumber: subscriber.sequenceNumber,
-    networkSliceName: subscriber.networkSliceName,
-    deviceGroupName: subscriber.deviceGroupName,
-  };
 
   return (
     <>
       <ViewExistingSubscriberModal
-        title={"View subscriber: " + `${subscriber.rawImsi}`}
-        subscriberValues={subscriberValues}
+        subscriber={subscriber}
         closeFn={closeFn}
       />
     </>

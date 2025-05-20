@@ -1,0 +1,9 @@
+.customConfirmationDeleteButton {
+  background-color: #c7162b;
+  color: #fff;
+}
+
+.customConfirmationDeleteButton:hover {
+  background-color: #b01326;
+  color: #fff;
+}
