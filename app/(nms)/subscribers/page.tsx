@@ -117,7 +117,10 @@ export default function Subscribers() {
         {
           content:
             <ContextualMenu
+              closeOnOutsideClick={false}
+              toggleLabel="Actions"
               hasToggleIcon
+              dropdownClassName="application-version-dropdown"
               position="right"
             >
               <Button
