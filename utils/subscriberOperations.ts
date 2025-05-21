@@ -68,15 +68,15 @@ async function apiPostSubscriber(rawImsi: string, subscriberData: SubscriberAuth
   }
 };
 
-export async function deleteSubscriber(rawImsi: string, token: string): Promise<void> {
-  if (!isValidSubscriberRawImsi(rawImsi)) {
-    throw new OperationError(`Error deleting subscriber: Invalid imsi provided ${rawImsi}.`);
+export async function deleteSubscriber(params: {rawImsi: string, token: string}): Promise<void> {
+  if (!isValidSubscriberRawImsi(params.rawImsi)) {
+    throw new OperationError(`Error deleting subscriber: Invalid imsi provided ${params.rawImsi}.`);
   }
   try {
-    const response =  await fetch(`/api/subscriber/imsi-${rawImsi}`, {
+    const response =  await fetch(`/api/subscriber/imsi-${params.rawImsi}`, {
       method: "DELETE",
       headers: {
-        "Authorization": "Bearer " + token,
+        "Authorization": "Bearer " + params.token,
         "Content-Type": "application/json",
       },
     });
@@ -85,7 +85,7 @@ export async function deleteSubscriber(rawImsi: string, token: string): Promise<
       throw new WebconsoleApiError(response.status, respData.error);
     }
   } catch (error) {
-    console.error(`Error deleting subscriber ${rawImsi}: ${error}`);
+    console.error(`Error deleting subscriber ${params.rawImsi}: ${error}`);
     throw error;
   }
 };

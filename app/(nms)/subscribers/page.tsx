@@ -4,7 +4,7 @@ import { Button, ContextualMenu, MainTable } from "@canonical/react-components"
 import { apiGetAllDeviceGroupNames } from "@/utils/deviceGroupOperations";
 import { apiGetAllNetworkSlices } from "@/utils/networkSliceOperations";
 import { getSubscribersTableData } from "@/utils/subscriberOperations";
-import { CreateSubscriberModal, DeleteSubscriberButton, EditSubscriberModal, ViewSubscriberModal } from "@/app/(nms)/subscribers/modals";
+import { CreateSubscriberModal, DeleteSubscriberModal, EditSubscriberModal, ViewSubscriberModal } from "@/app/(nms)/subscribers/modals";
 import { SubscriberTableData } from "@/components/types";
 import { is401UnauthorizedError }  from "@/utils/errors";
 import { MainTableRow } from "@canonical/react-components/dist/components/MainTable/MainTable"
@@ -21,14 +21,16 @@ import PageContent from "@/components/PageContent"
 import PageHeader from "@/components/PageHeader"
 import SyncOutlinedIcon from "@mui/icons-material/SyncOutlined";
 
+import "./styles.css";
 
 const CREATE = "create" as const;
 const EDIT = "edit" as const;
 const VIEW = "view" as const;
+const DELETE = "delete" as const;
 
 type modalData = {
   subscriber: SubscriberTableData;
-  action: typeof CREATE | typeof EDIT | typeof VIEW;
+  action: typeof CREATE | typeof EDIT | typeof VIEW | typeof DELETE;
 }
 
 export default function Subscribers() {
@@ -117,10 +119,7 @@ export default function Subscribers() {
         {
           content:
             <ContextualMenu
-              closeOnOutsideClick={false}
-              toggleLabel="Actions"
               hasToggleIcon
-              dropdownClassName="application-version-dropdown"
               position="right"
             >
               <Button
@@ -149,7 +148,19 @@ export default function Subscribers() {
               >
                 Edit
               </Button>
-              <DeleteSubscriberButton rawImsi={subscriber.rawImsi} />
+              <Button
+                className="p-contextual-menu__link customConfirmationDeleteButton"
+                onClick={
+                  () => {
+                    setModalData({
+                      subscriber: subscriber,
+                      action: DELETE,
+                    })
+                  }
+                }
+              >
+                Delete
+              </Button>
             </ContextualMenu>,
           className: "u-align--right",
           hasOverflow: true
@@ -196,6 +207,11 @@ export default function Subscribers() {
       }
       {modalData?.action == VIEW && <ViewSubscriberModal
                                       subscriber={modalData.subscriber}
+                                      closeFn={() => setModalData(null)}
+                                    />
+      }
+      {modalData?.action == DELETE && <DeleteSubscriberModal
+                                      rawImsi={modalData.subscriber.rawImsi}
                                       closeFn={() => setModalData(null)}
                                     />
       }

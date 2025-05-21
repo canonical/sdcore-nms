@@ -1,5 +1,5 @@
 import { apiGetAllDeviceGroupNames } from "@/utils/deviceGroupOperations";
-import { Button, CodeSnippet, ConfirmationButton, Form, Input, Modal, Select, Row, Col } from "@canonical/react-components"
+import { Button, CodeSnippet, Form, Input, Modal, Select, Row, Col } from "@canonical/react-components"
 import { createSubscriber, deleteSubscriber, editSubscriber } from "@/utils/subscriberOperations";
 import { generateOpc } from "@/utils/sim_configuration/generateOpc";
 import { generateSqn } from "@/utils/sim_configuration/generateSqn";
@@ -10,10 +10,9 @@ import { queryKeys } from "@/utils/queryKeys";
 import { useAuth } from "@/utils/auth"
 import { useFormik } from "formik";
 import { useQueryClient } from "@tanstack/react-query"
-import { useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery } from "@tanstack/react-query"
 import { useState } from "react"
 import { OperationError, is401UnauthorizedError}  from "@/utils/errors";
-import "./styles.css";
 
 import ErrorNotification from "@/components/ErrorNotification";
 import * as Yup from "yup";
@@ -438,6 +437,7 @@ export function EditSubscriberModal({ subscriber, token, closeFn }: editSubscrib
     enabled: token ? true : false,
   })
   const networkSlice = (networkSliceQuery.data as NetworkSlice) || null;
+  console.error(networkSlice)
   return (
     <>
       <SubscriberModal
@@ -453,46 +453,52 @@ export function EditSubscriberModal({ subscriber, token, closeFn }: editSubscrib
 }
 
 type deleteSubscriberButtonProps = {
-  rawImsi: string;
+  rawImsi: string
+  closeFn: () => void
 }
 
-export const DeleteSubscriberButton: React.FC<deleteSubscriberButtonProps> = ({rawImsi}) => {
+export function DeleteSubscriberModal({ rawImsi, closeFn }: deleteSubscriberButtonProps) {
   const auth = useAuth()
+  const [errorText, setErrorText] = useState<string>("")
   const queryClient = useQueryClient()
-  const handleConfirmDelete = async (rawImsi: string) => {
-    console.error("I am here")
-    try {
-      await deleteSubscriber(rawImsi, auth.user ? auth.user.authToken : "");
-    } catch (error) {
+  const deleteMutation = useMutation({
+    mutationFn: deleteSubscriber,
+    onSuccess: () => {
+      setErrorText("")
+      setTimeout(async () => { // Wait 100 ms before invalidating due to a race condition
+        await queryClient.invalidateQueries({ queryKey: [queryKeys.deviceGroups] });
+        await queryClient.invalidateQueries({ queryKey: [queryKeys.subscribers] });
+      }, 100);
+      closeFn()
+    },
+    onError: (error) => {
       if (is401UnauthorizedError(error)) { auth.logout(); }
-    }
-    setTimeout(async () => { // Wait 100 ms before invalidating due to a race condition
-      await queryClient.invalidateQueries({ queryKey: [queryKeys.deviceGroups] });
-      await queryClient.invalidateQueries({ queryKey: [queryKeys.subscribers] });
-    }, 100);
-  };
-
+      setErrorText("An unexpected error occurred.")
+    },
+  })
   return (
-    <ConfirmationButton
-      className="p-contextual-menu__link customConfirmationDeleteButton"
-      shiftClickEnabled
-      showShiftClickHint
-      title="Delete subscriber"
-      confirmationModalProps={{
-        title: `Delete subscriber ${rawImsi}`,
-        confirmButtonLabel: "Delete",
-        onConfirm: () => {console.error("TEST"); handleConfirmDelete(rawImsi)},
-        children: (
-          <p>
-            This will permanently delete the subscriber <b>{rawImsi}</b>.
-            <br />
-            You cannot undo this action.
-          </p>
-        ),
-      }}
-    >
-      Delete
-    </ConfirmationButton>
+    <Modal
+      title="Confirm delete"
+      close={closeFn}
+      buttonRow={
+        <>
+          <Button
+            appearance="negative"
+            onClick={() => deleteMutation.mutate({ token: auth.user ? auth.user.authToken : "", rawImsi: rawImsi })}
+          >
+            Confirm
+          </Button>
+          <Button
+            onClick={closeFn}
+          >
+            Cancel
+          </Button>
+        </>
+      }>
+      {errorText && <ErrorNotification error={errorText}/>}
+      <p>This will permanently delete the subscriber <b>{rawImsi}</b></p>
+      <p>You cannot undo this action.</p>
+    </Modal>
   )
 }
 
@@ -512,10 +518,9 @@ const ViewExistingSubscriberModal: React.FC<viewSubscriberModalProps> = ({
   subscriber,
   closeFn,
 }) => {
-
   return (
     <Modal
-      title={subscriber.rawImsi}
+      title={`View subscriber: ${subscriber.rawImsi}`}
       close={closeFn}
       buttonRow={
         <>
@@ -614,7 +619,7 @@ const ViewExistingSubscriberModal: React.FC<viewSubscriberModalProps> = ({
         <fieldset><legend>pySim command</legend>
           <Row className="p-form__control">
             <Col size={10}>
-              <CodeSnippet
+              <CodeSnippet style={{ opacity: 0.33, cursor: "not-allowed" }}
                 blocks={[{
                   code: `pySim-prog.py --mcc ${subscriber.rawImsi.substring(0,3)} --mnc ${subscriber.rawImsi.substring(3, subscriber.rawImsi.length-10)}
 --ki ${subscriber.key}
