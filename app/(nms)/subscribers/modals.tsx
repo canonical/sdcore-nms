@@ -479,20 +479,20 @@ export function DeleteSubscriberModal({ rawImsi, closeFn }: deleteSubscriberButt
   })
   return (
     <Modal
-      title="Confirm delete"
+      title={`Delete subscriber ${rawImsi}`}
       close={closeFn}
       buttonRow={
         <>
           <Button
-            appearance="negative"
-            onClick={() => deleteMutation.mutate({ token: auth.user ? auth.user.authToken : "", rawImsi: rawImsi })}
-          >
-            Confirm
-          </Button>
-          <Button
             onClick={closeFn}
           >
             Cancel
+          </Button>
+          <Button
+            appearance="negative"
+            onClick={() => deleteMutation.mutate({ token: auth.user ? auth.user.authToken : "", rawImsi: rawImsi })}
+          >
+            Delete
           </Button>
         </>
       }>
