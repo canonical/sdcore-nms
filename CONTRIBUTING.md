@@ -62,13 +62,14 @@ npm run lint
 
 ## Enabling copy to clipboard in development mode
 
-Since most browsers expose the Clipboard API only for secure contexts (HTTPS, for instance), when deploying NMS locally in development mode,
-without HTTPS, it is required to enable it manually.
+The Clipboard API is used by NMS to allow copying content from the page to the user clipboard. Most browsers expose the Clipboard API only for secure contexts (HTTPS, for instance).
+
+If Clipboard API access is needed when deploying NMS locally in development mode, without HTTPS, it is required to enable it manually.
 
 ### Google Chrome
 
 To enable Clipboard API for HTTP in Google Chrome, open the `chrome://flags` page, enable the `unsafely-treat-insecure-origin-as-secure`
-experimental feature and add the NMS endpoint in the whitelisted domains.
+experimental feature and add the NMS endpoint in the list of whitelisted domains. The format should be the following: `http://<NMS_IP>:5000/`.
 
 ## Build
 

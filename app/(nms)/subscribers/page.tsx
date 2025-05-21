@@ -21,7 +21,7 @@ import PageContent from "@/components/PageContent"
 import PageHeader from "@/components/PageHeader"
 import SyncOutlinedIcon from "@mui/icons-material/SyncOutlined";
 
-import "./styles.css";
+import "@/app/(nms)/subscribers/styles.css";
 
 const CREATE = "create" as const;
 const EDIT = "edit" as const;

@@ -27,8 +27,8 @@ const ViewSubscriberRow: FC<Props> = ({ fieldName, fieldValue}) => {
             </div>
           </Col>
         </Row>
-        </Col>
-        </Row>
+      </Col>
+      </Row>
   );
 };
 export default ViewSubscriberRow;

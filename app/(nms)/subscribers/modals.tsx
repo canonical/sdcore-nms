@@ -453,12 +453,12 @@ export function EditSubscriberModal({ subscriber, token, closeFn }: editSubscrib
   );
 }
 
-type deleteSubscriberButtonProps = {
+type deleteSubscriberModalProps = {
   rawImsi: string
   closeFn: () => void
 }
 
-export function DeleteSubscriberModal({ rawImsi, closeFn }: deleteSubscriberButtonProps) {
+export function DeleteSubscriberModal({ rawImsi, closeFn }: deleteSubscriberModalProps) {
   const auth = useAuth()
   const [errorText, setErrorText] = useState<string>("")
   const queryClient = useQueryClient()
@@ -510,15 +510,12 @@ interface SubscriberViewValues {
   sequenceNumber: string;
 }
 
-interface viewSubscriberModalProps {
+interface ViewSubscriberModalProps {
   subscriber: SubscriberViewValues;
   closeFn: () => void
 }
 
-const ViewExistingSubscriberModal: React.FC<viewSubscriberModalProps> = ({
-  subscriber,
-  closeFn,
-}) => {
+export function ViewSubscriberModal({ subscriber, closeFn }: ViewSubscriberModalProps) {
   return (
     <Modal
       title={`View subscriber: ${subscriber.rawImsi}`}
@@ -577,15 +574,3 @@ const ViewExistingSubscriberModal: React.FC<viewSubscriberModalProps> = ({
     </Modal>
   )
 };
-
-export function ViewSubscriberModal({ subscriber, closeFn }: viewSubscriberModalProps) {
-
-  return (
-    <>
-      <ViewExistingSubscriberModal
-        subscriber={subscriber}
-        closeFn={closeFn}
-      />
-    </>
-  );
-}
