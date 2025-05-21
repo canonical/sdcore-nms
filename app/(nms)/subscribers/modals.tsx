@@ -1,5 +1,5 @@
 import { apiGetAllDeviceGroupNames } from "@/utils/deviceGroupOperations";
-import { Button, CodeSnippet, Form, Input, Modal, Select, Row, Col } from "@canonical/react-components"
+import { Button, CodeSnippet, Form, Input, Modal, Select, Row, Col } from "@canonical/react-components";
 import { createSubscriber, deleteSubscriber, editSubscriber } from "@/utils/subscriberOperations";
 import { generateOpc } from "@/utils/sim_configuration/generateOpc";
 import { generateSqn } from "@/utils/sim_configuration/generateSqn";
@@ -7,12 +7,13 @@ import { generateUniqueImsi } from "@/utils/sim_configuration/generateImsi";
 import { getNetworkSlice, getNetworkSlices } from "@/utils/networkSliceOperations";
 import { NetworkSlice, SubscriberAuthData, SubscriberTableData } from "@/components/types";
 import { queryKeys } from "@/utils/queryKeys";
-import { useAuth } from "@/utils/auth"
+import { useAuth } from "@/utils/auth";
 import { useFormik } from "formik";
-import { useQueryClient } from "@tanstack/react-query"
-import { useMutation, useQuery } from "@tanstack/react-query"
-import { useState } from "react"
+import { useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { OperationError, is401UnauthorizedError}  from "@/utils/errors";
+import ViewSubscriberRow from "@/components/ViewSubscriberRow";
 
 import ErrorNotification from "@/components/ErrorNotification";
 import * as Yup from "yup";
@@ -529,97 +530,29 @@ const ViewExistingSubscriberModal: React.FC<viewSubscriberModalProps> = ({
       }>
       <Form>
         <fieldset><legend>Identity</legend>
-          <Row>
-            <Col size={3}>IMSI</Col>
-            <Col size={9}>
-              <Row className="p-form__control">
-                <Col size={7}>
-                  <div>{subscriber.rawImsi}</div>
-                </Col>
-                <Col size={2}>
-                  <div className="u-align--right">
-                   <Button
-                      appearance="positive"
-                      type="button"
-                      onClick={() => {navigator.clipboard.writeText(subscriber.rawImsi)}}
-                    >
-                      Copy
-                    </Button>
-                  </div>
-                </Col>
-              </Row>
-            </Col>
-          </Row>
+          <ViewSubscriberRow
+            fieldName="IMSI"
+            fieldValue={subscriber.rawImsi}
+          />
         </fieldset>
         <fieldset><legend>Authentication</legend>
-          <Row>
-            <Col size={3}>OPC</Col>
-            <Col size={9}>
-              <Row className="p-form__control">
-                <Col size={7}>
-                  <div>{subscriber.opc}</div>
-                </Col>
-                <Col size={2}>
-                  <div className="u-align--right">
-                   <Button
-                      appearance="positive"
-                      type="button"
-                      onClick={() => {navigator.clipboard.writeText(subscriber.opc)}}
-                    >
-                      Copy
-                    </Button>
-                  </div>
-                </Col>
-              </Row>
-            </Col>
-          </Row>
-          <Row>
-            <Col size={3}>Key</Col>
-            <Col size={9}>
-              <Row className="p-form__control">
-                <Col size={7}>
-                  <div>{subscriber.key}</div>
-                </Col>
-                <Col size={2}>
-                  <div className="u-align--right">
-                    <Button
-                      appearance="positive"
-                      type="button"
-                      onClick={() => {navigator.clipboard.writeText(subscriber.key)}}
-                    >
-                      Copy
-                    </Button>
-                  </div>
-                </Col>
-              </Row>
-            </Col>
-          </Row>
-          <Row>
-            <Col size={3}>Sequence Number</Col>
-            <Col size={9}>
-              <Row className="p-form__control">
-                <Col size={7}>
-                  <div>{subscriber.sequenceNumber}</div>
-                </Col>
-                <Col size={2}>
-                  <div className="u-align--right">
-                    <Button
-                      appearance="positive"
-                      type="button"
-                      onClick={() => {navigator.clipboard.writeText(subscriber.sequenceNumber)}}
-                    >
-                      Copy
-                    </Button>
-                  </div>
-                </Col>
-              </Row>
-            </Col>
-          </Row>
+          <ViewSubscriberRow
+            fieldName="OPC"
+            fieldValue={subscriber.opc}
+          />
+          <ViewSubscriberRow
+            fieldName="Key"
+            fieldValue={subscriber.key}
+          />
+          <ViewSubscriberRow
+            fieldName="Sequence Number"
+            fieldValue={subscriber.sequenceNumber}
+          />
         </fieldset>
         <fieldset><legend>pySim command</legend>
           <Row className="p-form__control">
             <Col size={10}>
-              <CodeSnippet style={{ opacity: 0.33, cursor: "not-allowed" }}
+              <CodeSnippet
                 blocks={[{
                   code: `pySim-prog.py --mcc ${subscriber.rawImsi.substring(0,3)} --mnc ${subscriber.rawImsi.substring(3, subscriber.rawImsi.length-10)}
 --ki ${subscriber.key}
