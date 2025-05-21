@@ -60,9 +60,10 @@ To run lint check:
 npm run lint
 ```
 
-## Enabling copy to clipboard
+## Enabling copy to clipboard in development mode
 
-Since most browsers expose the Clipboard API only for secure contexts (HTTPS, for instance), it is required to enable it manually.
+Since most browsers expose the Clipboard API only for secure contexts (HTTPS, for instance), when deploying NMS locally in development mode,
+without HTTPS, it is required to enable it manually.
 
 ### Google Chrome
 
