@@ -1,9 +1,6 @@
-.customConfirmationDeleteButton {
-  background-color: #c7162b;
-  color: #fff;
-}
-
-.customConfirmationDeleteButton:hover {
-  background-color: #b01326;
-  color: #fff;
+.subscriber-actions button {
+  border: 0;
+  margin-bottom: 0;
+  text-align: start;
+  width: 100%;
 }

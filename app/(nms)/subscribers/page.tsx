@@ -121,9 +121,9 @@ export default function Subscribers() {
             <ContextualMenu
               hasToggleIcon
               position="right"
+              className="subscriber-actions"
             >
               <Button
-                className="p-contextual-menu__link"
                 onClick={
                   () => {
                     setModalData({
@@ -136,7 +136,6 @@ export default function Subscribers() {
                 View
               </Button>
               <Button
-                className="p-contextual-menu__link"
                 onClick={
                   () => {
                     setModalData({
@@ -149,7 +148,7 @@ export default function Subscribers() {
                 Edit
               </Button>
               <Button
-                className="p-contextual-menu__link customConfirmationDeleteButton"
+                appearance="negative"
                 onClick={
                   () => {
                     setModalData({
