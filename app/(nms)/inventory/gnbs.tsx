@@ -1,6 +1,6 @@
 "use client"
 
-import { Button, MainTable, Notification } from "@canonical/react-components"
+import { Button, Icon, List, MainTable, Notification } from "@canonical/react-components"
 import { getGnbList } from "@/utils/gnbOperations";
 import { GnbItem } from "@/components/types";
 import { MainTableRow } from "@canonical/react-components/dist/components/MainTable/MainTable"
@@ -15,6 +15,8 @@ import Loader from "@/components/Loader"
 import PageHeader from "@/components/PageHeader"
 import SyncOutlinedIcon from "@mui/icons-material/SyncOutlined";
 import { EditGnbModal } from "@/app/(nms)/inventory/gnbs_modals";
+
+import "@/app/(nms)/templates/styles.scss";
 
 const EDIT = "edit" as const;
 
@@ -49,23 +51,24 @@ export default function GnbTable() {
         { content: gnb.tac || "" },
         {
           content:
-          <div>
-            <Button
-              appearance=""
-              className="u-no-margin--bottom"
-              onClick={() => {
-                setModalData({
-                  gnb: gnb,
-                  action: EDIT,
-                });
-              }}
-              title="Edit"
-            >
-              Edit
-            </Button>
-          </div>,
-          className:"u-align--right",
-        },
+            <List
+              inline
+              className="actions-list"
+              items={[
+                <Button
+                  key="edit"
+                  hasIcon
+                  dense
+                  appearance="base"
+                  title="Edit network slice"
+                  onClick={() => setModalData({ gnb: gnb, action: EDIT })}
+                >
+                  <Icon name="edit" />
+                </Button>
+              ]}
+            />,
+          className: "u-align--right",
+        }
       ]
     };
   });
@@ -92,7 +95,7 @@ export default function GnbTable() {
           onClick={() => { query.refetch() }}
           title="Refresh gNodeB list"
         >
-          <SyncOutlinedIcon style={{ color: "#666" }} />
+          <Icon name="restart" />
         </Button>
       </PageHeader>
       <MainTable
