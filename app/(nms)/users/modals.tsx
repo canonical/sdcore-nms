@@ -34,16 +34,27 @@ export function DeleteModal({ user, closeFn }: accountDeleteActionModalProps) {
   })
   return (
     <Modal
-      title="Confirm delete"
+      title={`Delete user: ${user.username}`}
+      close={ closeFn }
       buttonRow={
         <>
-          <Button appearance="negative" onClick={() => deleteMutation.mutate({ authToken: auth.user ? auth.user.authToken : "", username: user.username })}>Confirm</Button>
-          <Button onClick={closeFn}>Cancel</Button>
+          <Button
+            onClick={closeFn}>Cancel
+          </Button>
+          <Button
+            appearance="negative"
+            onClick={() => deleteMutation.mutate({ authToken: auth.user ? auth.user.authToken : "", username: user.username })}
+          >
+            Delete
+          </Button>
         </>
       }>
       {errorText && <ErrorNotification error={errorText}/>}
-      <p>Delete user {user.username}?</p>
-      <p>This action is irreversible.</p>
+      <p>
+        This will permanently delete the user <b>{user.username}</b>.
+        <br />
+        You cannot undo this action.
+      </p>
     </Modal >
   )
 }
@@ -79,6 +90,7 @@ export function ChangePasswordModal({ user, closeFn }: accountChangePasswordActi
   return (
     <Modal
       title="Change password"
+      close={ closeFn }
       buttonRow={
         <>
           <Button
@@ -162,6 +174,7 @@ export function CreateUserModal({ closeFn }: createNewAccountModalProps) {
   return (
     <Modal
       title="Create user"
+      close={ closeFn }
       buttonRow={
         <>
           <Button
