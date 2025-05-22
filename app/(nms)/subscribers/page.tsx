@@ -162,8 +162,7 @@ export default function Subscribers() {
 
               ]}
             />,
-            className: "u-align--right",
-            hasOverflow: true
+            className: "u-align--right"
           }
         ]
       }
