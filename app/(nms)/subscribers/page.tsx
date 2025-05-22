@@ -1,10 +1,10 @@
 "use client";
 
-import { Button, ContextualMenu, MainTable } from "@canonical/react-components"
+import { Button, Icon, List, MainTable } from "@canonical/react-components"
 import { apiGetAllDeviceGroupNames } from "@/utils/deviceGroupOperations";
 import { apiGetAllNetworkSlices } from "@/utils/networkSliceOperations";
 import { getSubscribersTableData } from "@/utils/subscriberOperations";
-import { CreateSubscriberModal, DeleteSubscriberModal, EditSubscriberModal, ViewSubscriberModal } from "@/app/(nms)/subscribers/modals";
+import { CreateSubscriberModal, DeleteSubscriberButton, EditSubscriberModal, ViewSubscriberModal } from "@/app/(nms)/subscribers/modals";
 import { SubscriberTableData } from "@/components/types";
 import { is401UnauthorizedError }  from "@/utils/errors";
 import { MainTableRow } from "@canonical/react-components/dist/components/MainTable/MainTable"
@@ -21,16 +21,15 @@ import PageContent from "@/components/PageContent"
 import PageHeader from "@/components/PageHeader"
 import SyncOutlinedIcon from "@mui/icons-material/SyncOutlined";
 
-import "@/app/(nms)/subscribers/styles.css";
+import "@/app/(nms)/templates/styles.scss";
 
 const CREATE = "create" as const;
 const EDIT = "edit" as const;
 const VIEW = "view" as const;
-const DELETE = "delete" as const;
 
 type modalData = {
   subscriber: SubscriberTableData;
-  action: typeof CREATE | typeof EDIT | typeof VIEW | typeof DELETE;
+  action: typeof CREATE | typeof EDIT | typeof VIEW;
 }
 
 export default function Subscribers() {
@@ -118,54 +117,56 @@ export default function Subscribers() {
         { content: subscriber.deviceGroupName },
         {
           content:
-            <ContextualMenu
-              hasToggleIcon
-              position="right"
-              className="subscriber-actions"
-            >
-              <Button
-                onClick={
-                  () => {
-                    setModalData({
-                      subscriber: subscriber,
-                      action: VIEW,
-                    })
+            <List
+              inline
+              className="actions-list"
+              items={[
+                <Button
+                  key="view"
+                  hasIcon
+                  dense
+                  appearance="base"
+                  title="View subscriber"
+                  onClick={
+                    () => {
+                      setModalData({
+                        subscriber: subscriber,
+                        action: VIEW,
+                      })
+                    }
                   }
-                }
-              >
-                View
-              </Button>
-              <Button
-                onClick={
-                  () => {
-                    setModalData({
-                      subscriber: subscriber,
-                      action: EDIT,
-                    })
+                >
+                  <Icon name="show" />
+                </Button>,
+                <Button
+                  key="edit"
+                  hasIcon
+                  dense
+                  appearance="base"
+                  title="Edit subscriber"
+                  onClick={
+                    () => {
+                      setModalData({
+                        subscriber: subscriber,
+                        action: EDIT,
+                      })
+                    }
                   }
-                }
-              >
-                Edit
-              </Button>
-              <Button
-                appearance="negative"
-                onClick={
-                  () => {
-                    setModalData({
-                      subscriber: subscriber,
-                      action: DELETE,
-                    })
-                  }
-                }
-              >
-                Delete
-              </Button>
-            </ContextualMenu>,
-          className: "u-align--right",
-          hasOverflow: true
-        },
-      ],
-    };
+                >
+                  <Icon name="edit" />
+                </Button>,
+                <DeleteSubscriberButton
+                  key="delete"
+                  rawImsi={subscriber.rawImsi}
+                />,
+
+              ]}
+            />,
+            className: "u-align--right",
+            hasOverflow: true
+          }
+        ]
+      }
   });
 
   return (
@@ -206,11 +207,6 @@ export default function Subscribers() {
       }
       {modalData?.action == VIEW && <ViewSubscriberModal
                                       subscriber={modalData.subscriber}
-                                      closeFn={() => setModalData(null)}
-                                    />
-      }
-      {modalData?.action == DELETE && <DeleteSubscriberModal
-                                      rawImsi={modalData.subscriber.rawImsi}
                                       closeFn={() => setModalData(null)}
                                     />
       }

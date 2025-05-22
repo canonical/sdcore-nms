@@ -1,5 +1,5 @@
 import { apiGetAllDeviceGroupNames } from "@/utils/deviceGroupOperations";
-import { Button, CodeSnippet, Form, Input, Modal, Select, Row, Col } from "@canonical/react-components";
+import { Button, CodeSnippet, ConfirmationButton, Form, Input, Modal, Select, Row, Col, Icon } from "@canonical/react-components";
 import { createSubscriber, deleteSubscriber, editSubscriber } from "@/utils/subscriberOperations";
 import { generateOpc } from "@/utils/sim_configuration/generateOpc";
 import { generateSqn } from "@/utils/sim_configuration/generateSqn";
@@ -10,7 +10,7 @@ import { queryKeys } from "@/utils/queryKeys";
 import { useAuth } from "@/utils/auth";
 import { useFormik } from "formik";
 import { useQueryClient } from "@tanstack/react-query";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { OperationError, is401UnauthorizedError}  from "@/utils/errors";
 import ViewSubscriberRow from "@/components/ViewSubscriberRow";
@@ -453,53 +453,48 @@ export function EditSubscriberModal({ subscriber, token, closeFn }: editSubscrib
   );
 }
 
-type deleteSubscriberModalProps = {
-  rawImsi: string
-  closeFn: () => void
+type deleteSubscriberButtonProps = {
+  rawImsi: string;
 }
 
-export function DeleteSubscriberModal({ rawImsi, closeFn }: deleteSubscriberModalProps) {
+export const DeleteSubscriberButton: React.FC<deleteSubscriberButtonProps> = ({rawImsi}) => {
   const auth = useAuth()
-  const [errorText, setErrorText] = useState<string>("")
   const queryClient = useQueryClient()
-  const deleteMutation = useMutation({
-    mutationFn: deleteSubscriber,
-    onSuccess: () => {
-      setErrorText("")
-      setTimeout(async () => { // Wait 100 ms before invalidating due to a race condition
-        await queryClient.invalidateQueries({ queryKey: [queryKeys.deviceGroups] });
-        await queryClient.invalidateQueries({ queryKey: [queryKeys.subscribers] });
-      }, 100);
-      closeFn()
-    },
-    onError: (error) => {
+  const handleConfirmDelete = async (rawImsi: string) => {
+    try {
+      await deleteSubscriber(rawImsi, auth.user ? auth.user.authToken : "");
+    } catch (error) {
       if (is401UnauthorizedError(error)) { auth.logout(); }
-      setErrorText("An unexpected error occurred.")
-    },
-  })
+    }
+    setTimeout(async () => { // Wait 100 ms before invalidating due to a race condition
+      await queryClient.invalidateQueries({ queryKey: [queryKeys.deviceGroups] });
+      await queryClient.invalidateQueries({ queryKey: [queryKeys.subscribers] });
+    }, 100);
+  };
+
   return (
-    <Modal
-      title={`Delete subscriber ${rawImsi}`}
-      close={closeFn}
-      buttonRow={
-        <>
-          <Button
-            onClick={closeFn}
-          >
-            Cancel
-          </Button>
-          <Button
-            appearance="negative"
-            onClick={() => deleteMutation.mutate({ token: auth.user ? auth.user.authToken : "", rawImsi: rawImsi })}
-          >
-            Delete
-          </Button>
-        </>
-      }>
-      {errorText && <ErrorNotification error={errorText}/>}
-      <p>This will permanently delete the subscriber <b>{rawImsi}</b></p>
-      <p>You cannot undo this action.</p>
-    </Modal>
+    <ConfirmationButton
+      appearance="base"
+      className="is-dense has-icon u-no-margin--bottom"
+      shiftClickEnabled
+      showShiftClickHint
+      onHoverText="Delete subscriber"
+      title="Delete subscriber"
+      confirmationModalProps={{
+        title: `Delete subscriber: ${rawImsi}`,
+        confirmButtonLabel: "Delete",
+        onConfirm: () => handleConfirmDelete(rawImsi),
+        children: (
+          <p>
+            This will permanently delete the subscriber <b>{rawImsi}</b>.
+            <br />
+            You cannot undo this action.
+          </p>
+        ),
+      }}
+    >
+      <Icon name="delete" />
+    </ConfirmationButton>
   )
 }
 
