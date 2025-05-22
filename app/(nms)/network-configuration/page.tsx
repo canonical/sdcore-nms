@@ -18,7 +18,6 @@ import ErrorNotification from "@/components/ErrorNotification";
 import Loader from "@/components/Loader"
 import PageContent from "@/components/PageContent"
 import PageHeader from "@/components/PageHeader"
-import SyncOutlinedIcon from "@mui/icons-material/SyncOutlined";
 
 import "@/app/(nms)/templates/styles.scss";
 
@@ -160,7 +159,7 @@ export default function NetworkSlices() {
           onClick={() => { networkSliceQuery.refetch(), upfQuery.refetch(),gnbsQuery.refetch() }}
           title="Refresh network slice list"
         >
-          <SyncOutlinedIcon style={{ color: "#666" }} />
+          <Icon name="restart" />
         </Button>
         <Button
           appearance="positive"

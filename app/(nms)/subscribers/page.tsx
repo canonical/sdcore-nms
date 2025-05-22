@@ -19,7 +19,6 @@ import ErrorNotification from "@/components/ErrorNotification";
 import Loader from "@/components/Loader"
 import PageContent from "@/components/PageContent"
 import PageHeader from "@/components/PageHeader"
-import SyncOutlinedIcon from "@mui/icons-material/SyncOutlined";
 
 import "@/app/(nms)/templates/styles.scss";
 
@@ -177,7 +176,7 @@ export default function Subscribers() {
           onClick={() => { subscribersQuery.refetch(), deviceGroupQuery.refetch(), networkSlicesQuery.refetch() }}
           title="Refresh subscriber list"
         >
-          <SyncOutlinedIcon style={{ color: "#666" }} />
+          <Icon name="restart" />
         </Button>
         <Button appearance="positive" onClick={() => setModalData({ subscriber: {} as SubscriberTableData, action: CREATE })}>
           Create

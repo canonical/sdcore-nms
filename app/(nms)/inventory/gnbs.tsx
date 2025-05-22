@@ -13,7 +13,6 @@ import { is401UnauthorizedError }  from "@/utils/errors";
 import ErrorNotification from "@/components/ErrorNotification";
 import Loader from "@/components/Loader"
 import PageHeader from "@/components/PageHeader"
-import SyncOutlinedIcon from "@mui/icons-material/SyncOutlined";
 import { EditGnbModal } from "@/app/(nms)/inventory/gnbs_modals";
 
 import "@/app/(nms)/templates/styles.scss";

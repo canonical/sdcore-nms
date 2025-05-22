@@ -15,7 +15,6 @@ import ErrorNotification from "@/components/ErrorNotification"
 import Loader from "@/components/Loader"
 import PageContent from "@/components/PageContent"
 import PageHeader from "@/components/PageHeader"
-import SyncOutlinedIcon from "@mui/icons-material/SyncOutlined";
 import { queryKeys } from "@/utils/queryKeys"
 
 import "@/app/(nms)/templates/styles.scss";
@@ -93,9 +92,9 @@ export default function Users() {
           hasIcon
           appearance="base"
           onClick={() => { query.refetch() }}
-          title="refresh accounts list"
+          title="Refresh accounts list"
         >
-          <SyncOutlinedIcon style={{ color: "#666" }} />
+          <Icon name="restart" />
         </Button>
         <Button appearance="positive" onClick={() => setModalData({ user: {} as UserEntry, type: CREATE_USER })}>
           Create
