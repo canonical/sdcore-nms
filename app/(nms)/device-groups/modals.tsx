@@ -1,5 +1,5 @@
 import { apiGetAllNetworkSlices } from "@/utils/networkSliceOperations"
-import { Button, Form, Input, ConfirmationButton, Modal, Select } from "@canonical/react-components"
+import { Button, Form, Icon, Input, ConfirmationButton, Modal, Select } from "@canonical/react-components"
 import { createDeviceGroup, editDeviceGroup, deleteDeviceGroup } from "@/utils/deviceGroupOperations";
 import { DeviceGroup } from "@/components/types";
 import { filterSubscribers } from "@/utils/subscriberOperations";
@@ -452,8 +452,9 @@ export const DeleteDeviceGroupButton: React.FC<deleteDeviceGroupActionModalProps
   if (subscribers && filteredSubscribers.length > 0) {
     return (
       <ConfirmationButton
-        appearance="negative"
-        className="u-no-margin--bottom"
+        appearance="base"
+        className="is-dense has-icon u-no-margin--bottom"
+        onHoverText="Delete device group"
         title="Delete device group"
         confirmationModalProps={{
           title: "Warning",
@@ -471,19 +472,20 @@ export const DeleteDeviceGroupButton: React.FC<deleteDeviceGroupActionModalProps
           ),
         }}
       >
-        Delete
+        <Icon name="delete" />
       </ConfirmationButton>
     )
   }
   return (
     <ConfirmationButton
-      appearance="negative"
-      className="u-no-margin--bottom"
+      appearance="base"
+      className="is-dense has-icon u-no-margin--bottom"
+      onHoverText="Delete device group"
       shiftClickEnabled
       showShiftClickHint
       title="Delete device group"
       confirmationModalProps={{
-        title: `Delete device group ${deviceGroupName}`,
+        title: `Delete device group: ${deviceGroupName}`,
         confirmButtonLabel: "Delete",
         onConfirm: () => handleConfirmDelete(deviceGroupName),
         children: (
@@ -495,7 +497,7 @@ export const DeleteDeviceGroupButton: React.FC<deleteDeviceGroupActionModalProps
         ),
       }}
     >
-      Delete
+      <Icon name="delete" />
     </ConfirmationButton>
   )
 }
