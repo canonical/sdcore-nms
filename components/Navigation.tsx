@@ -165,7 +165,7 @@ const Navigation: FC = () => {
                     >
                       <Icon
                         className="is-light p-side-navigation__icon"
-                        name=""
+                        name="log-out"
                       />
                       Log out
                     </a>
