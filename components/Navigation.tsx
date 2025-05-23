@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "@/utils/auth";
 import classnames from "classnames";
 import TuneOutlinedIcon from '@mui/icons-material/TuneOutlined';
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import Logo from "@/components/Logo"
 
 const Navigation: FC = () => {
@@ -131,10 +132,11 @@ const Navigation: FC = () => {
                         pathname === "/inventory" ? "page" : undefined
                       }
                     >
-                      <Icon
+                      <Inventory2OutlinedIcon
                         className="is-light p-side-navigation__icon"
-                        name="pods"
-                      />{" "}
+                        fontSize="inherit"
+                        style={{ color: "#fff" }}
+                      />
                       Inventory
                     </a>
                   </li>
