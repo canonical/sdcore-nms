@@ -3,6 +3,7 @@ import { Button, Icon } from "@canonical/react-components";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/utils/auth";
 import classnames from "classnames";
+import TuneOutlinedIcon from '@mui/icons-material/TuneOutlined';
 import Logo from "@/components/Logo"
 
 const Navigation: FC = () => {
@@ -97,10 +98,11 @@ const Navigation: FC = () => {
                         pathname === "/device-groups" ? "page" : undefined
                       }
                     >
-                      <Icon
+                      <TuneOutlinedIcon
                         className="is-light p-side-navigation__icon"
-                        name="switcher-environments"
-                      />{" "}
+                        fontSize="inherit"
+                        style={{ color: "#fff" }}
+                      />
                       Device groups
                     </a>
                   </li>
