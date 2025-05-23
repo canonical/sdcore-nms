@@ -18,6 +18,8 @@ body {
 @include vf-p-icon-show;
 @include vf-p-icon-edit;
 @include vf-p-icon-delete;
+@include vf-p-icon-restart;
+@include vf-p-icon-log-out;
 
 @import "pattern_navigation";
 

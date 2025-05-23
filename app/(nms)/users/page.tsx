@@ -1,6 +1,6 @@
 "use client"
 
-import { Button, ContextualMenu, MainTable } from "@canonical/react-components"
+import { Button, ContextualMenu, Icon, List, MainTable } from "@canonical/react-components"
 import { ChangePasswordModal, CreateUserModal, DeleteModal } from "@/app/(nms)/users/modals"
 import { is401UnauthorizedError, is403ForbiddenError } from "@/utils/errors"
 import { listUsers } from "@/utils/accountQueries"
@@ -15,9 +15,9 @@ import ErrorNotification from "@/components/ErrorNotification"
 import Loader from "@/components/Loader"
 import PageContent from "@/components/PageContent"
 import PageHeader from "@/components/PageHeader"
-import SyncOutlinedIcon from "@mui/icons-material/SyncOutlined";
 import { queryKeys } from "@/utils/queryKeys"
 
+import "@/app/(nms)/templates/styles.scss";
 
 const CREATE_USER = "create user" as const;
 const CHANGE_PASSWORD = "change password" as const;
@@ -50,20 +50,38 @@ export default function Users() {
       columns: [
         { content: user.username },
         {
-          content: <ContextualMenu
-            links={[
-              {
-                children: "Delete account",
-                disabled: user.role == 1,
-                onClick: () => setModalData({ user: user, type: DELETE })
-              }, {
-                children: "Change password",
-                disabled: user.role == 1,
-                onClick: () => setModalData({ user: user, type: CHANGE_PASSWORD })
-              }
-            ]} hasToggleIcon />,
-          className: "u-align--right"
-        }],
+          content:
+            <List
+              inline
+              className="actions-list"
+              items={[
+                <Button
+                  key="edit"
+                  hasIcon
+                  dense
+                  appearance="base"
+                  title="Change password"
+                  disabled={user.role == 1}
+                  onClick={() => setModalData({ user: user, type: CHANGE_PASSWORD })}
+                >
+                  <Icon name="edit" />
+                </Button>,
+                <Button
+                  key="delete"
+                  hasIcon
+                  dense
+                  appearance="base"
+                  title="Delete user"
+                  disabled={user.role == 1}
+                  onClick={() => setModalData({ user: user, type: DELETE })}
+                >
+                  <Icon name="delete" />
+                </Button>
+              ]}
+            />,
+          className: "u-align--right",
+        }
+      ],
     };
   });
 
@@ -74,9 +92,9 @@ export default function Users() {
           hasIcon
           appearance="base"
           onClick={() => { query.refetch() }}
-          title="refresh accounts list"
+          title="Refresh user list"
         >
-          <SyncOutlinedIcon style={{ color: "#666" }} />
+          <Icon name="restart" />
         </Button>
         <Button appearance="positive" onClick={() => setModalData({ user: {} as UserEntry, type: CREATE_USER })}>
           Create

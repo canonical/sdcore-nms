@@ -1,7 +1,7 @@
 "use client"
 
 import { apiGetAllNetworkSlices } from "@/utils/networkSliceOperations";
-import { Button, MainTable } from "@canonical/react-components"
+import { Button, Icon, List, MainTable } from "@canonical/react-components"
 import { CreateDeviceGroupModal, EditDeviceGroupModal, DeleteDeviceGroupButton } from "@/app/(nms)/device-groups/modals";
 import { DeviceGroup } from "@/components/types";
 import { getDeviceGroups } from "@/utils/deviceGroupOperations";
@@ -18,8 +18,8 @@ import ErrorNotification from "@/components/ErrorNotification";
 import Loader from "@/components/Loader"
 import PageContent from "@/components/PageContent"
 import PageHeader from "@/components/PageHeader"
-import SyncOutlinedIcon from "@mui/icons-material/SyncOutlined";
 
+import "@/app/(nms)/templates/styles.scss";
 
 const CREATE = "create" as const;
 const EDIT = "edit" as const;
@@ -119,24 +119,30 @@ export default function DeviceGroups() {
         },
         {
           content:
-            <Button
-              appearance=""
-              className="u-no-margin--bottom"
-              onClick={() => setModalData({ deviceGroup: deviceGroup, action: EDIT })}
-              title="Edit"
-            >
-              Edit
-            </Button>,
-          className:"u-align--right",
-        },
-        {
-          content:
-            <DeleteDeviceGroupButton
-              deviceGroupName={deviceGroup["group-name"]}
-              subscribers={deviceGroup["imsis"]}
-            >
-            </DeleteDeviceGroupButton>
-        },
+            <List
+              inline
+              className="actions-list"
+              items={[
+                <Button
+                  key="edit"
+                  hasIcon
+                  dense
+                  appearance="base"
+                  title="Edit device group"
+                  onClick={() => setModalData({ deviceGroup: deviceGroup, action: EDIT })}
+                >
+                  <Icon name="edit" />
+                </Button>,
+                <DeleteDeviceGroupButton
+                  key="delete"
+                  deviceGroupName={deviceGroup["group-name"]}
+                  subscribers={deviceGroup["imsis"]}
+                >
+                </DeleteDeviceGroupButton>
+              ]}
+            />,
+          className: "u-align--right",
+        }
       ],
     };
   });
@@ -150,7 +156,7 @@ export default function DeviceGroups() {
           onClick={() => { deviceGroupQuery.refetch(), networkSlicesQuery.refetch() }}
           title="Refresh device group list"
         >
-          <SyncOutlinedIcon style={{ color: "#666" }} />
+          <Icon name="restart" />
         </Button>
         <Button appearance="positive" onClick={() => setModalData({ deviceGroup: {} as DeviceGroup, action: CREATE })}>
           Create
@@ -191,7 +197,6 @@ export default function DeviceGroups() {
               content: "ARP",
               className:"u-align--right",
             },
-            { content: ""},
             {
               content: "Actions",
               className:"u-align--right",

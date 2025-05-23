@@ -1,5 +1,5 @@
 import { apiGetAllDeviceGroupNames } from "@/utils/deviceGroupOperations";
-import { Button, Form, Input, ConfirmationButton, Modal, Select } from "@canonical/react-components"
+import { Button, Form, Icon, Input, ConfirmationButton, Modal, Select } from "@canonical/react-components"
 import { createNetworkSlice, editNetworkSlice, deleteNetworkSlice } from "@/utils/networkSliceOperations";
 import { getGnbList } from "@/utils/gnbOperations";
 import { getUpfList } from "@/utils/upfOperations";
@@ -405,8 +405,9 @@ export const DeleteNetworkSliceButton: React.FC<deleteNetworkSliceModalProps> = 
   if (deviceGroups && filteredDeviceGroups().length > 0) {
     return (
       <ConfirmationButton
-        appearance="negative"
-        className="u-no-margin--bottom"
+        appearance="base"
+        className="is-dense has-icon u-no-margin--bottom"
+        onHoverText="Delete network slice"
         title="Delete network slice"
         confirmationModalProps={{
           title: "Warning",
@@ -424,19 +425,20 @@ export const DeleteNetworkSliceButton: React.FC<deleteNetworkSliceModalProps> = 
           ),
         }}
       >
-        Delete
+        <Icon name="delete" />
       </ConfirmationButton>
     )
   }
   return (
     <ConfirmationButton
-      appearance="negative"
-      className="u-no-margin--bottom"
+      appearance="base"
+      className="is-dense has-icon u-no-margin--bottom"
+      onHoverText="Delete network slice"
       shiftClickEnabled
       showShiftClickHint
       title="Delete network slice"
       confirmationModalProps={{
-        title: `Delete network slice ${networkSliceName}`,
+        title: `Delete network slice: ${networkSliceName}`,
         confirmButtonLabel: "Delete",
         onConfirm: () => handleConfirmDelete(networkSliceName),
         children: (
@@ -448,7 +450,7 @@ export const DeleteNetworkSliceButton: React.FC<deleteNetworkSliceModalProps> = 
         ),
       }}
     >
-      Delete
+      <Icon name="delete" />
     </ConfirmationButton>
   )
 }

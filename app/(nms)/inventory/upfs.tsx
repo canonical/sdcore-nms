@@ -1,6 +1,6 @@
 "use client"
 
-import { Button, MainTable, Notification  } from "@canonical/react-components"
+import { Button, Icon, MainTable, Notification  } from "@canonical/react-components"
 import { getUpfList } from "@/utils/upfOperations";
 import { MainTableRow } from "@canonical/react-components/dist/components/MainTable/MainTable"
 import { queryKeys } from "@/utils/queryKeys";
@@ -11,7 +11,6 @@ import { useState } from "react";
 import { is401UnauthorizedError } from "@/utils/errors";
 
 import Loader from "@/components/Loader"
-import SyncOutlinedIcon from "@mui/icons-material/SyncOutlined";
 import PageHeader from "@/components/PageHeader"
 import ErrorNotification from "@/components/ErrorNotification";
 
@@ -65,7 +64,7 @@ export default function UpfTable() {
             onClick={() => { query.refetch() }}
             title="Refresh UPF list"
             >
-          <SyncOutlinedIcon style={{ color: "#666" }} />
+          <Icon name="restart" />
           </Button>
         </PageHeader>
         <MainTable

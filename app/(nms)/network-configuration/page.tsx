@@ -1,6 +1,6 @@
 "use client"
 
-import { Button, List, MainTable, Notification } from "@canonical/react-components"
+import { Button, Icon, List, MainTable, Notification } from "@canonical/react-components"
 import { CreateNetworkSliceModal, EditNetworkSliceModal, DeleteNetworkSliceButton } from "@/app/(nms)/network-configuration/modals";
 import { GnbItem, NetworkSlice, UpfItem } from "@/components/types";
 import { getGnbList } from "@/utils/gnbOperations";
@@ -18,8 +18,8 @@ import ErrorNotification from "@/components/ErrorNotification";
 import Loader from "@/components/Loader"
 import PageContent from "@/components/PageContent"
 import PageHeader from "@/components/PageHeader"
-import SyncOutlinedIcon from "@mui/icons-material/SyncOutlined";
 
+import "@/app/(nms)/templates/styles.scss";
 
 const CREATE = "create" as const;
 const EDIT = "edit" as const;
@@ -121,26 +121,32 @@ export default function NetworkSlices() {
         },
         {
           content:
-            <Button
-              appearance=""
-              disabled={!isInventoryCreated}
-              className="u-no-margin--bottom"
-              onClick={() => setModalData({ networkSlice: networkSlice, action: EDIT })}
-              title="Edit"
-            >
-              Edit
-            </Button>,
-          className:"u-align--right",
-        },
-        {
-          content:
-            <DeleteNetworkSliceButton
-              networkSliceName={ networkSlice["slice-name"] }
-              deviceGroups={ networkSlice["site-device-group"] || [] }
-            >
-            </DeleteNetworkSliceButton>
-        },
-      ],
+            <List
+              inline
+              className="actions-list"
+              items={[
+                <Button
+                  key="edit"
+                  hasIcon
+                  dense
+                  appearance="base"
+                  title="Edit network slice"
+                  disabled={!isInventoryCreated}
+                  onClick={() => setModalData({ networkSlice: networkSlice, action: EDIT })}
+                >
+                  <Icon name="edit" />
+                </Button>,
+                <DeleteNetworkSliceButton
+                  key="delete"
+                  networkSliceName={ networkSlice["slice-name"] }
+                  deviceGroups={ networkSlice["site-device-group"] || [] }
+                >
+                </DeleteNetworkSliceButton>
+              ]}
+            />,
+          className: "u-align--right",
+        }
+      ]
     };
   });
 
@@ -153,7 +159,7 @@ export default function NetworkSlices() {
           onClick={() => { networkSliceQuery.refetch(), upfQuery.refetch(),gnbsQuery.refetch() }}
           title="Refresh network slice list"
         >
-          <SyncOutlinedIcon style={{ color: "#666" }} />
+          <Icon name="restart" />
         </Button>
         <Button
           appearance="positive"
@@ -197,10 +203,9 @@ export default function NetworkSlices() {
               content: "gNodeBs",
               style: { textTransform: "none" },
             },
-            { content: ""},
             {
               content: "Actions",
-              className:"u-align--center",
+              className:"u-align--right",
             },
           ]}
           rows={tableContent}
