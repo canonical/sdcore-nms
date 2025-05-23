@@ -1,5 +1,5 @@
 import { apiGetAllDeviceGroupNames } from "@/utils/deviceGroupOperations";
-import { Button, Form, Input, ConfirmationButton, Modal, Select, Row, Col } from "@canonical/react-components"
+import { Button, CodeSnippet, ConfirmationButton, Form, Input, Modal, Select, Row, Col, Icon } from "@canonical/react-components";
 import { createSubscriber, deleteSubscriber, editSubscriber } from "@/utils/subscriberOperations";
 import { generateOpc } from "@/utils/sim_configuration/generateOpc";
 import { generateSqn } from "@/utils/sim_configuration/generateSqn";
@@ -7,12 +7,13 @@ import { generateUniqueImsi } from "@/utils/sim_configuration/generateImsi";
 import { getNetworkSlice, getNetworkSlices } from "@/utils/networkSliceOperations";
 import { NetworkSlice, SubscriberAuthData, SubscriberTableData } from "@/components/types";
 import { queryKeys } from "@/utils/queryKeys";
-import { useAuth } from "@/utils/auth"
+import { useAuth } from "@/utils/auth";
 import { useFormik } from "formik";
-import { useQueryClient } from "@tanstack/react-query"
-import { useQuery } from "@tanstack/react-query"
-import { useState } from "react"
+import { useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { OperationError, is401UnauthorizedError}  from "@/utils/errors";
+import ViewSubscriberRow from "@/components/ViewSubscriberRow";
 
 import ErrorNotification from "@/components/ErrorNotification";
 import * as Yup from "yup";
@@ -268,7 +269,7 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
               : [])
           ]}
         />
-        <fieldset><legend></legend>
+        <fieldset><legend>Identity</legend>
           <Row>
             <Col size={4}>* IMSI</Col>
             <Col size={8}>
@@ -289,6 +290,7 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
                     required
                     disabled={isEdit}
                     placeholder="0100007487"
+                    help="Mobile Subscriber Identification Number"
                     {...formik.getFieldProps("msin")}
                     error={formik.touched.msin && formik.errors.msin ? formik.errors.msin : imsiError }
                   />
@@ -312,7 +314,7 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
               </Button>
             </div></div>
           }
-          <Input
+          <Input style={{ textTransform : "uppercase" }}
             id="opc"
             label="OPC"
             type="text"
@@ -324,7 +326,7 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
             {...formik.getFieldProps("opc")}
             error={formik.touched.opc ? formik.errors.opc : null}
           />
-          <Input
+          <Input style={{ textTransform : "uppercase" }}
             id="key"
             label="Key"
             type="text"
@@ -336,7 +338,7 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
             {...formik.getFieldProps("key")}
             error={formik.touched.key ? formik.errors.key : null}
           />
-          <Input
+          <Input style={{ textTransform : "uppercase" }}
             id="sequence-number"
             label="Sequence Number"
             type="text"
@@ -344,6 +346,7 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
             stacked
             disabled={isEdit}
             placeholder="16f3b3f70fc2"
+            help="Sequence Number"
             {...formik.getFieldProps("sequenceNumber")}
             error={
               formik.touched.sequenceNumber ? formik.errors.sequenceNumber : null
@@ -471,13 +474,14 @@ export const DeleteSubscriberButton: React.FC<deleteSubscriberButtonProps> = ({r
 
   return (
     <ConfirmationButton
-      appearance="negative"
-      className="u-no-margin--bottom"
+      appearance="base"
+      className="is-dense has-icon u-no-margin--bottom"
       shiftClickEnabled
       showShiftClickHint
+      onHoverText="Delete subscriber"
       title="Delete subscriber"
       confirmationModalProps={{
-        title: `Delete subscriber ${rawImsi}`,
+        title: `Delete subscriber: ${rawImsi}`,
         confirmButtonLabel: "Delete",
         onConfirm: () => handleConfirmDelete(rawImsi),
         children: (
@@ -489,7 +493,79 @@ export const DeleteSubscriberButton: React.FC<deleteSubscriberButtonProps> = ({r
         ),
       }}
     >
-      Delete
+      <Icon name="delete" />
     </ConfirmationButton>
   )
 }
+
+interface SubscriberViewValues {
+  rawImsi: string;
+  opc: string;
+  key: string;
+  sequenceNumber: string;
+}
+
+interface ViewSubscriberModalProps {
+  subscriber: SubscriberViewValues;
+  closeFn: () => void
+}
+
+export function ViewSubscriberModal({ subscriber, closeFn }: ViewSubscriberModalProps) {
+  return (
+    <Modal
+      title={`View subscriber: ${subscriber.rawImsi}`}
+      close={closeFn}
+      buttonRow={
+        <>
+        <Button onClick={closeFn}>Close</Button>
+        </>
+      }>
+      <Form>
+        <fieldset><legend>Identity</legend>
+          <ViewSubscriberRow
+            fieldName="IMSI"
+            fieldValue={subscriber.rawImsi}
+          />
+        </fieldset>
+        <fieldset><legend>Authentication</legend>
+          <ViewSubscriberRow
+            fieldName="OPC"
+            fieldValue={subscriber.opc}
+          />
+          <ViewSubscriberRow
+            fieldName="Key"
+            fieldValue={subscriber.key}
+          />
+          <ViewSubscriberRow
+            fieldName="Sequence Number"
+            fieldValue={subscriber.sequenceNumber}
+          />
+        </fieldset>
+        <fieldset><legend>pySim command</legend>
+          <Row className="p-form__control">
+            <Col size={10}>
+              <CodeSnippet
+                blocks={[{
+                  code: `pySim-prog.py --mcc ${subscriber.rawImsi.substring(0,3)} --mnc ${subscriber.rawImsi.substring(3, subscriber.rawImsi.length-10)}
+--ki ${subscriber.key}
+--opc ${subscriber.opc}
+--imsi ${subscriber.rawImsi} --num 0`
+                }]} />
+            </Col>
+            <Col size={2}>
+              <div className="u-align--right">
+                <Button
+                  appearance="positive"
+                  type="button"
+                  onClick={() => {navigator.clipboard.writeText(`pySim-prog.py --mcc ${subscriber.rawImsi.substring(0,3)} --mnc ${subscriber.rawImsi.substring(3, subscriber.rawImsi.length-10)} --ki ${subscriber.key} --opc ${subscriber.opc} --imsi ${subscriber.rawImsi} --num 0`)}}
+                >
+                Copy
+                </Button>
+              </div>
+            </Col>
+          </Row>
+        </fieldset>
+      </Form>
+    </Modal>
+  )
+};
