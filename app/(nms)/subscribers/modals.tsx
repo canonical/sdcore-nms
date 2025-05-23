@@ -314,7 +314,7 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
               </Button>
             </div></div>
           }
-          <Input className="p-form__control" style={{ textTransform : "uppercase" }}
+          <Input style={{ textTransform : "uppercase" }}
             id="opc"
             label="OPC"
             type="text"
@@ -326,7 +326,7 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
             {...formik.getFieldProps("opc")}
             error={formik.touched.opc ? formik.errors.opc : null}
           />
-          <Input className="p-form__control" style={{ textTransform : "uppercase" }}
+          <Input style={{ textTransform : "uppercase" }}
             id="key"
             label="Key"
             type="text"
@@ -338,7 +338,7 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
             {...formik.getFieldProps("key")}
             error={formik.touched.key ? formik.errors.key : null}
           />
-          <Input className="p-form__control" style={{ textTransform : "uppercase" }}
+          <Input style={{ textTransform : "uppercase" }}
             id="sequence-number"
             label="Sequence Number"
             type="text"
