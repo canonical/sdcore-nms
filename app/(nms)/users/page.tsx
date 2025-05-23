@@ -92,7 +92,7 @@ export default function Users() {
           hasIcon
           appearance="base"
           onClick={() => { query.refetch() }}
-          title="Refresh accounts list"
+          title="Refresh user list"
         >
           <Icon name="restart" />
         </Button>

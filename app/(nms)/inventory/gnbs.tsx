@@ -59,7 +59,7 @@ export default function GnbTable() {
                   hasIcon
                   dense
                   appearance="base"
-                  title="Edit network slice"
+                  title="Edit gNodeB"
                   onClick={() => setModalData({ gnb: gnb, action: EDIT })}
                 >
                   <Icon name="edit" />
