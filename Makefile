@@ -3,7 +3,7 @@ ARTIFACT_FOLDER := artifacts
 
 WEBCONSOLE_PROJECT_DIR := webconsole-src
 WEBCONSOLE_FILES := $(shell find $(BUILD_FOLDER)/$(WEBCONSOLE_PROJECT_DIR) -regex ".*\.go" 2> /dev/null)
-WEBCONSOLE_REPO_URL := https://github.com/omec-project/webconsole.git
+WEBCONSOLE_REPO_URL := https://github.com/gatici/webconsole.git
 WEBCONSOLE_ARTIFACT_NAME := webconsole
 
 NMS_FILES := $(shell find app components images utils -type f) package.json package-lock.json
@@ -46,6 +46,7 @@ deploy: rockcraft.yaml
 
 	lxc file push $(ARTIFACT_FOLDER)/$(ROCK_ARTIFACT_NAME) nms/root/$(ROCK_ARTIFACT_NAME)
 	lxc file push examples/config/webuicfg.yaml nms/root/
+	lxc file push examples/config/nfconfig.yaml nms/root/
 	@if [ "$$(lxc exec nms -- docker ps 2> /dev/null | grep nms > /dev/null; echo $$?)" = 0 ]; then \
 		echo "removing old nms container"; \
 		lxc exec nms -- docker stop nms; \
@@ -56,7 +57,7 @@ deploy: rockcraft.yaml
 	lxc exec nms -- docker run -d \
 		--name nms \
 		-e WEBUI_ENDPOINT=$$(lxc info nms | grep enp5s0 -A 15 | grep inet: | grep -oE '([0-9]{1,3}\.){3}[0-9]{1,3}'):5000 \
-		-v /root/webuicfg.yaml:/config/webuicfg.yaml \
+		-v /root/webuicfg.yaml:/config/webuicfg.yaml  -v /root/nfconfig.yaml:/config/nfconfig.yaml \
 		--network host \
 		nms:latest --verbose
 	@echo "You can access NMS at $$(lxc info nms | grep enp5s0 -A 15 | grep inet: | grep -oE '([0-9]{1,3}\.){3}[0-9]{1,3}'):5000"
@@ -65,6 +66,7 @@ hotswap: artifacts/webconsole examples/config/webuicfg.yaml
 	@echo "make: replacing nms binary with new binary"
 	lxc file push artifacts/webconsole nms/root/
 	lxc file push examples/config/webuicfg.yaml nms/root/
+	lxc file push examples/config/nfconfig.yaml nms/root/
 	lxc exec nms -- docker cp ./webconsole nms:/bin/webconsole
 	lxc exec nms -- docker exec nms pebble restart nms
 
@@ -82,7 +84,7 @@ clean-vm:
 	-lxc delete nms
 
 $(BUILD_FOLDER)/fetch-repo:
-	-git clone $(WEBCONSOLE_REPO_URL) $(BUILD_FOLDER)/$(WEBCONSOLE_PROJECT_DIR)
+	-git clone $(WEBCONSOLE_REPO_URL) -b TELCO-1753-start-https-endpoint $(BUILD_FOLDER)/$(WEBCONSOLE_PROJECT_DIR)
 	touch $(BUILD_FOLDER)/fetch-repo
 
 $(BUILD_FOLDER)/$(NMS_ARTIFACT_NAME): $(NMS_FILES)

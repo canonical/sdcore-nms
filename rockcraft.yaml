@@ -37,9 +37,9 @@ parts:
     after:
       - nms
     plugin: go
-    source: https://github.com/omec-project/webconsole.git
+    source: https://github.com/gatici/webconsole.git
     source-type: git
-    source-tag: v${CRAFT_PROJECT_VERSION}
+    source-branch: TELCO-1753-start-https-endpoint
     build-snaps:
       - go/1.24/stable
     go-buildtags:
