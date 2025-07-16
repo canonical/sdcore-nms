@@ -20,6 +20,7 @@ import * as Yup from "yup";
 interface DeviceGroupFormValues {
   name: string;
   networkSlice: string;
+  dnn: string;
   ueIpPool: string;
   dns: string;
   mtu: number;
@@ -49,6 +50,18 @@ const DeviceGroupSchema = Yup.object().shape({
   networkSlice: Yup.string()
       .min(1)
       .required("Network slice is required."),
+  dnn: Yup.string()
+      .min(1)
+      .max(255, "Name should not exceed 255 characters.")
+      .matches(/^[a-zA-Z][a-zA-Z0-9-_]+$/, {
+      message: (
+        <>
+          DNN must start with a letter. <br />
+          Only alphanumeric characters, dashes, and underscores.
+        </>
+      ),
+      })
+      .required("DNN is required"),
   ueIpPool: Yup.string()
       .required("IP pool is required")
       .test("is-cidr", "Invalid IP address pool.", (value) => value ? validateCidr(value) : false),
@@ -184,6 +197,17 @@ export const DeviceGroupModal: React.FC<DeviceGroupModalProps> = ({
                 value: networkSliceName,
             })),
           ]}
+        />
+        <Input
+          id="dnn"
+          label="DNN"
+          type="text"
+          required
+          stacked
+          disabled={isEdit}
+          placeholder="internet"
+          {...formik.getFieldProps("dnn")}
+          error={formik.touched.dnn ? formik.errors.dnn : null}
         />
         <Input
           id="ue-ip-pool"
@@ -325,6 +349,7 @@ export function CreateDeviceGroupModal({ closeFn }: createNewDeviceGroupModalPro
     const MBRDownstreamBps = Number(values.MBRDownstreamMbps) * 1_000_000;
     await createDeviceGroup({
       name: values.name,
+      dnn: values.dnn,
       ueIpPool: values.ueIpPool,
       dns: values.dns,
       mtu: values.mtu,
@@ -340,6 +365,7 @@ export function CreateDeviceGroupModal({ closeFn }: createNewDeviceGroupModalPro
   const initialValues: DeviceGroupFormValues = {
     name: "",
     networkSlice: "",
+    dnn: "",
     ueIpPool: "",
     dns: "8.8.8.8",
     mtu: 1456,
@@ -373,6 +399,7 @@ export function EditDeviceGroupModal({ deviceGroup, closeFn }: editDeviceGroupAc
     const MBRDownstreamBps = Number(values.MBRDownstreamMbps) * 1_000_000;
     await editDeviceGroup({
       name: values.name,
+      dnn: values.dnn,
       ueIpPool: values.ueIpPool,
       dns: values.dns,
       mtu: values.mtu,
@@ -391,6 +418,7 @@ export function EditDeviceGroupModal({ deviceGroup, closeFn }: editDeviceGroupAc
   const initialValues: DeviceGroupFormValues = {
     name: deviceGroup["group-name"] || "",
     networkSlice:deviceGroup["network-slice"] || "",
+    dnn: deviceGroup["ip-domain-expanded"]?.["dnn"] || "",
     ueIpPool: deviceGroup["ip-domain-expanded"]?.["ue-ip-pool"] || "",
     dns: deviceGroup["ip-domain-expanded"]?.["dns-primary"] || "8.8.8.8",
     mtu: deviceGroup["ip-domain-expanded"]?.["mtu"] || 1456,

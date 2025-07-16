@@ -114,6 +114,7 @@ export default function Subscribers() {
         { content: subscriber.rawImsi },
         { content: subscriber.networkSliceName },
         { content: subscriber.deviceGroupName },
+        { content: subscriber.dnn },
         {
           content:
             <List
@@ -188,6 +189,7 @@ export default function Subscribers() {
             { content: "IMSI" },
             { content: "Network Slice" },
             { content: "Device Group" },
+            { content: "DNN" },
             {
               content: "Actions",
               className:"u-align--right",

@@ -96,6 +96,7 @@ export type SubscriberTableData = {
   sequenceNumber: string;
   networkSliceName: string;
   deviceGroupName: string;
+  dnn: string;
 }
 
 export type User = {

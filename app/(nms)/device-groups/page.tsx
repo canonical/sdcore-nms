@@ -83,12 +83,15 @@ export default function DeviceGroups() {
       </>
     );
   }
-  const tableContent: MainTableRow[] = deviceGroups.map((deviceGroup) => {
+
+  const sortedDeviceGroups = [...deviceGroups].sort((a, b) => a["group-name"].localeCompare(b["group-name"]));
+  const tableContent: MainTableRow[] = sortedDeviceGroups.map((deviceGroup) => {
     return {
       key: deviceGroup["group-name"],
       columns: [
         { content: deviceGroup["group-name"] },
         { content: deviceGroup["network-slice"] },
+        { content: deviceGroup["ip-domain-expanded"]?.dnn },
         {
           content: deviceGroup["ip-domain-expanded"]?.["ue-ip-pool"],
           hasOverflow: true,
@@ -167,6 +170,7 @@ export default function DeviceGroups() {
           headers={[
             { content: "Name" },
             { content: "Network Slice" },
+            { content: "DNN" },
             { content: "Subscriber IP Pool" },
             {
               content: "DNS",

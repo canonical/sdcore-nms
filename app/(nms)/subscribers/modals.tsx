@@ -500,6 +500,7 @@ export const DeleteSubscriberButton: React.FC<deleteSubscriberButtonProps> = ({r
 
 interface SubscriberViewValues {
   rawImsi: string;
+  dnn: string;
   opc: string;
   key: string;
   sequenceNumber: string;
@@ -521,10 +522,14 @@ export function ViewSubscriberModal({ subscriber, closeFn }: ViewSubscriberModal
         </>
       }>
       <Form>
-        <fieldset><legend>Identity</legend>
+        <fieldset>
           <ViewSubscriberRow
             fieldName="IMSI"
             fieldValue={subscriber.rawImsi}
+          />
+          <ViewSubscriberRow
+            fieldName="DNN"
+            fieldValue={subscriber.dnn}
           />
         </fieldset>
         <fieldset><legend>Authentication</legend>
