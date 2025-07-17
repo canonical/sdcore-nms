@@ -1,4 +1,4 @@
-import { apiGetAllDeviceGroupNames } from "@/utils/deviceGroupOperations";
+import { apiGetAllDeviceGroupNames, getDeviceGroupDnns } from "@/utils/deviceGroupOperations";
 import { Button, CodeSnippet, ConfirmationButton, Form, Input, Modal, Select, Row, Col, Icon } from "@canonical/react-components";
 import { createSubscriber, deleteSubscriber, editSubscriber } from "@/utils/subscriberOperations";
 import { generateOpc } from "@/utils/sim_configuration/generateOpc";
@@ -27,6 +27,7 @@ interface SubscriberFormValues {
   sequenceNumber: string;
   networkSliceName: string;
   deviceGroupName: string;
+  dnn: string;
 }
 
 const SubscriberSchema = Yup.object().shape({
@@ -53,6 +54,7 @@ const SubscriberSchema = Yup.object().shape({
     .required("Sequence number is required."),
   networkSliceName: Yup.string().required("Network slice selection is required."),
   deviceGroupName: Yup.string().required("Device group selection is required."),
+  dnn: Yup.string().required("DNN is required."),
 });
 
 interface SubscriberModalProps {
@@ -124,12 +126,23 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
     enabled: auth.user ? true : false,
   })
 
+  const deviceGroupDnnQuery = useQuery<Record<string, string>, Error>({
+    queryKey: [queryKeys.deviceGroups, auth.user?.authToken],
+    queryFn: () => getDeviceGroupDnns(auth.user?.authToken ?? ""),
+    enabled: auth.user ? true : false,
+  })
+
   const deviceGroupNames = (deviceGroupQuery.data as string[]) || [] as string[];
   if (deviceGroupQuery.isError) {
     setDeviceGroupError("Failed to retrieve device groups.");
   }
   if (!deviceGroupError && !deviceGroupQuery.isLoading && deviceGroupNames.length === 0) {
     setDeviceGroupError("No device group available. Please create a device group.");
+  }
+
+  const deviceGroupDnns = deviceGroupDnnQuery.data as Record<string, string>;
+  if (deviceGroupDnnQuery.isError) {
+    setDeviceGroupError("Failed to retrieve device groups.");
   }
 
   const getFilteredDeviceGroups = (sliceName: string) => {
@@ -162,7 +175,8 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
       ...formik.values,
       networkSliceName: selectedSliceName,
       deviceGroupName: filteredDeviceGroupOptions.length > 1 ? "" : filteredDeviceGroupOptions[0] || "",
-      plmnId: `${mcc}${mnc}`
+      plmnId: `${mcc}${mnc}`,
+      dnn: filteredDeviceGroupOptions.length > 1 ? "" : deviceGroupDnns[filteredDeviceGroupOptions[0]] || ""
     });
   };
 
@@ -175,6 +189,7 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
       ...formik.values,
       networkSliceName: selectedSliceName,
       deviceGroupName: filteredDeviceGroupOptions.length > 1 ? "" : filteredDeviceGroupOptions[0] || "",
+      dnn: filteredDeviceGroupOptions.length > 1 ? "" : deviceGroupDnns[filteredDeviceGroupOptions[0]] || ""
     });
   };
 
@@ -254,7 +269,13 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
           required
           stacked
           value={formik.values.deviceGroupName}
-          onChange={(event) => formik.setFieldValue("deviceGroupName", (event.target.value))}
+          onChange={(event) => {
+            const groupName = event.target.value;
+            formik.setFieldValue("deviceGroupName", groupName);
+            const dnn = deviceGroupDnns[groupName] || "";
+            formik.setFieldValue("dnn", dnn);
+            }
+          }
           error={formik.touched.deviceGroupName ? formik.errors.deviceGroupName : null}
           options={[
             { disabled: true, label: "Select an option", value: "" },
@@ -269,6 +290,10 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
               : [])
           ]}
         />
+        <Row>
+          <Col size={4}>* DNN</Col>
+          <Col size={8}>{formik.values.dnn}</Col>
+        </Row><br></br>
         <fieldset><legend>Identity</legend>
           <Row>
             <Col size={4}>* IMSI</Col>
@@ -386,6 +411,7 @@ export function CreateSubscriberModal({ closeFn }: createNewSubscriberModalProps
     sequenceNumber: "",
     networkSliceName: "",
     deviceGroupName: "",
+    dnn: "",
   };
 
   return (
@@ -430,6 +456,7 @@ export function EditSubscriberModal({ subscriber, token, closeFn }: editSubscrib
     sequenceNumber: subscriber.sequenceNumber,
     networkSliceName: subscriber.networkSliceName,
     deviceGroupName: subscriber.deviceGroupName,
+    dnn: subscriber.dnn,
   };
 
   const networkSliceQuery = useQuery<NetworkSlice, Error>({
