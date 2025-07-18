@@ -293,8 +293,8 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
         <Row>
           <Col size={4}>* DNN</Col>
           <Col size={8}>{
-            formik.values.dnn.length > 50
-              ? `${formik.values.dnn.substring(0, 50)}...`
+            formik.values.dnn.length > 40
+              ? `${formik.values.dnn.substring(0, 40)}...`
               : formik.values.dnn}
           </Col>
         </Row><br></br>
@@ -560,7 +560,11 @@ export function ViewSubscriberModal({ subscriber, closeFn }: ViewSubscriberModal
           />
           <ViewSubscriberRow
             fieldName="DNN"
-            fieldValue={subscriber.dnn}
+            fieldValue={
+              subscriber.dnn.length > 40
+                ? `${subscriber.dnn.substring(0, 40)}...`
+                : subscriber.dnn
+            }
           />
         </fieldset>
         <fieldset><legend>Authentication</legend>
