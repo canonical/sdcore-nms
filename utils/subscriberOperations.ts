@@ -98,7 +98,7 @@ export async function getSubscribersTableData(token: string): Promise<Subscriber
       subscriberNames.map(async (subscriber: SubscriberId) => {
         const subscriberAuthData = await getSubscriberAuthData(subscriber.ueId, token);
         const parents = findDeviceGroupByImsi(subscriber.ueId.split("-")[1], deviceGroups);
-          return { ...subscriberAuthData, networkSliceName: parents?.networkSliceName || "", deviceGroupName: parents?.deviceGroupName || "" };
+          return { ...subscriberAuthData, dnn: parents?.dnn || "", networkSliceName: parents?.networkSliceName || "", deviceGroupName: parents?.deviceGroupName || "" };
         })
       );
     return allSubscribers.filter((item) => item !== undefined);
@@ -112,10 +112,11 @@ export async function getSubscribersTableData(token: string): Promise<Subscriber
 const findDeviceGroupByImsi = (
   rawImsi: string,
   deviceGroups: DeviceGroup[]
-): { deviceGroupName: string; networkSliceName: string } | null => {
+): { dnn: string; deviceGroupName: string; networkSliceName: string } | null => {
   for (const deviceGroup of deviceGroups) {
     if (deviceGroup.imsis && deviceGroup.imsis.includes(rawImsi)) {
       return {
+        dnn : deviceGroup["ip-domain-expanded"]?.dnn ?? "",
         deviceGroupName: deviceGroup["group-name"],
         networkSliceName: deviceGroup["network-slice"] ?? ""
       };

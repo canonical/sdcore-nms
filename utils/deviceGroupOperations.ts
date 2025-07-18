@@ -82,6 +82,7 @@ export async function apiPostDeviceGroup(name: string, deviceGroupData: any, tok
 
 interface CreateDeviceGroupArgs {
   name: string;
+  dnn: string;
   ueIpPool: string;
   dns: string;
   mtu: number;
@@ -95,6 +96,7 @@ interface CreateDeviceGroupArgs {
 
 export async function createDeviceGroup({
   name,
+  dnn,
   ueIpPool,
   dns,
   mtu,
@@ -116,7 +118,7 @@ export async function createDeviceGroup({
     "imsis": [],
     "ip-domain-name": "pool1",
     "ip-domain-expanded": {
-      dnn: "internet",
+      dnn: dnn,
       "ue-ip-pool": ueIpPool,
       "dns-primary": dns,
       mtu: mtu,
@@ -164,6 +166,7 @@ export async function createDeviceGroup({
 
 interface EditDeviceGroupArgs {
   name: string;
+  dnn: string;
   ueIpPool: string;
   dns: string;
   mtu: number;
@@ -176,6 +179,7 @@ interface EditDeviceGroupArgs {
 
 export async function editDeviceGroup({
   name,
+  dnn,
   ueIpPool,
   dns,
   mtu,
@@ -199,7 +203,7 @@ export async function editDeviceGroup({
       "imsis": imsis,
       "ip-domain-name": "pool1",
       "ip-domain-expanded": {
-        dnn: "internet",
+        dnn: dnn,
         "ue-ip-pool": ueIpPool,
         "dns-primary": dns,
         mtu: mtu,
@@ -261,6 +265,23 @@ export async function getDeviceGroup(deviceGroupName: string, token: string): Pr
     throw error;
   }
 };
+
+export async function getDeviceGroupDnns(token: string): Promise<Record<string, string>> {
+  try {
+    const deviceGroupNames = await apiGetAllDeviceGroupNames(token);
+    const entries = await Promise.all(
+      deviceGroupNames.map(async (groupName: string) => {
+        const deviceGroup = await getDeviceGroup(groupName, token);
+        return [groupName, deviceGroup["ip-domain-expanded"]?.dnn || ""] as [string, string];
+      })
+    );
+
+    return Object.fromEntries(entries);
+  } catch (error) {
+    console.error(`Failed to get DeviceGroup DNN map: ${error}`);
+    throw error;
+  }
+}
 
 const findDeviceGroupNetworkSlice = (deviceGroupName: string, networkSlices: NetworkSlice[]): string => {
   for (const networkSlice of networkSlices) {
