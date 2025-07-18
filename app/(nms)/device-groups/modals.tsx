@@ -52,7 +52,7 @@ const DeviceGroupSchema = Yup.object().shape({
       .required("Network slice is required."),
   dnn: Yup.string()
       .min(1)
-      .max(255, "Name should not exceed 255 characters.")
+      .max(255, "DNN should not exceed 255 characters.")
       .matches(/^[a-zA-Z][a-zA-Z0-9-_]+$/, {
       message: (
         <>
@@ -93,6 +93,7 @@ interface DeviceGroupModalProps {
   title: string;
   initialValues: DeviceGroupFormValues;
   isEdit?: boolean;
+  numberOfSubscribers: number;
   onSubmit: (values: any) => void;
   closeFn: () => void
 }
@@ -101,6 +102,7 @@ export const DeviceGroupModal: React.FC<DeviceGroupModalProps> = ({
   title,
   initialValues,
   isEdit = false,
+  numberOfSubscribers,
   onSubmit,
   closeFn,
 }) => {
@@ -204,7 +206,7 @@ export const DeviceGroupModal: React.FC<DeviceGroupModalProps> = ({
           type="text"
           required
           stacked
-          disabled={isEdit}
+          disabled={isEdit && numberOfSubscribers > 0}
           placeholder="internet"
           {...formik.getFieldProps("dnn")}
           error={formik.touched.dnn ? formik.errors.dnn : null}
@@ -380,6 +382,7 @@ export function CreateDeviceGroupModal({ closeFn }: createNewDeviceGroupModalPro
       <DeviceGroupModal
         title="Create device group"
         initialValues={initialValues}
+        numberOfSubscribers={0}
         onSubmit={handleSubmit}
         closeFn={closeFn}
       />
@@ -434,6 +437,7 @@ export function EditDeviceGroupModal({ deviceGroup, closeFn }: editDeviceGroupAc
         title={"Edit device group: " + `${deviceGroup["group-name"]}`}
         initialValues={initialValues}
         isEdit={true}
+        numberOfSubscribers={deviceGroup.imsis.length}
         onSubmit={handleSubmit}
         closeFn={closeFn}
       />

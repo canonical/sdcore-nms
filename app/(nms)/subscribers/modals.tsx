@@ -292,7 +292,11 @@ const SubscriberModal: React.FC<SubscriberModalProps> = ({
         />
         <Row>
           <Col size={4}>* DNN</Col>
-          <Col size={8}>{formik.values.dnn}</Col>
+          <Col size={8}>{
+            formik.values.dnn.length > 50
+              ? `${formik.values.dnn.substring(0, 50)}...`
+              : formik.values.dnn}
+          </Col>
         </Row><br></br>
         <fieldset><legend>Identity</legend>
           <Row>
