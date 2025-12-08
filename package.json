@@ -39,7 +39,7 @@
     "react-dom": "18.3.1",
     "react-icons": "^5.5.0",
     "sass": "^1.89.2",
-    "swagger-ui-react": "^5.27.1",
+    "swagger-ui-react": "^5.30.3",
     "tree-sitter": "^0.25.0",
     "typescript": "5.8.3",
     "vanilla-framework": "^4.27.0",
